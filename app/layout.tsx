@@ -30,19 +30,16 @@ const quicksand = Quicksand({
 });
 
 export const metadata: Metadata = {
-  title: "NowTickets",
+  title: "StormGo",
   description:
-    "Eventos underground, streetwear premium y Party Pass sin login para la comunidad NENEZ.",
+    "Descubre los mejores eventos, conciertos y experiencias en Ecuador con StormGo.",
   manifest: "/manifest.json",
   icons: {
     icon: [
       { url: "/favicon.svg", type: "image/svg+xml" },
-      { url: "/icons/nenez-icon-192.png", sizes: "192x192", type: "image/png" },
-      { url: "/icons/nenez-icon-512.png", sizes: "512x512", type: "image/png" },
     ],
-    apple: [{ url: "/apple-icon.png", sizes: "180x180", type: "image/png" }],
   },
-  appleWebApp: { capable: true, title: "NENEZ", statusBarStyle: "black-translucent" },
+  appleWebApp: { capable: true, title: "StormGo", statusBarStyle: "black-translucent" },
   other: {
     "mobile-web-app-capable": "yes",
     "apple-mobile-web-app-capable": "yes",

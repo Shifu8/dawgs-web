@@ -16,7 +16,7 @@ import {
   readJson,
   secureLog,
 } from "@/lib/security";
-import { getActiveTicketEvent } from "@/lib/tickets/activeEvent";
+import { getActiveTicketEvent, getTicketEventById } from "@/lib/tickets/activeEvent";
 import { getRecoverableTicket } from "@/lib/tickets/recoveryTicket";
 import { createRecoveryToken } from "@/lib/tickets/recoveryToken";
 import { verifyTurnstileToken } from "@/lib/turnstile";
@@ -27,6 +27,7 @@ const verifySchema = z.object({
   email: z.string().trim().toLowerCase().email().max(120),
   code: z.string().regex(/^\d{6}$/),
   turnstileToken: z.string().max(4096).optional(),
+  eventId: z.string().optional(),
 });
 
 function messageFor(reason: "expired" | "not-found" | "locked" | "invalid"): string {
@@ -47,7 +48,15 @@ export async function POST(request: Request) {
     const body = await readJson(request, verifySchema);
     const email = normalizeRecoveryEmail(body.email);
     const emailHash = recoveryEmailHash(email);
-    const event = getActiveTicketEvent();
+    
+    let event = getActiveTicketEvent();
+    if (body.eventId) {
+      const matched = getTicketEventById(body.eventId);
+      if (matched) {
+        event = matched;
+      }
+    }
+
     const ipHash = hashLookup(getClientIp(request));
     const userAgentHash = hashLookup(request.headers.get("user-agent") || "unknown");
 

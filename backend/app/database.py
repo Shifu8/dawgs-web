@@ -1,25 +1,40 @@
 """
-Configuración de la base de datos MySQL y motor SQLModel/SQLAlchemy.
+Configuración de la base de datos PostgreSQL (AWS RDS / Supabase / Railway) o SQLite/MySQL con motor SQLModel.
 """
 import os
 from sqlmodel import SQLModel, Session, create_engine
 
+
 def get_database_url() -> str:
-    return os.getenv(
+    url = os.getenv(
         "DATABASE_URL",
-        "mysql+pymysql://dawgs_user:dawgs_password@127.0.0.1:3306/dawgs_db"
+        os.getenv(
+            "POSTGRES_URL",
+            os.getenv("MYSQL_URL", "sqlite:///./dawgs_local.db")
+        )
     )
+    # Convert AWS RDS / Heroku / Supabase 'postgres://' URI to SQLAlchemy compliant 'postgresql://'
+    if url.startswith("postgres://"):
+        url = url.replace("postgres://", "postgresql://", 1)
+    return url
+
+
+db_url = get_database_url()
+is_sqlite = db_url.startswith("sqlite")
+
+connect_args = {"check_same_thread": False} if is_sqlite else {}
 
 engine = create_engine(
-    get_database_url(),
+    db_url,
     echo=os.getenv("DB_ECHO", "false").lower() == "true",
-    pool_pre_ping=True,
-    pool_recycle=3600,
+    connect_args=connect_args,
+    pool_pre_ping=not is_sqlite,
+    pool_recycle=3600 if not is_sqlite else -1,
 )
 
 
 def init_db() -> None:
-    """Crear tablas si no existen (solo para desarrollo). En producción usar Alembic."""
+    """Crear todas las tablas en la base de datos (PostgreSQL AWS / MySQL / SQLite)."""
     SQLModel.metadata.create_all(engine)
 
 

@@ -24,6 +24,8 @@ interface EventTicketCarouselProps {
   onViewDetails: (event: Event) => void;
   isTicketPulse?: boolean;
   onInactiveClick?: (event: Event) => void;
+  onOpenDrinks: (event: Event) => void;
+  onOpenRecovery: (event: Event) => void;
 }
 
 export const CAROUSEL_EVENTS: CarouselEvent[] = [
@@ -211,7 +213,9 @@ export default function EventTicketCarousel({
   onBuy,
   onViewDetails,
   isTicketPulse = false,
-  onInactiveClick
+  onInactiveClick,
+  onOpenDrinks,
+  onOpenRecovery
 }: EventTicketCarouselProps) {
   const events = (propEvents && propEvents.length > 0) ? propEvents : CAROUSEL_EVENTS;
   const [dragOffset, setDragOffset] = useState(0);
@@ -238,14 +242,14 @@ export default function EventTicketCarousel({
     const handleResize = () => {
       setRadius(
         window.innerWidth > 1536
-          ? 480
-          : window.innerWidth > 1280
-          ? 430
-          : window.innerWidth > 1024
           ? 390
+          : window.innerWidth > 1280
+          ? 350
+          : window.innerWidth > 1024
+          ? 310
           : window.innerWidth > 768
-          ? 340
-          : 320
+          ? 270
+          : 250
       );
     };
     handleResize();
@@ -404,7 +408,7 @@ export default function EventTicketCarousel({
       onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
-      className="relative w-full h-[520px] md:h-[560px] lg:h-[680px] xl:h-[740px] 2xl:h-[780px] flex items-center justify-center select-none overflow-visible"
+      className="relative w-full h-[450px] md:h-[490px] lg:h-[550px] xl:h-[600px] 2xl:h-[640px] flex items-center justify-center select-none overflow-visible"
     >
       {/* 3D Scene Wrapper */}
       <div 
@@ -450,18 +454,29 @@ export default function EventTicketCarousel({
                   return;
                 }
                 if (diff === 0) {
+                  if ((event.status as any) === "coming-soon") {
+                    return; // Do nothing for coming-soon events
+                  }
+                  const salesStatus = getOnlineSalesStatus(event);
                   if (event.status === "available") {
-                    onBuy(event);
+                    if (salesStatus.isClosed) {
+                      onInactiveClick?.({
+                        ...event,
+                        customMessage: `Las entradas online por esta web han finalizado a las ${salesStatus.cutoffTime} hs. Puedes adquirir tu entrada directamente en la puerta del evento.`
+                      } as any);
+                    } else {
+                      onBuy(event);
+                    }
                   } else {
                     onInactiveClick?.(event);
                   }
                 }
               }}
-              className={`absolute w-[290px] h-[410px] md:w-[330px] md:h-[460px] lg:w-[410px] lg:h-[560px] xl:w-[460px] xl:h-[620px] 2xl:w-[490px] 2xl:h-[660px] rounded-[32px] cursor-pointer origin-center transition-all animate-float group ${
+              className={`absolute w-[240px] h-[350px] md:w-[270px] md:h-[390px] lg:w-[320px] lg:h-[450px] xl:w-[350px] xl:h-[490px] 2xl:w-[375px] 2xl:h-[520px] rounded-[28px] cursor-pointer origin-center transition-all animate-float group ${
                 diff === 0 && isTicketPulse ? "ticket-pulse-active" : ""
               }`}
               style={{
-                transform: `translate3d(${translateX + px}px, ${diff === 0 ? -15 + py : py}px, ${translateZ}px) rotateY(${rotateY + prY}deg) rotateX(${prX}deg) scale(${scale})`,
+                transform: `translate3d(${translateX + px}px, ${diff === 0 ? -10 + py : py}px, ${translateZ}px) rotateY(${rotateY + prY}deg) rotateX(${prX}deg) scale(${scale})`,
                 zIndex,
                 opacity,
                 filter: `blur(${blur}px)`,
@@ -491,11 +506,11 @@ export default function EventTicketCarousel({
                   <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-zinc-950" />
                 </div>
               )}
-              <div className="relative w-full h-full p-5 xl:p-6 flex flex-col justify-between z-10" style={{ transform: "translateZ(20px)" }}>
+              <div className="relative w-full h-full p-4 md:p-5 lg:p-6 flex flex-col justify-between z-10" style={{ transform: "translateZ(20px)" }}>
                 
                 {/* Grayscale Artist Cover */}
-                <div className={`relative w-full rounded-[20px] overflow-hidden bg-zinc-900 border border-white/5 transition-all duration-500 ${
-                  diff === 0 ? "h-[50%] md:h-[54%] lg:h-[58%] xl:h-[60%]" : "h-[58%] xl:h-[62%]"
+                <div className={`relative w-full rounded-[18px] overflow-hidden bg-zinc-900 border border-white/5 transition-all duration-500 ${
+                  diff === 0 ? "h-[44%] md:h-[47%] lg:h-[50%]" : "h-[50%]"
                 }`}>
                   {event.poster ? (
                     <Image
@@ -560,6 +575,20 @@ export default function EventTicketCarousel({
 
                   {/* Active Card Action Buttons (Mobile & Desktop) */}
                   {diff === 0 && (() => {
+                    if ((event.status as any) === "coming-soon") {
+                      return (
+                        <div className="flex w-full mt-3 xl:mt-4 pt-3 border-t border-white/5 z-50">
+                          <button
+                            type="button"
+                            disabled
+                            className="w-full h-9 xl:h-10 rounded-full border border-zinc-800 bg-zinc-900/20 text-[8px] xl:text-[9px] font-black uppercase tracking-[0.15em] text-zinc-600 opacity-50 cursor-not-allowed text-center"
+                          >
+                            Próximamente
+                          </button>
+                        </div>
+                      );
+                    }
+
                     const salesStatus = getOnlineSalesStatus(event);
 
                     if (salesStatus.isClosed && event.status === "available") {
@@ -595,6 +624,30 @@ export default function EventTicketCarousel({
                               Entradas en Puerta
                             </button>
                           </div>
+                          <div className="flex gap-2 w-full">
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                if (clickMovedRef.current) return;
+                                onOpenDrinks(event);
+                              }}
+                              className="flex-1 h-9 xl:h-10 rounded-full border border-white/10 bg-white/[0.03] text-zinc-300 text-[8px] xl:text-[9px] font-black uppercase tracking-[0.12em] hover:border-white/30 hover:bg-white/5 hover:text-white transition active:scale-95 cursor-pointer"
+                            >
+                              Bar & Bebidas
+                            </button>
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                if (clickMovedRef.current) return;
+                                onOpenRecovery(event);
+                              }}
+                              className="flex-1 h-9 xl:h-10 rounded-full border border-white/10 bg-white/[0.03] text-zinc-300 text-[8px] xl:text-[9px] font-black uppercase tracking-[0.12em] hover:border-white/30 hover:bg-white/5 hover:text-white transition active:scale-95 cursor-pointer"
+                            >
+                              Recuperar Entrada
+                            </button>
+                          </div>
                         </div>
                       );
                     }
@@ -610,43 +663,32 @@ export default function EventTicketCarousel({
                         <div className="flex gap-2 w-full">
                           <button
                             type="button"
-                            disabled={event.status === "coming-soon"}
                             onClick={(e) => {
                               e.stopPropagation();
                               if (clickMovedRef.current) return;
                               onViewDetails(event);
                             }}
-                            className={`flex-1 h-9 xl:h-10 rounded-full border text-[8px] xl:text-[9px] font-black uppercase tracking-[0.15em] transition duration-300 ${
-                              event.status === "coming-soon"
-                                ? "border-zinc-800 bg-zinc-900/20 text-zinc-600 cursor-not-allowed opacity-50"
-                                : "border-white/25 bg-white/10 text-white hover:border-white/50 hover:bg-white/25 active:scale-95 cursor-pointer shadow-[0_4px_16px_rgba(0,0,0,0.5)] backdrop-blur-md"
-                            }`}
+                            className="flex-1 h-9 xl:h-10 rounded-full border text-[8px] xl:text-[9px] font-black uppercase tracking-[0.15em] transition duration-300 border-white/25 bg-white/10 text-white hover:border-white/50 hover:bg-white/25 active:scale-95 cursor-pointer shadow-[0_4px_16px_rgba(0,0,0,0.5)] backdrop-blur-md"
                           >
                             Ver Detalle
                           </button>
 
                           {event.status === "available" ? (
-                            <div
-                              className={`flex-1 relative p-[1.5px] rounded-full overflow-hidden bg-zinc-950 flex items-center justify-center transition-all duration-500 group/btn ${
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                if (clickMovedRef.current) return;
+                                onBuy(event);
+                              }}
+                              className={`flex-1 h-9 xl:h-10 rounded-full text-[8px] xl:text-[9px] font-black uppercase tracking-[0.15em] transition-all duration-300 active:scale-95 cursor-pointer ${
                                 diff === 0 && isTicketPulse
-                                  ? "ring-2 ring-pink-500 shadow-[0_0_35px_rgba(225,0,117,0.85),0_0_65px_rgba(225,0,117,0.45)] scale-[1.03] animate-pulse"
-                                  : "shadow-[0_0_15px_rgba(225,0,117,0.2)]"
+                                  ? "bg-white text-black ring-2 ring-white shadow-[0_0_25px_rgba(255,255,255,0.35)] scale-[1.03] animate-pulse"
+                                  : "bg-zinc-700 text-white border border-zinc-600 hover:bg-zinc-600 hover:border-zinc-500"
                               }`}
                             >
-                              {/* Pink spinning line */}
-                              <div className="absolute inset-[-150%] animate-[spin_3s_linear_infinite] bg-[conic-gradient(from_0deg,transparent_35%,#e10075_50%,transparent_65%)] pointer-events-none" />
-                              <button
-                                type="button"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  if (clickMovedRef.current) return;
-                                  onBuy(event);
-                                }}
-                                className="relative z-10 w-full h-[34px] xl:h-[38px] rounded-full bg-zinc-950 text-[8px] xl:text-[9px] font-black uppercase tracking-[0.15em] text-white hover:bg-zinc-900 transition-all duration-300 active:scale-95 cursor-pointer"
-                              >
-                                Comprar Entrada
-                              </button>
-                            </div>
+                              Comprar Entrada
+                            </button>
                           ) : (
                             <button
                               type="button"
@@ -660,6 +702,30 @@ export default function EventTicketCarousel({
                               {event.status === "sold-out" ? "Agotado" : "Próximamente"}
                             </button>
                           )}
+                        </div>
+                        <div className="flex gap-2 w-full">
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                if (clickMovedRef.current) return;
+                                onOpenDrinks(event);
+                            }}
+                            className="flex-1 h-9 xl:h-10 rounded-full border border-zinc-700 bg-zinc-800/60 text-zinc-300 text-[8px] xl:text-[9px] font-black uppercase tracking-[0.12em] hover:bg-zinc-700 hover:text-white transition-all duration-300 active:scale-95 cursor-pointer"
+                          >
+                            Bar & Bebidas
+                          </button>
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                if (clickMovedRef.current) return;
+                                onOpenRecovery(event);
+                            }}
+                            className="flex-1 h-9 xl:h-10 rounded-full border border-white/10 bg-white/[0.03] text-zinc-300 text-[8px] xl:text-[9px] font-black uppercase tracking-[0.12em] hover:border-white/30 hover:bg-white/5 hover:text-white transition active:scale-95 cursor-pointer"
+                          >
+                            Recuperar Entrada
+                          </button>
                         </div>
                       </div>
                     );

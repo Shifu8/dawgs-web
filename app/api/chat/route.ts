@@ -9,7 +9,7 @@ const openai = process.env.OPENAI_API_KEY ? new OpenAI({
 
 const replies: [RegExp, string][] = [
   [/^(hola|hey|buenas|que tal|q tal|hi|buenos|saludos|buen[oa])\b/i,
-    "Hola. Bienvenido a NOW Tickets. Pregunta lo que necesites: entradas, precio, fecha, acceso o soporte."],
+    "Hola. Bienvenido a Now4Go. Pregunta lo que necesites: entradas, precio, fecha, acceso o soporte."],
   [/gracias|thank|excelente|perfecto|okey|ok/i,
     "Con gusto. Cualquier otra duda, aca estoy."],
   [/adios|chao|bye|nos vemos|hasta luego/i,
@@ -29,7 +29,7 @@ const replies: [RegExp, string][] = [
 
   // Evento general
   [/evento|trap.?loud|concierto|show|presentaci[oó]n|que\s*hay|(que\s*es\s*(el\s*evento|trap|now|tickets|trap.?loud))/i,
-    "TRAP LOUD es el evento activo de NOW Tickets. Puedes comprar tu ticket por $10. Incluye QR unico enviado por Gmail."],
+    "TRAP LOUD es el evento activo de Now4Go. Puedes comprar tu ticket por $10. Incluye QR unico enviado por Gmail."],
 
   // Comprar ticket
   [/comprar|ticket|acceso|entrada|boleta|como\s*obtengo|quiero\s*ir/i,
@@ -53,7 +53,7 @@ const replies: [RegExp, string][] = [
 
   // Qué es Merch / Ropa
   [/(?:que\s*es|que\s*significa|explicame|definicion)\s*(?:la\s*)?(merch|ropa|wear|streetwear|prenda|moda)/i,
-    "La merch de NOW Tickets es nuestra línea de ropa urbana exclusiva (camisetas, gorras, hoodies) diseñada en colaboración con los artistas. Puedes explorar todos los diseños en la sección Merch de la web, y para comprar, te facilitamos nuestro WhatsApp de ventas directas: https://wa.me/593988831372."],
+    "La merch de Now4Go es nuestra línea de ropa urbana exclusiva (camisetas, gorras, hoodies) diseñada en colaboración con los artistas. Puedes explorar todos los diseños en la sección Merch de la web, y para comprar, te facilitamos nuestro WhatsApp de ventas directas: https://wa.me/593988831372."],
 
   // NENEZ Wear / ropa
   [/ropa|wear|merch|streetwear|camiseta|polera|gorra|buso|sudadera|talla|vestimenta|moda/i,
@@ -154,11 +154,11 @@ export async function POST(req: Request) {
           content: m.text,
         }));
 
-        const systemPrompt = `Eres el asistente virtual oficial de "NOW Tickets" (un bot inteligente de soporte y asistencia).
+        const systemPrompt = `Eres el asistente virtual oficial de "Now4Go" (un bot inteligente de soporte y asistencia).
 Tu propósito es responder de manera inteligente, concisa, educada y en español a cualquier pregunta relacionada con el evento y la plataforma.
 
 Información oficial y reglas de la plataforma:
-- Marca: Se llama "NOW Tickets" (nunca digas NENEZ AI, pero si preguntan por la marca de ropa, se llama NENEZ Wear o ropa de la marca NENEZ).
+- Marca: Se llama "Now4Go" (nunca digas NENEZ AI, pero si preguntan por la marca de ropa, se llama NENEZ Wear o ropa de la marca NENEZ).
 - Evento Activo: El evento activo se llama "TRAP LOUD".
 - Fecha: Es el 18 de junio de 2026. Se realiza en San Juan, Ecuador. Recomienda llegar temprano para evitar filas.
 - Precio de Ticket: Cuesta $10 USD por entrada general (pago único vía PayPhone o transferencia bancaria dentro de la web).

@@ -43,34 +43,21 @@ declare global {
 }
 
 function siteKeyForVariant(variant: TurnstileVariant): string {
-  if (
-    process.env.NODE_ENV !== "production" &&
-    process.env.NEXT_PUBLIC_TURNSTILE_IN_DEVELOPMENT !== "true"
-  ) {
-    return "";
+  // Env variable configured key
+  const envKey = (
+    variant === "invisible"
+      ? (process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY_INVISIBLE || process.env.NEXT_PUBLIC_CLOUDFLARE_TURNSTILE_SITE_KEY_INVISIBLE)
+      : (process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY_VISIBLE || process.env.NEXT_PUBLIC_CLOUDFLARE_TURNSTILE_SITE_KEY_VISIBLE)
+  ) || process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || process.env.NEXT_PUBLIC_CLOUDFLARE_TURNSTILE_SITE_KEY;
+
+  if (envKey && envKey.trim()) {
+    return envKey.trim();
   }
 
-  if (typeof window !== "undefined" && (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1" || window.location.hostname === "0.0.0.0")) {
-    return variant === "invisible" ? "1x00000000000000000000BB" : "1x00000000000000000000AA";
-  }
-
-  if (variant === "invisible") {
-    return (
-      process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY_INVISIBLE ||
-      process.env.NEXT_PUBLIC_CLOUDFLARE_TURNSTILE_SITE_KEY_INVISIBLE ||
-      process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY ||
-      process.env.NEXT_PUBLIC_CLOUDFLARE_TURNSTILE_SITE_KEY ||
-      ""
-    ).trim();
-  }
-
-  return (
-    process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY_VISIBLE ||
-    process.env.NEXT_PUBLIC_CLOUDFLARE_TURNSTILE_SITE_KEY_VISIBLE ||
-    process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY ||
-    process.env.NEXT_PUBLIC_CLOUDFLARE_TURNSTILE_SITE_KEY ||
-    ""
-  ).trim();
+  // Official Cloudflare testing site keys (works on localhost & dev environments)
+  // 1x00000000000000000000AA -> Always passes visible widget
+  // 1x00000000000000000000BB -> Always passes invisible widget
+  return variant === "invisible" ? "1x00000000000000000000BB" : "1x00000000000000000000AA";
 }
 
 function loadTurnstileScript(): Promise<void> {
@@ -100,9 +87,6 @@ function loadTurnstileScript(): Promise<void> {
 }
 
 export function hasTurnstileSiteKey(variant: TurnstileVariant = "visible"): boolean {
-  if (process.env.NODE_ENV !== "production") {
-    return false;
-  }
   return Boolean(siteKeyForVariant(variant));
 }
 

@@ -1,7 +1,7 @@
 {
-  "name": "NENEZ",
-  "short_name": "NENEZ",
-  "description": "Eventos underground, streetwear premium y acceso sin login para la comunidad NENEZ.",
+  "name": "Now4Go",
+  "short_name": "Now4Go",
+  "description": "Eventos underground, entradas y experiencias exclusivas con Now4Go.",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#050505",

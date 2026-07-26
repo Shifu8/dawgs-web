@@ -86,3 +86,11 @@ export function getActiveTicketEvent(): ActiveTicketEvent {
 export function eventMatchesActiveEvent(eventId: string | undefined, event: ActiveTicketEvent): boolean {
   return Boolean(eventId && event.aliases.includes(eventId));
 }
+
+export function getTicketEventById(eventId: string): ActiveTicketEvent | null {
+  const events = loadAllEvents();
+  const configured = selectConfiguredEvent(events, eventId);
+  if (configured) return toActiveEvent(configured);
+  return null;
+}
+

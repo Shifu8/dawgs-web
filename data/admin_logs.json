@@ -781,5 +781,32 @@
       "expiresAt": "2026-07-22T06:46:48.594Z"
     },
     "createdAt": "2026-07-21T18:46:48.594Z"
+  },
+  {
+    "action": "STAFF_LOGIN",
+    "metadata": {
+      "role": "admin",
+      "sessionId": "2c567be2-1064-4321-b25e-de955d10b8a2",
+      "expiresAt": "2026-07-25T12:45:54.220Z"
+    },
+    "createdAt": "2026-07-25T00:45:54.226Z"
+  },
+  {
+    "action": "STAFF_LOGIN",
+    "metadata": {
+      "role": "admin",
+      "sessionId": "9d5ba105-d8c5-4b75-ae79-47b5600ead4f",
+      "expiresAt": "2026-07-25T13:21:09.467Z"
+    },
+    "createdAt": "2026-07-25T01:21:09.478Z"
+  },
+  {
+    "action": "STAFF_LOGIN",
+    "metadata": {
+      "role": "admin",
+      "sessionId": "1a4f4981-69f6-4df4-9822-e9cd2a433ecb",
+      "expiresAt": "2026-07-25T13:49:05.682Z"
+    },
+    "createdAt": "2026-07-25T01:49:05.687Z"
   }
 ]

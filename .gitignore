@@ -14,6 +14,11 @@ build/
 # Deployment
 .vercel/
 
+# Databases
+*.db
+*.sqlite
+*.sqlite3
+
 # Logs (all log files)
 *.log
 *.out.log

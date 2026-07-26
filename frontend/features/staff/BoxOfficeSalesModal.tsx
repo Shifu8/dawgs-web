@@ -286,7 +286,7 @@ export default function BoxOfficeSalesModal({
         <table>
           <tr>
             <td colspan="5" style="font-size: 16px; font-weight: bold; color: #10b981; background-color: #070707; text-align: center; padding: 14px; border: 1px solid #000000;">
-              NOWTICKETS — REPORTE DE CIERRE DE CAJA DE TAQUILLA
+              NOW4GO — REPORTE DE CIERRE DE CAJA DE TAQUILLA
             </td>
           </tr>
           <tr><td colspan="5"></td></tr>

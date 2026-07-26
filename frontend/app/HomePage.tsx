@@ -13,6 +13,7 @@ import { useRouter } from "next/navigation";
 import {
   Calendar,
   ChevronLeft,
+  ChevronRight,
   KeyRound,
   LockKeyhole,
   MapPin,
@@ -20,20 +21,32 @@ import {
   ShieldCheck,
   Ticket,
   X,
-  Share2
+  Share2,
+  User,
+  PlusCircle,
+  LayoutDashboard,
+  Search,
+  Sparkles,
+  Wine,
+  CreditCard,
+  Key,
+  Settings,
+  LogOut,
 } from "lucide-react";
 import { AnimatePresence, motion, useDragControls } from "framer-motion";
 import Atmosphere from "@/frontend/components/Atmosphere";
 import AIChatbot from "@/frontend/components/AIChatbot";
 import PurchaseFarewell from "@/frontend/components/PurchaseFarewell";
 import AccessDrop, { type AccessDropHandle } from "@/frontend/features/access-drop/AccessDrop";
-import TicketRecovery from "@/frontend/features/access-drop/TicketRecovery";
+import TicketRecoveryModal from "@/frontend/components/TicketRecoveryModal";
 import OutfitBuilderSection from "@/frontend/features/merch/OutfitBuilderSection";
 import StaffModal from "@/frontend/features/staff/StaffModal";
 import BoxOfficeSalesModal from "@/frontend/features/staff/BoxOfficeSalesModal";
 import DrinksSalesModal from "@/frontend/features/staff/DrinksSalesModal";
 import EventTicketCarousel, { CAROUSEL_EVENTS } from "@/frontend/components/EventTicketCarousel";
 import EventDetailOverlay from "@/frontend/features/events/EventDetailOverlay";
+import InstallApp from "@/frontend/components/InstallApp";
+import { QuickPreviewModal } from "@/frontend/components/QuickPreviewModal";
 import { gsap, useGSAP } from "@/frontend/animations/gsapSetup";
 import DrinksMenuModal from "@/frontend/components/DrinksMenuModal";
 import { events as fallbackEvents } from "@/frontend/services/nenezData";
@@ -44,7 +57,8 @@ import type { Event } from "@/frontend/types/domain";
 import { getOnlineSalesStatus } from "@/frontend/utils/cutoff";
 
 const HOME_NAV_ITEMS = [
-  { id: "show", label: "Show" },
+  { id: "home", label: "Home" },
+  { id: "explore", label: "Shows" },
   { id: "access", label: "Access" },
   { id: "wear", label: "Merch" },
   { id: "support", label: "Support" },
@@ -54,6 +68,7 @@ type HomeNavId = (typeof HOME_NAV_ITEMS)[number]["id"];
 
 interface HomePageProps {
   initialConfig: HomepageConfig;
+  initialEventSlug?: string;
 }
 
 function TypewriterText({ text }: { text: string }) {
@@ -84,7 +99,7 @@ function TypewriterText({ text }: { text: string }) {
   );
 }
 
-export default function HomePage({ initialConfig }: HomePageProps) {
+export default function HomePage({ initialConfig, initialEventSlug }: HomePageProps) {
   const router = useRouter();
   const scope = useRef<HTMLElement>(null);
   const longPressTimer = useRef<NodeJS.Timeout | null>(null);
@@ -93,6 +108,7 @@ export default function HomePage({ initialConfig }: HomePageProps) {
   const [events, setEvents] = useState<Event[]>(fallbackEvents);
   const [activeSection, setActiveSection] = useState<HomeNavId>("show");
   const [showHiddenMenu, setShowHiddenMenu] = useState(false);
+  const [showUserMenu, setShowUserMenu] = useState(false);
   const [isStaffModalOpen, setIsStaffModalOpen] = useState(false);
   const [isPosModalOpen, setIsPosModalOpen] = useState(false);
   const [isDrinksPosModalOpen, setIsDrinksPosModalOpen] = useState(false);
@@ -105,16 +121,90 @@ export default function HomePage({ initialConfig }: HomePageProps) {
   const [isRecoveryPulse, setIsRecoveryPulse] = useState(false);
   const [showEventModal, setShowEventModal] = useState(false);
   const [showDetailOverlay, setShowDetailOverlay] = useState(false);
+  const [showQuickPreview, setShowQuickPreview] = useState(false);
+  const [quickPreviewEvent, setQuickPreviewEvent] = useState<any>(null);
+  const [expandedCardId, setExpandedCardId] = useState<string | null>(null);
   const [showDrinksModal, setShowDrinksModal] = useState(false);
+  const [showRecoveryModal, setShowRecoveryModal] = useState(false);
   const [selectedCarouselEvent, setSelectedCarouselEvent] = useState<Event>(CAROUSEL_EVENTS[0]);
+
+  // Auto-open EventDetailOverlay if initialEventSlug is specified
+  useEffect(() => {
+    if (initialEventSlug && Array.isArray(events)) {
+      const targetSlug = String(initialEventSlug).toLowerCase();
+      const match = events.find((e) => {
+        if (!e) return false;
+        const slugMatch = typeof e.slug === "string" && e.slug.toLowerCase() === targetSlug;
+        const idMatch = typeof e.id === "string" && e.id.toLowerCase() === targetSlug;
+        return slugMatch || idMatch;
+      });
+      if (match) {
+        setSelectedCarouselEvent(match);
+        setShowDetailOverlay(true);
+      }
+    }
+  }, [initialEventSlug, events]);
+
+  // Search & Catalog Carousel State
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedCity, setSelectedCity] = useState("Todas");
+  const homeCarouselRef = useRef<HTMLDivElement>(null);
+
+  const scrollHomeCarousel = (direction: "left" | "right") => {
+    if (!homeCarouselRef.current) return;
+    const dist = homeCarouselRef.current.clientWidth * 0.75;
+    homeCarouselRef.current.scrollBy({
+      left: direction === "left" ? -dist : dist,
+      behavior: "smooth",
+    });
+  };
+
+  const filteredCatalogEvents = events.filter((evt) => {
+    const matchesSearch =
+      !searchQuery ||
+      evt.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (evt.subtitle && evt.subtitle.toLowerCase().includes(searchQuery.toLowerCase())) ||
+      (evt.venue && evt.venue.toLowerCase().includes(searchQuery.toLowerCase())) ||
+      evt.city.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesCity = selectedCity === "Todas" || evt.city.toLowerCase() === selectedCity.toLowerCase();
+    return matchesSearch && matchesCity;
+  });
 
   // Custom states for 3D Carousel & Premium visual effects
   const [activeIndex, setActiveIndex] = useState(0);
+  const [trendingIndex, setTrendingIndex] = useState(0);
   const activeEvent = events[activeIndex] || selectedCarouselEvent;
-  const nextIndex = events.length > 0 ? (activeIndex + 1) % events.length : 0;
-  const nextEvent = events[nextIndex] || activeEvent;
   const [isLoading, setIsLoading] = useState(true);
+
+  // Clear loader on mount & popstate (browser back/forward navigation)
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 1200);
+
+    const handlePageShow = () => {
+      setIsLoading(false);
+    };
+
+    window.addEventListener("pageshow", handlePageShow);
+    window.addEventListener("popstate", handlePageShow);
+
+    return () => {
+      clearTimeout(timer);
+      window.removeEventListener("pageshow", handlePageShow);
+      window.removeEventListener("popstate", handlePageShow);
+    };
+  }, []);
   const [checkoutState, setCheckoutState] = useState<string>("register");
+
+  // Auto-advance Featured Trending Presale Card every 5 seconds
+  useEffect(() => {
+    if (!events.length) return;
+    const timer = setInterval(() => {
+      setTrendingIndex((prev) => (prev + 1) % events.length);
+    }, 5000);
+    return () => clearInterval(timer);
+  }, [events.length]);
 
   const [, setTick] = useState(0);
   useEffect(() => {
@@ -244,6 +334,20 @@ export default function HomePage({ initialConfig }: HomePageProps) {
       .then((data) => {
         if (data.success && Array.isArray(data.events) && data.events.length > 0) {
           setEvents(data.events);
+          
+          const params = new URLSearchParams(window.location.search);
+          const eventParam = params.get("event");
+          if (eventParam) {
+            const foundIdx = data.events.findIndex(
+              (e: any) => e.id === eventParam || e.slug === eventParam
+            );
+            if (foundIdx !== -1) {
+              setSelectedCarouselEvent(data.events[foundIdx]);
+              setActiveIndex(foundIdx);
+              return;
+            }
+          }
+          
           setSelectedCarouselEvent(data.events[0]);
         }
       })
@@ -327,7 +431,7 @@ export default function HomePage({ initialConfig }: HomePageProps) {
 
           const tl = gsap.timeline({ defaults: { ease: "power3.out" } });
 
-          // Animación del logo de NowTickets (corre en móvil y desktop)
+          // Animación del logo de Now4Go (corre en móvil y desktop)
           tl.fromTo(".logo-icon",
             { scale: 0, rotation: -45, opacity: 0 },
             { scale: 1, rotation: 0, opacity: 1, duration: 0.8, ease: "back.out(1.7)" }
@@ -392,11 +496,8 @@ export default function HomePage({ initialConfig }: HomePageProps) {
   };
 
   const scrollToRecovery = () => {
-    scrollToSection("recovery", "center", "access");
-    window.setTimeout(() => {
-      setIsRecoveryPulse(true);
-      window.setTimeout(() => setIsRecoveryPulse(false), 2600);
-    }, 650);
+    setSelectedCarouselEvent(activeEvent);
+    setShowRecoveryModal(true);
   };
 
   const onBuy = (event: Event) => {
@@ -422,29 +523,82 @@ export default function HomePage({ initialConfig }: HomePageProps) {
       className="relative min-h-screen overflow-x-hidden bg-black text-white"
       style={themeStyle}
     >
-      {/* Premium cinematic intro loader overlay */}
+      {/* StormGo Animated Intro Loader Splash Overlay */}
       <AnimatePresence>
         {isLoading && (
           <motion.div
             key="loader"
-            exit={{ opacity: 0, filter: "blur(12px)" }}
-            transition={{ duration: 0.75, ease: "easeInOut" }}
-            className="fixed inset-0 z-[999] flex flex-col items-center justify-center bg-black"
+            exit={{ opacity: 0, y: "-100%", filter: "blur(12px)" }}
+            transition={{ duration: 0.8, ease: [0.76, 0, 0.24, 1] }}
+            className="fixed inset-0 z-[999] flex flex-col items-center justify-center bg-[#8b5cf6] text-black select-none"
           >
             <motion.div
-              initial={{ opacity: 0, y: 15 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, ease: "easeOut" }}
-              className="text-center"
+              initial={{ opacity: 0, scale: 0.8, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              transition={{ duration: 0.6, ease: "easeOut" }}
+              className="flex flex-col items-center text-center px-4"
             >
-              <h1 className="text-sm font-black uppercase tracking-[0.6em] text-white">NOW</h1>
-              <p className="mt-2 text-[8px] font-black uppercase tracking-[0.4em] text-zinc-500">Elevate Your Frequency</p>
-              <div className="mt-6 h-0.5 w-16 bg-white/20 mx-auto overflow-hidden rounded">
+              {/* Animated Cool Cloud Mascot Winking ("echando un ojo") - Slightly Smaller */}
+              <motion.div
+                animate={{
+                  y: [0, -8, 0],
+                  rotate: [0, -4, 4, 0],
+                }}
+                transition={{
+                  duration: 2.5,
+                  repeat: Infinity,
+                  ease: "easeInOut",
+                }}
+                className="relative w-16 h-16 sm:w-20 sm:h-20 mb-3 drop-shadow-[0_10px_22px_rgba(0,0,0,0.35)]"
+              >
+                <svg className="w-full h-full select-none" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M25 68 C15 68, 10 58, 15 48 C10 38, 20 28, 32 30 C38 18, 55 15, 65 24 C75 16, 88 24, 88 36 C95 44, 92 58, 82 68 Z" fill="#ffffff" stroke="#1e1b4b" strokeWidth="5.5" strokeLinejoin="round" />
+                  
+                  {/* Winking Left Eyebrow & Eyebrow motion */}
+                  <motion.path
+                    d="M30 30 L44 32"
+                    stroke="#1e1b4b"
+                    strokeWidth="5"
+                    strokeLinecap="round"
+                    animate={{ rotate: [0, -12, 0] }}
+                    transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
+                  />
+                  <path d="M56 30 L70 32" stroke="#1e1b4b" strokeWidth="5" strokeLinecap="round" />
+
+                  {/* Sunglasses Lens Frame */}
+                  <motion.g
+                    animate={{ y: [0, 3, 0] }}
+                    transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
+                  >
+                    <path
+                      d="M24 44 C24 44, 46 38, 50 46 C54 38, 76 44, 76 44 L72 58 C72 58, 54 62, 50 56 C46 62, 28 58, 28 58 Z"
+                      fill="#111111"
+                      stroke="#1e1b4b"
+                      strokeWidth="4"
+                      strokeLinejoin="round"
+                    />
+                    {/* Winking Sparkle Flare behind sunglasses ("echando un ojo") */}
+                    <motion.circle
+                      cx="38"
+                      cy="49"
+                      r="4"
+                      fill="#c2d902"
+                      animate={{ scale: [0, 1.6, 0], opacity: [0, 1, 0] }}
+                      transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut", delay: 0.2 }}
+                    />
+                    <line x1="30" y1="46" x2="42" y2="52" stroke="#ffffff" strokeWidth="3" strokeLinecap="round" />
+                    <line x1="56" y1="46" x2="68" y2="52" stroke="#ffffff" strokeWidth="3" strokeLinecap="round" />
+                  </motion.g>
+                </svg>
+              </motion.div>
+
+              {/* Sleek Progress Bar */}
+              <div className="mt-2 h-1.5 w-28 bg-black/15 mx-auto overflow-hidden rounded-full border border-black/10">
                 <motion.div
-                  initial={{ x: "-100%" }}
-                  animate={{ x: "100%" }}
-                  transition={{ duration: 1.2, repeat: Infinity, ease: "easeInOut" }}
-                  className="h-full w-1/2 bg-white"
+                  initial={{ width: "0%" }}
+                  animate={{ width: "100%" }}
+                  transition={{ duration: 1.4, ease: "easeInOut" }}
+                  className="h-full bg-black rounded-full"
                 />
               </div>
             </motion.div>
@@ -454,94 +608,103 @@ export default function HomePage({ initialConfig }: HomePageProps) {
 
       <Atmosphere />
 
-      {/* Modern, minimalist top navigation bar */}
-      <header className="fixed inset-x-0 top-0 z-50 border-b border-white/[0.02] bg-black/45 backdrop-blur-2xl">
-        <div className="mx-auto flex w-full max-w-[1600px] items-center justify-between gap-3 px-4 py-3 sm:px-6 md:px-12 lg:px-16">
-
-          {/* Logo on the left (No puppy image, text visible on mobile and desktop) */}
+      {/* Modern, chic top navigation bar */}
+      <header className="fixed inset-x-0 top-0 z-50 border-b border-white/15 bg-[#8b5cf6]/95 backdrop-blur-2xl shadow-lg">
+        <div className="mx-auto flex w-full max-w-[1600px] items-center justify-between gap-3 px-4 py-2.5 sm:px-6 md:px-12 lg:px-16">
+          
+          {/* Cool Cloud Mascot Character Logo for StormGo */}
           <div className="flex min-w-0 items-center">
             <button
               type="button"
-              onMouseDown={handleTouchStart}
-              onMouseUp={handleTouchEnd}
-              onMouseLeave={handleTouchEnd}
-              onTouchStart={handleTouchStart}
-              onTouchEnd={handleTouchEnd}
-              className="group flex select-none items-center gap-3 outline-none hover:opacity-85 transition-opacity duration-200"
+              onClick={() => {
+                const el = document.getElementById("show");
+                if (el) el.scrollIntoView({ behavior: "smooth" });
+              }}
+              className="group flex select-none items-center gap-2.5 outline-none hover:scale-105 transition-all duration-300 cursor-pointer"
               style={{ WebkitTapHighlightColor: "transparent" }}
-              aria-label="nowtickets"
+              aria-label="stormgo"
             >
-              <svg
-                className="logo-icon h-5 w-auto select-none opacity-0"
-                viewBox="0 0 100 100"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                {/* Two pink dots */}
-                <circle cx="15" cy="31" r="10" fill="#e10075" />
-                <circle cx="15" cy="69" r="10" fill="#e10075" />
-                {/* White lowercase n arch */}
-                <path
-                  d="M 50.5,71 L 50.5,48 A 19,19 0 0 1 88.5,48 L 88.5,71"
-                  stroke="#ffffff"
-                  strokeWidth="16"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-              <span className="logo-text flex items-center text-[19px] font-semibold font-quicksand lowercase tracking-normal leading-none select-none">
-                {"now".split("").map((char, index) => (
-                  <span key={`now-${index}`} className="logo-char text-white inline-block opacity-0">
-                    {char}
-                  </span>
-                ))}
-                {"tickets".split("").map((char, index) => (
-                  <span key={`tickets-${index}`} className="logo-char inline-block opacity-0" style={{ color: "#e10075" }}>
-                    {char}
-                  </span>
-                ))}
+              {/* Cool Cloud with Sunglasses Mascot SVG (Matching Reference Image) */}
+              <div className="relative w-10 h-10 sm:w-11 sm:h-11 flex items-center justify-center shrink-0 drop-shadow-[0_4px_12px_rgba(0,0,0,0.3)]">
+                <svg className="w-full h-full select-none" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M25 68 C15 68, 10 58, 15 48 C10 38, 20 28, 32 30 C38 18, 55 15, 65 24 C75 16, 88 24, 88 36 C95 44, 92 58, 82 68 Z" fill="#ffffff" stroke="#1e1b4b" strokeWidth="6" strokeLinejoin="round" />
+                  <path d="M30 32 L44 30" stroke="#1e1b4b" strokeWidth="5" strokeLinecap="round" />
+                  <path d="M56 30 L70 32" stroke="#1e1b4b" strokeWidth="5" strokeLinecap="round" />
+                  <path d="M24 44 C24 44, 46 38, 50 46 C54 38, 76 44, 76 44 L72 58 C72 58, 54 62, 50 56 C46 62, 28 58, 28 58 Z" fill="#111111" stroke="#1e1b4b" strokeWidth="4" strokeLinejoin="round" />
+                  <line x1="30" y1="46" x2="42" y2="52" stroke="#ffffff" strokeWidth="3" strokeLinecap="round" />
+                  <line x1="56" y1="46" x2="68" y2="52" stroke="#ffffff" strokeWidth="3" strokeLinecap="round" />
+                </svg>
+              </div>
+
+              {/* Brand Typography in Solid Black (Smaller & Compact) */}
+              <span className="logo-text flex items-center text-lg sm:text-xl font-black tracking-tight leading-none select-none text-black">
+                <span className="text-black font-black">Storm</span>
+                <span className="text-black font-black">Go</span>
               </span>
             </button>
           </div>
 
-          {/* Centered nav links */}
-          <nav className="hidden items-center gap-8 lg:flex">
-            {HOME_NAV_ITEMS.map((item) => (
-              <button
-                type="button"
-                key={item.id}
-                onClick={() => {
-                  scrollToSection(item.id, item.id === "show" ? "start" : "center");
-                }}
-                className={`relative py-2 text-[9px] font-black uppercase tracking-[0.28em] transition ${activeSection === item.id ? "text-white font-bold" : "text-zinc-500 hover:text-zinc-200"
+          {/* Centered nav links (Home -> Shows -> Access -> Merch -> Support) */}
+          <nav className="hidden items-center gap-7 lg:flex">
+            {HOME_NAV_ITEMS.map((item) => {
+              const targetId = item.id === "home" ? "show" : item.id;
+              const isActive = activeSection === item.id || (activeSection === "show" && item.id === "home");
+              return (
+                <button
+                  type="button"
+                  key={item.id}
+                  onClick={() => {
+                    const el = document.getElementById(targetId);
+                    if (el) el.scrollIntoView({ behavior: "smooth" });
+                  }}
+                  className={`relative py-2 text-[10px] font-black uppercase tracking-[0.28em] transition-colors ${
+                    isActive ? "text-white font-black" : "text-white/70 hover:text-white"
                   }`}
-              >
-                {item.label}
-                <span
-                  className={`absolute inset-x-0 -bottom-0.5 h-px bg-white transition-transform duration-300 ${activeSection === item.id ? "scale-x-100" : "scale-x-0"
+                >
+                  {item.label}
+                  <span
+                    className={`absolute inset-x-0 -bottom-0.5 h-0.5 bg-[#c2d902] transition-transform duration-300 ${
+                      isActive ? "scale-x-100" : "scale-x-0"
                     }`}
-                />
-              </button>
-            ))}
+                  />
+                </button>
+              );
+            })}
           </nav>
 
-          {/* Two rounded CTA buttons on the right */}
-          <div className="flex shrink-0 items-center gap-3">
+          {/* Action buttons on the right */}
+          <div className="flex shrink-0 items-center gap-2 sm:gap-3">
             <button
               type="button"
-              onClick={scrollToRecovery}
-              className={`inline-flex h-9 items-center justify-center rounded-full border border-white/10 bg-white/[0.03] px-5 text-[8px] font-black uppercase tracking-[0.16em] text-zinc-300 transition hover:border-white/30 hover:bg-white/5 hover:text-white ${isRecoveryPulse ? "top-recovery-pulse" : ""
-                }`}
+              onClick={scrollToTicketCard}
+              className="hidden sm:inline-flex h-9 items-center justify-center gap-1.5 rounded-full border border-[#e10075]/40 bg-[#e10075]/15 px-4 text-[8px] font-black uppercase tracking-[0.16em] text-white transition hover:bg-[#e10075]/30 hover:border-[#e10075] active:scale-95 shadow-[0_0_15px_rgba(225,0,117,0.3)] font-bold cursor-pointer"
             >
-              Recuperar
+              <Ticket className="w-3.5 h-3.5 text-[#e10075]" />
+              <span>Comprar</span>
             </button>
 
             <button
               type="button"
-              onClick={scrollToTicketCard}
-              className="inline-flex h-9 items-center justify-center rounded-full bg-white px-5 text-[8px] font-black uppercase tracking-[0.16em] text-black transition hover:bg-zinc-200"
+              onClick={() => router.push("/organizer/register")}
+              className="inline-flex h-9 items-center justify-center gap-1.5 rounded-full bg-white px-3.5 sm:px-4 text-[8px] font-black uppercase tracking-[0.16em] text-black transition hover:bg-zinc-200 active:scale-95 shadow-lg font-bold"
             >
-              Comprar
+              <PlusCircle className="w-3.5 h-3.5" />
+              <span>Publicar Evento</span>
+            </button>
+
+            {/* User Icon Avatar Button ("el muñequito del usuario a la derecha") */}
+            <button
+              type="button"
+              onClick={() => setShowUserMenu(!showUserMenu)}
+              className={`inline-flex h-9 w-9 items-center justify-center rounded-full border transition-all duration-300 shadow-lg cursor-pointer ${
+                showUserMenu
+                  ? "bg-[#c2d902] text-black border-[#c2d902] scale-105 shadow-[0_0_20px_rgba(194,217,2,0.6)]"
+                  : "border-white/20 bg-white/10 text-white hover:bg-white/20 hover:scale-105 active:scale-95"
+              }`}
+              title="Perfil / Iniciar Sesión / Panel"
+              aria-label="Perfil y panel de usuario"
+            >
+              <User className="w-4 h-4" />
             </button>
           </div>
 
@@ -551,287 +714,407 @@ export default function HomePage({ initialConfig }: HomePageProps) {
       {/* Monochromatic 3D Concrete Room backdrop */}
       <section
         id="show"
-        className="relative z-10 flex min-h-[100svh] w-full flex-col overflow-hidden px-4 pb-8 pt-24 sm:px-8 md:px-14 lg:px-20 lg:pb-10 justify-center"
+        className="relative z-10 flex w-full flex-col overflow-hidden px-4 pb-12 pt-14 sm:px-8 md:px-14 lg:px-20 justify-start"
       >
-        {/* Cinematic Concrete Room Environment */}
-        <div aria-hidden className="absolute inset-0 -z-20 overflow-hidden bg-black select-none pointer-events-none">
-          {/* Wall guidelines / vertical lines */}
-          <div className="absolute inset-0 opacity-[0.02] border-x border-white mx-32 pointer-events-none" />
-          <div className="absolute inset-0 opacity-[0.02] border-x border-white mx-64 pointer-events-none" />
+        {/* Electric Purple Ambient Backdrop (#8b5cf6) */}
+        <div aria-hidden className="absolute inset-0 -z-20 overflow-hidden bg-[#8b5cf6] select-none pointer-events-none">
+          <div className="absolute inset-0 bg-[#8b5cf6]" />
+          {/* Ambient Swirl Wave Vector Lines (extended down across entire section & bottom) */}
+          <svg className="absolute inset-0 w-full h-full opacity-35 pointer-events-none" viewBox="0 0 1440 1200" preserveAspectRatio="none" fill="none">
+            {/* Top Wave Lines */}
+            <path d="M-100 150 C 300 20, 700 350, 1540 80" stroke="white" strokeWidth="70" strokeLinecap="round" opacity="0.15" />
+            <path d="M-50 320 C 400 80, 900 480, 1500 220" stroke="#c2d902" strokeWidth="45" strokeLinecap="round" opacity="0.22" />
 
-          {/* Wall corner gradient shadow (Back wall shadow) - transitions smoothly to floor base color */}
-          <div className="absolute top-0 inset-x-0 h-[45%] bg-gradient-to-b from-black via-zinc-950/90 to-[#090909]" />
+            {/* Middle Wave Lines */}
+            <path d="M-80 620 C 350 420, 950 780, 1520 540" stroke="white" strokeWidth="65" strokeLinecap="round" opacity="0.18" />
+            <path d="M-150 750 C 300 580, 850 920, 1580 680" stroke="#c2d902" strokeWidth="40" strokeLinecap="round" opacity="0.25" />
 
-          {/* Floor gradient */}
-          <div
-            className="absolute bottom-0 inset-x-0 h-[55%] bg-[#080808]"
-            style={{
-              backgroundImage: "radial-gradient(ellipse at 50% 0%, rgba(255, 255, 255, 0.05) 0%, transparent 60%), linear-gradient(180deg, #090909 0%, #060606 40%, #030303 100%)",
-            }}
-          />
-
-          {/* Soft diffused spotlight source at the top (replaces the solid white skylight) */}
-          <div
-            className="absolute top-0 lg:left-[64%] left-1/2 -translate-x-1/2 w-[110vw] lg:w-[75vw] h-[30vh] pointer-events-none mix-blend-screen"
-            style={{
-              background: "radial-gradient(ellipse at top, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.02) 50%, transparent 80%)",
-            }}
-          />
-
-          {/* Volumetric light cone with soft blurred edges (no clip-path to prevent browser blur clipping) */}
-          <div
-            className="absolute top-0 lg:left-[64%] left-1/2 -translate-x-1/2 w-[100vw] lg:w-[60vw] h-[100vh] opacity-15 pointer-events-none mix-blend-screen filter blur-[24px]"
-            style={{
-              background: "conic-gradient(from 165deg at 50% 0%, transparent, rgba(255, 255, 255, 0.08) 10deg, rgba(255, 255, 255, 0.08) 20deg, transparent 30deg)",
-              maskImage: "linear-gradient(to bottom, black 0%, rgba(0, 0, 0, 0.2) 50%, transparent 85%)",
-              WebkitMaskImage: "linear-gradient(to bottom, black 0%, rgba(0, 0, 0, 0.2) 50%, transparent 85%)",
-            }}
-          />
-
-
+            {/* Bottom Wave Lines (parte de abajo) */}
+            <path d="M-100 900 C 400 700, 1000 1080, 1540 840" stroke="white" strokeWidth="75" strokeLinecap="round" opacity="0.15" />
+            <path d="M-60 1050 C 320 880, 880 1180, 1500 960" stroke="#c2d902" strokeWidth="50" strokeLinecap="round" opacity="0.2" />
+            <path d="M-140 1180 C 280 1020, 920 1280, 1560 1100" stroke="white" strokeWidth="60" strokeLinecap="round" opacity="0.14" />
+          </svg>
         </div>
 
-        {/* Background Artwork Fade */}
-        <div className="absolute inset-0 pointer-events-none z-0 overflow-hidden opacity-40">
-          <AnimatePresence mode="wait">
+        {/* Hero Main Showcase: Chic Modern Pop-Art Hero Stage (Matching User Reference Image) */}
+        <div className="relative z-10 w-full max-w-[1300px] mx-auto flex flex-col items-center justify-center text-center py-6 sm:py-10">
+
+          {/* Top Pill Badges (seasonal | treat box / NOW4GO | classics) */}
+          <div className="flex items-center justify-center gap-3 sm:gap-4 mb-6 select-none">
+            <span className="px-4 py-1.5 rounded-full border border-white/40 text-[10px] sm:text-xs font-bold uppercase tracking-wider text-white backdrop-blur-md">
+              temporada 2026
+            </span>
+            <span className="px-6 py-2 rounded-2xl bg-black text-white font-black text-sm sm:text-base uppercase tracking-widest shadow-xl border border-white/20">
+              stormgo
+            </span>
+            <span className="px-4 py-1.5 rounded-full border border-white/40 text-[10px] sm:text-xs font-bold uppercase tracking-wider text-white backdrop-blur-md">
+              eventos 3d
+            </span>
+          </div>
+
+          {/* Headline (Matching Reference Image Typography: Your dog deserves a treat! -> TUS EVENTOS MERECEN UNA EXPERIENCIA 3D!) */}
+          <div className="space-y-1 sm:space-y-2 max-w-4xl mx-auto select-none">
+            <h1 className="text-4xl sm:text-6xl lg:text-7xl font-black uppercase text-black tracking-tighter leading-none">
+              TUS EVENTOS
+            </h1>
+            <h1 className="text-4xl sm:text-6xl lg:text-7xl font-black uppercase text-white tracking-tighter leading-none">
+              MERECEN UNA
+            </h1>
+            <div className="flex items-center justify-center gap-2 sm:gap-4">
+              <span className="text-[#c2d902] text-3xl sm:text-5xl font-black animate-pulse">✳</span>
+              <h1 className="text-4xl sm:text-6xl lg:text-7xl font-black uppercase text-white tracking-tighter leading-none">
+                EXPERIENCIA 3D!
+              </h1>
+              <span className="text-[#c2d902] text-3xl sm:text-5xl font-black animate-pulse">✳</span>
+            </div>
+          </div>
+
+          {/* Centerpiece: 2 Angled 3D Smartphones (Matching Reference Image Center Stage) */}
+          <div className="relative w-full max-w-[580px] h-[340px] sm:h-[440px] my-6 sm:my-8 flex items-center justify-center select-none">
+            {/* Left Phone (Lime Green Frame, angled -10deg) */}
             <motion.div
-              key={activeEvent.id}
-              initial={{ opacity: 0, scale: 1.05 }}
-              animate={{ opacity: 0.08, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              transition={{ duration: 1.2, ease: "easeInOut" }}
-              className="absolute inset-0 grayscale filter blur-[50px] pointer-events-none"
+              animate={{ y: [0, -12, 0], rotate: [-10, -7, -10] }}
+              transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
+              className="absolute left-[8%] sm:left-[12%] w-[200px] sm:w-[260px] aspect-[9/18.5] rounded-[38px] bg-[#c2d902] border-[4px] border-black p-2 shadow-[0_25px_60px_rgba(0,0,0,0.5)] z-20 overflow-hidden cursor-pointer"
+              onClick={() => {
+                const el = document.getElementById("explore");
+                if (el) el.scrollIntoView({ behavior: "smooth" });
+              }}
             >
-              {activeEvent.poster ? (
-                <Image
-                  src={activeEvent.poster}
-                  alt=""
-                  fill
-                  className="object-cover"
-                  sizes="100vw"
-                  priority
-                />
-              ) : (
-                <div className="absolute inset-0 bg-[#0a0a0a]" />
-              )}
+              <div className="relative w-full h-full rounded-[30px] overflow-hidden bg-black flex flex-col justify-between p-3 text-white">
+                <div className="text-left pt-2">
+                  <span className="text-[8px] font-black uppercase text-[#ff77a8] tracking-widest block">Trending Show</span>
+                  <h4 className="text-xs font-black uppercase text-white tracking-tight mt-0.5">BLOCK X OUSI</h4>
+                  <p className="text-[9px] font-medium text-zinc-400">Omar Courtz Experience</p>
+                </div>
+                <div className="relative w-full h-[65%] rounded-xl overflow-hidden bg-zinc-900 my-1">
+                  <img src="/images/now4go-hero-presentation-hd-v3.png" alt="App Preview" className="w-full h-full object-cover" />
+                </div>
+                <div className="py-1.5 px-3 rounded-full bg-[#c2d902] text-black font-black text-[9px] uppercase tracking-wider text-center">
+                  Entradas $10 USD
+                </div>
+              </div>
             </motion.div>
-          </AnimatePresence>
-        </div>
 
-        {/* Columns Grid Layout */}
-        <div className="relative z-10 w-full max-w-[1600px] mx-auto grid grid-cols-1 lg:grid-cols-12 gap-x-12 gap-y-6 lg:gap-y-12 items-center flex-1">
-
-          {/* Block 1: Header info (NENEZ presenta & Description) */}
-          <div className="order-1 lg:col-span-5 flex flex-col justify-center text-left select-none relative z-20">
-            <p className="text-[10px] font-black uppercase tracking-[0.5em] text-zinc-500">
-              NENEZ presenta
-            </p>
-
-            {/* Dynamic Big Artist Name with elegant AnimatePresence transition */}
-            <AnimatePresence mode="wait">
-              <motion.h1
-                key={activeEvent.id}
-                initial={{ opacity: 0, y: 35, rotateX: 12 }}
-                animate={{ opacity: 1, y: 0, rotateX: 0 }}
-                exit={{ opacity: 0, y: -35, rotateX: -12 }}
-                transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-                className="mt-2 text-7xl md:text-8xl font-black uppercase leading-none tracking-tighter text-white"
-              >
-                {activeEvent.lineup && activeEvent.lineup.length > 0 ? activeEvent.lineup.join(" / ") : activeEvent.title}
-              </motion.h1>
-            </AnimatePresence>
-
-            {/* Luxury descriptive subtitle */}
-            <p className="text-zinc-400 text-xs mt-2 max-w-sm leading-relaxed">
-              Eventos temáticos que combinan DJ sets, visuales inmersivos y una producción inspirada en la esencia de tu artista favorito.
-            </p>
-
-            {/* Bar & Drinks Menu button (displayed on desktop screens) */}
-            <div className="hidden lg:flex gap-4 pt-6">
-              <motion.div
-                whileHover={{ scale: 1.04 }}
-                whileTap={{ scale: 0.96 }}
-                transition={{ duration: 0.2, ease: "easeOut" }}
-                className="relative p-[2px] rounded-full overflow-hidden bg-zinc-950 flex items-center justify-center shadow-[0_0_20px_rgba(225,0,117,0.2)] hover:shadow-[0_0_30px_rgba(225,0,117,0.4)] transition-shadow duration-300 group cursor-pointer"
-              >
-                {/* Línea giratoria */}
-                <div className="absolute inset-[-150%] animate-[spin_3s_linear_infinite] bg-[conic-gradient(from_0deg,transparent_35%,#e10075_50%,transparent_65%)] pointer-events-none" />
-                
-                <button
-                  type="button"
-                  onClick={() => setShowDrinksModal(true)}
-                  className="relative z-10 flex h-[44px] px-7 items-center justify-center rounded-full bg-zinc-950 text-[9px] font-black uppercase tracking-[0.2em] text-white group-hover:bg-white group-hover:text-black transition-colors duration-300 cursor-pointer"
-                >
-                  Bar & Carta de Bebidas
-                </button>
-              </motion.div>
-            </div>
-          </div>
-
-          {/* Block 2: 3D Stage & Carousel */}
-          <div className="order-2 lg:col-span-7 lg:row-span-2 relative h-[520px] md:h-[600px] lg:h-[680px] xl:h-[760px] 2xl:h-[800px] w-full flex items-center justify-center overflow-visible">
-
-            {/* Circular Concrete Stage Platform */}
-            <div
-              className="absolute bottom-[5%] lg:bottom-[4%] left-1/2 -translate-x-1/2 w-[550px] lg:w-[680px] xl:w-[780px] 2xl:w-[850px] h-[160px] lg:h-[200px] xl:h-[230px] pointer-events-none z-0"
-              style={{ perspective: 1000 }}
-            >
-              {/* Dark rim thickness shadow */}
-              <div className="absolute inset-0 bg-black/90 blur-xl rounded-full translate-y-4" />
-              {/* Concrete edge rim */}
-              <div className="absolute inset-x-[15px] bottom-0 h-6 bg-[#040404] border-b border-zinc-900 rounded-full" />
-              {/* Platform top face */}
-              <div
-                className="absolute inset-0 bg-gradient-to-b from-zinc-800 to-[#080808] border border-white/5 rounded-full"
-                style={{
-                  transform: "rotateX(72deg) translateZ(0)",
-                }}
-              />
-              {/* Subtle light rim highlight */}
-              <div
-                className="absolute inset-[3px] bg-transparent border border-white/10 rounded-full"
-                style={{
-                  transform: "rotateX(72deg) translateZ(1px)",
-                }}
-              />
-            </div>
-
-            {/* The 3D Carousel component */}
-            <div id="tickets-stage" className="relative z-10 w-full h-full flex items-center justify-center overflow-visible">
-              <EventTicketCarousel
-                events={events as any}
-                activeIndex={activeIndex}
-                setActiveIndex={setActiveIndex}
-                onBuy={onBuy}
-                onViewDetails={onViewDetails}
-                isTicketPulse={isTicketPulse}
-                onInactiveClick={triggerInactiveToast}
-              />
-            </div>
-
-          </div>
-
-          {/* Mobile Bar & Drinks Menu button (displayed under event cards on mobile screens) */}
-          <div className="order-2 lg:hidden flex justify-center w-full pt-2 pb-2 relative z-30">
+            {/* Right Phone (Dark Violet Frame, angled 8deg) */}
             <motion.div
-              whileHover={{ scale: 1.04 }}
-              whileTap={{ scale: 0.96 }}
-              transition={{ duration: 0.2, ease: "easeOut" }}
-              className="relative p-[2px] rounded-full overflow-hidden bg-zinc-950 flex items-center justify-center shadow-[0_0_20px_rgba(225,0,117,0.2)] transition-shadow duration-300 group cursor-pointer"
+              animate={{ y: [0, -15, 0], rotate: [7, 10, 7] }}
+              transition={{ duration: 5.5, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}
+              className="absolute right-[8%] sm:right-[12%] w-[200px] sm:w-[260px] aspect-[9/18.5] rounded-[38px] bg-[#1e1b4b] border-[4px] border-black p-2 shadow-[0_25px_60px_rgba(0,0,0,0.5)] z-10 overflow-hidden cursor-pointer"
+              onClick={() => {
+                const el = document.getElementById("explore");
+                if (el) el.scrollIntoView({ behavior: "smooth" });
+              }}
             >
-              {/* Línea giratoria */}
-              <div className="absolute inset-[-150%] animate-[spin_3s_linear_infinite] bg-[conic-gradient(from_0deg,transparent_35%,#e10075_50%,transparent_65%)] pointer-events-none" />
-              
-              <button
-                type="button"
-                onClick={() => setShowDrinksModal(true)}
-                className="relative z-10 flex h-[44px] px-7 items-center justify-center rounded-full bg-zinc-950 text-[9px] font-black uppercase tracking-[0.2em] text-white group-hover:bg-white group-hover:text-black transition-colors duration-300 cursor-pointer"
-              >
-                Bar & Carta de Bebidas
-              </button>
+              <div className="relative w-full h-full rounded-[30px] overflow-hidden bg-black flex flex-col justify-between p-3 text-white">
+                <div className="text-left pt-2">
+                  <span className="text-[8px] font-black uppercase text-[#84cc16] tracking-widest block">Exclusivo Ecuador</span>
+                  <h4 className="text-xs font-black uppercase text-white tracking-tight mt-0.5">LATIN LOUD 2026</h4>
+                  <p className="text-[9px] font-medium text-zinc-400">Bad Bunny &amp; Rauw</p>
+                </div>
+                <div className="relative w-full h-[65%] rounded-xl overflow-hidden bg-zinc-900 my-1">
+                  <img src="/images/hero-element-ticket_latin.png" alt="Ticket Preview" className="w-full h-full object-cover" />
+                </div>
+                <div className="py-1.5 px-3 rounded-full bg-[#e10075] text-white font-black text-[9px] uppercase tracking-wider text-center">
+                  Ver Evento &rarr;
+                </div>
+              </div>
             </motion.div>
           </div>
 
-          {/* Block 3: Upcoming Event Details */}
-          <div className="order-3 lg:col-span-5 flex flex-col justify-center text-left select-none space-y-4 lg:pt-0 pt-6 relative z-20">
-            <div className="space-y-4">
-              <p className="text-[8px] font-black tracking-[0.3em] text-zinc-500 uppercase">
-                Próximo Evento
-              </p>
-              <div>
-                <h2 className="text-2xl font-black uppercase tracking-tight text-white">
-                  {nextEvent.title}
-                </h2>
-                <p className="text-[9px] font-bold text-zinc-400 uppercase tracking-widest mt-0.5">
-                  {nextEvent.subtitle}
-                </p>
-              </div>
-
-              {/* Event Location & Date info */}
-              <div className="flex flex-wrap gap-2 text-zinc-300">
-                <span className="inline-flex items-center rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-[8px] font-black uppercase tracking-widest">
-                  {nextEvent.dateLabel}
-                </span>
-                <span className="inline-flex items-center rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-[8px] font-black uppercase tracking-widest">
-                  {nextEvent.city}
-                </span>
-              </div>
-
-              {/* Lineup tags */}
-              <div className="flex flex-wrap gap-1.5 pt-1">
-                {nextEvent.lineup.map((artist) => (
-                  <span
-                    key={artist}
-                    className="rounded-full border border-white/15 bg-white/[0.03] px-2.5 py-1 text-[7px] font-black uppercase tracking-[0.2em] text-zinc-300"
-                  >
-                    {artist}
-                  </span>
-                ))}
-              </div>
-            </div>
-          </div>
+          <p className="text-xs sm:text-sm font-bold uppercase tracking-wider text-white/90 max-w-xl mx-auto leading-relaxed">
+            Explora la cartelera exclusiva de conciertos, festivales y fiestas en Ecuador. Entradas 3D oficiales con verificación instantánea.
+          </p>
         </div>
 
-      </section>
-
-      {/* ACCESS & INFORMATION SECTION (Side-by-side desktop layout) */}
-      <section
-        id="access"
-        className="relative z-20 mx-auto w-full max-w-[1600px] px-4 py-16 sm:px-6 md:px-12 lg:px-16"
-      >
-        <div className="grid gap-8 grid-cols-1 lg:grid-cols-2">
-
-          {/* Card 1: Protected Access */}
-          <div
-            className="relative overflow-hidden rounded-[32px] border border-white/10 bg-black/45 p-5 backdrop-blur-2xl sm:p-7 lg:p-9 shadow-2xl flex flex-col justify-start gap-8"
-            style={{ boxShadow: "0 24px 90px rgba(255, 255, 255, 0.01)" }}
-          >
-            {/* Soft static monochrome lighting vignette details */}
-            <div className="pointer-events-none absolute -right-20 top-1/2 h-64 w-64 -translate-y-1/2 rounded-full bg-white/[0.01] blur-3xl" />
-            <div className="pointer-events-none absolute -left-24 bottom-0 h-52 w-52 rounded-full bg-white/[0.005] blur-3xl" />
-
-            <div className="relative z-10 flex flex-col justify-center">
-              <p className="inline-flex w-fit items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-[9px] font-black uppercase tracking-[0.3em] text-white">
-                {config.accessSection.badge}
-              </p>
-              <h2 className="mt-4 text-3xl font-black uppercase leading-[0.9] tracking-[-0.05em] text-white sm:text-4xl">
-                {config.accessSection.headingLine1}
-                <br />
-                {config.accessSection.headingLine2}
+        {/* Clean Spaced Catalog Section Below Presentation */}
+        <div id="explore" className="relative z-20 w-full max-w-[1600px] mx-auto mt-6 sm:mt-10 pt-6 space-y-8">
+          
+          {/* Section Header & Minimalist Search Bar with 3D Flame Mascot on the Right */}
+          <div className="relative flex flex-col md:flex-row items-start md:items-center justify-between gap-6 pb-4">
+            <div>
+              <h2 className="text-3xl sm:text-4xl font-black uppercase tracking-tight text-white">
+                Explora Eventos &amp; Shows
               </h2>
-              <p className="mt-5 inline-flex items-center text-xl font-black uppercase tracking-[-0.03em] text-white">
-                {config.accessSection.qrSubtitle}
-              </p>
-              <p className="mt-5 max-w-lg text-sm leading-7 text-zinc-400">
-                {config.accessSection.description}
-              </p>
             </div>
 
-            <div className="relative z-10 grid grid-cols-3 gap-2 sm:gap-3 w-full">
-              {config.accessSection.steps.map((data) => (
-                <article
-                  key={data.step}
-                  className="rounded-[16px] sm:rounded-[24px] border border-white/[0.07] bg-zinc-950/40 p-3 sm:p-5 shadow-[0_12px_32px_rgba(0,0,0,0.4)] transition duration-300 hover:border-white/20 hover:bg-white/[0.03] hover:shadow-[0_0_30px_rgba(255,255,255,0.02)]"
-                >
-                  <div className="flex items-center justify-between">
-                    <span className="text-[7px] sm:text-[8px] font-black tracking-[0.24em] text-zinc-600">
-                      {data.step}
+            {/* Minimalist Dark Search Bar */}
+            <div className="w-full md:w-auto flex-1 max-w-md">
+              <div className="relative flex items-center bg-black/60 rounded-full border border-white/15 px-4 py-2.5 shadow-inner focus-within:border-white/40 transition">
+                <Search className="w-4 h-4 text-zinc-400 shrink-0" />
+                <input
+                  type="text"
+                  placeholder="Buscar eventos, artistas o ciudad..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full bg-transparent pl-3 pr-2 text-xs font-medium text-white placeholder-zinc-500 focus:outline-none"
+                />
+                {searchQuery && (
+                  <button onClick={() => setSearchQuery("")} className="text-[10px] text-zinc-400 hover:text-white font-bold">
+                    Limpiar
+                  </button>
+                )}
+              </div>
+            </div>
+
+          </div>
+
+          {/* Filter Chips (Ciudades) */}
+          <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none">
+            <span className="text-[10px] font-black uppercase tracking-widest text-zinc-500 shrink-0 mr-2">Ciudad:</span>
+            {["Todas", "Loja", "Quito", "Guayaquil", "Cuenca", "Manta"].map((c) => (
+              <button
+                key={c}
+                type="button"
+                onClick={() => setSelectedCity(c)}
+                className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-wider border transition shrink-0 ${
+                  selectedCity === c
+                    ? "border-white bg-white text-black font-bold shadow-lg"
+                    : "border-white/10 bg-white/[0.03] text-zinc-400 hover:border-white/30 hover:text-white"
+                }`}
+              >
+                {c}
+              </button>
+            ))}
+          </div>
+
+          {/* Featured Trending Presale Banner Card Showcase (Auto-rotates every 5 seconds) */}
+          <div className="relative w-full max-w-[540px] mx-auto my-8 select-none px-2">
+            <div 
+              onClick={() => {
+                setQuickPreviewEvent(events[trendingIndex]);
+                setShowQuickPreview(true);
+              }}
+              className="group relative w-full rounded-[28px] bg-[#0c0c0e] border border-white/15 overflow-hidden shadow-[0_25px_60px_rgba(0,0,0,0.7)] cursor-pointer hover:border-[#e10075]/60 transition-all duration-300"
+            >
+              {/* Card Top Poster Banner */}
+              <div className="relative w-full aspect-[2/1] bg-zinc-950 overflow-hidden">
+                <AnimatePresence mode="wait">
+                  <motion.div
+                    key={events[trendingIndex].id}
+                    initial={{ opacity: 0, x: 30 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: -30 }}
+                    transition={{ duration: 0.4, ease: "easeInOut" }}
+                    className="relative w-full h-full"
+                  >
+                    {events[trendingIndex].poster ? (
+                      <Image
+                        src={events[trendingIndex].poster}
+                        alt={events[trendingIndex].title}
+                        fill
+                        className="object-cover group-hover:scale-105 transition-transform duration-700"
+                        priority
+                      />
+                    ) : (
+                      <div className="w-full h-full bg-zinc-900 flex items-center justify-center">
+                        <span className="text-3xl font-black text-white">{events[trendingIndex].title}</span>
+                      </div>
+                    )}
+                    <div className="absolute inset-0 bg-gradient-to-t from-[#0c0c0e] via-transparent to-transparent opacity-80" />
+                    
+                    <span className="absolute top-3 left-3 px-3 py-1 rounded-full bg-black/80 text-[9px] font-black uppercase text-white border border-white/20 backdrop-blur-md">
+                      {events[trendingIndex].city}
                     </span>
-                  </div>
-                  <h3 className="mt-4 sm:mt-8 text-xs sm:text-lg font-black uppercase text-white">{data.title}</h3>
-                  <p className="mt-1 sm:mt-2 text-[8px] sm:text-[10px] leading-normal sm:leading-5 text-zinc-500">{data.copy}</p>
-                </article>
+                    <span className="absolute top-3 right-3 px-3 py-1 rounded-full bg-white text-black text-[10px] font-black shadow-md">
+                      ${events[trendingIndex].price} USD
+                    </span>
+                  </motion.div>
+                </AnimatePresence>
+              </div>
+
+              {/* Card Bottom Details (Matching User Reference Image 2) */}
+              <div className="p-4 sm:p-5 text-left border-t border-white/10 bg-[#0c0c0e]">
+                <AnimatePresence mode="wait">
+                  <motion.div
+                    key={`text-${events[trendingIndex].id}`}
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -8 }}
+                    transition={{ duration: 0.3 }}
+                  >
+                    <span className="text-[10px] font-black uppercase tracking-widest text-[#ff77a8] block">
+                      Trending Presale:
+                    </span>
+                    <h3 className="text-xl sm:text-2xl font-black uppercase text-white tracking-tight mt-0.5 group-hover:text-[#ff77a8] transition-colors">
+                      {events[trendingIndex].title}
+                    </h3>
+                    <p className="text-xs font-medium text-zinc-400 mt-0.5">
+                      {events[trendingIndex].subtitle || events[trendingIndex].organizer || "Omar Courtz Experience"}
+                    </p>
+
+                    <div className="mt-4 pt-3 border-t border-white/10 flex items-center justify-between text-xs font-black uppercase text-white">
+                      <div className="flex items-center gap-3">
+                        <span className="text-[#84cc16]">${events[trendingIndex].price} USD</span>
+                        <span className="text-zinc-400 font-medium">{events[trendingIndex].dateLabel}</span>
+                        <span className="text-zinc-500 font-medium">{events[trendingIndex].city}</span>
+                      </div>
+
+                      <span className="text-[10px] px-3 py-1 rounded-full bg-white/10 group-hover:bg-[#e10075] transition-colors">
+                        Ver &rarr;
+                      </span>
+                    </div>
+                  </motion.div>
+                </AnimatePresence>
+              </div>
+            </div>
+
+            {/* Pagination Dots (Clickable to change trending event) */}
+            <div className="flex items-center justify-center gap-2 mt-3 select-none">
+              {events.map((evt, idx) => (
+                <button
+                  key={`dot-${evt.id}`}
+                  type="button"
+                  onClick={() => setTrendingIndex(idx)}
+                  className={`h-2 rounded-full transition-all duration-300 ${
+                    idx === trendingIndex
+                      ? "w-6 bg-white shadow-[0_0_10px_rgba(255,255,255,0.8)]"
+                      : "w-2 bg-white/20 hover:bg-white/50"
+                  }`}
+                  aria-label={`Ir a evento ${idx + 1}`}
+                />
               ))}
             </div>
           </div>
 
-          {/* Card 2: Ticket Recovery */}
-          <TicketRecovery embedded pulse={isRecoveryPulse} className="hero-reveal h-full" />
+          {/* Centered Cards Catalog Grid (Strictly 2 per row on Mobile, 4 per row on Desktop) */}
+          <div className="mt-10 pt-6 border-t border-white/10">
+            <div className="flex items-center justify-between mb-8 max-w-[1400px] mx-auto px-2">
+              <h3 className="text-base sm:text-lg font-black uppercase tracking-wider text-black flex items-center gap-2">
+                <span className="inline-block w-2.5 h-4 bg-black rounded-full" />
+                Cartelera Completa &amp; Shows
+              </h3>
+              <span className="text-[10px] font-black uppercase tracking-widest text-black/70">
+                {filteredCatalogEvents.length} Eventos Disponibles
+              </span>
+            </div>
 
+            {/* Square Cards Grid (Strictly 2 per row on mobile: grid-cols-2) */}
+            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-6 max-w-[1240px] mx-auto justify-items-center pb-6">
+              {filteredCatalogEvents.map((evt) => (
+                <div
+                  key={evt.id}
+                  onClick={() => {
+                    setExpandedCardId(expandedCardId === evt.id ? null : evt.id);
+                  }}
+                  className="group relative w-full rounded-2xl sm:rounded-3xl bg-zinc-950 border border-white/10 overflow-hidden cursor-pointer hover:border-[#e10075]/50 transition-all duration-300 hover:-translate-y-1.5 hover:shadow-[0_20px_50px_rgba(225,0,117,0.15)] flex flex-col min-h-[320px]"
+                >
+                  {/* Square Poster Image */}
+                  <div className="relative aspect-square w-full bg-zinc-900 overflow-hidden">
+                    {evt.poster ? (
+                      <Image
+                        src={evt.poster}
+                        alt={evt.title}
+                        fill
+                        className="object-cover group-hover:scale-105 transition-transform duration-500"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center bg-zinc-900">
+                        <span className="text-3xl font-black text-zinc-700">{evt.title.slice(0, 2).toUpperCase()}</span>
+                      </div>
+                    )}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent" />
+                    <span className="absolute top-3 left-3 px-2.5 py-1 rounded-full bg-black/70 border border-white/20 text-[9px] font-black uppercase tracking-wider text-white backdrop-blur-md">
+                      {evt.city}
+                    </span>
+                    <span className="absolute top-3 right-3 px-2.5 py-1 rounded-full bg-white text-black text-[10px] font-black">
+                      ${evt.price} USD
+                    </span>
+                  </div>
+
+                  {/* Event Info */}
+                  <div className="p-4 flex-1 flex flex-col justify-between border-t border-white/5 bg-[#09090b]">
+                    <div>
+                      <p className="text-[9px] font-black uppercase tracking-widest text-[#e10075] mb-1">{evt.organizer || "Now4Go"}</p>
+                      <h4 className="font-black text-base uppercase text-white leading-tight line-clamp-1 group-hover:text-[#e10075] transition-colors">{evt.title}</h4>
+                      <p className="text-zinc-400 text-xs mt-0.5 line-clamp-1 font-medium">{evt.subtitle}</p>
+                    </div>
+
+                    <div className="flex items-center justify-between mt-4 pt-3 border-t border-white/10 text-[11px] text-zinc-400">
+                      <span className="font-bold text-white flex items-center gap-1.5">
+                        <Calendar className="w-3.5 h-3.5 text-zinc-400" />
+                        {evt.dateLabel}
+                      </span>
+                      <span className="font-black text-white group-hover:text-[#e10075] flex items-center gap-1 transition-colors">
+                        Ver <Ticket className="w-3 h-3" />
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Glassmorphic Folder Sheet Overlay (Slides UP from bottom of the Card) */}
+                  <AnimatePresence>
+                    {expandedCardId === evt.id && (
+                      <motion.div
+                        initial={{ y: "100%", opacity: 0 }}
+                        animate={{ y: 0, opacity: 1 }}
+                        exit={{ y: "100%", opacity: 0 }}
+                        transition={{ type: "spring", damping: 25, stiffness: 280 }}
+                        className="absolute inset-x-0 bottom-0 top-8 z-30 bg-black/90 backdrop-blur-2xl border-t border-white/20 rounded-t-[24px] p-3.5 sm:p-4 flex flex-col justify-between text-left shadow-[0_-15px_40px_rgba(0,0,0,0.85)]"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <div>
+                          {/* Top Folder Handle Line — */}
+                          <div className="w-10 h-1 rounded-full bg-white/40 mx-auto mb-2.5" />
+
+                          <div className="flex items-center justify-between mb-1">
+                            <span className="text-[9px] font-bold text-[#ff77a8] truncate">
+                              @{((evt as any).organizer || "now4go").toLowerCase().replace(/\s+/g, "_")}
+                            </span>
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setExpandedCardId(null);
+                              }}
+                              className="text-[9px] font-bold text-zinc-400 hover:text-white px-2 py-0.5 rounded-full bg-white/10"
+                            >
+                              ✕
+                            </button>
+                          </div>
+
+                          <h4 className="text-xs sm:text-sm font-black uppercase text-white tracking-tight line-clamp-1">
+                            {evt.title}
+                          </h4>
+
+                          <p className="text-[9px] font-normal text-zinc-300 mt-1 line-clamp-2 leading-relaxed">
+                            {evt.subtitle || "Experiencia inmersiva con lo mejor del Reggaeton, Trap Latino y Urban Music en vivo."}
+                          </p>
+
+                          {/* Genre Tags */}
+                          <div className="flex flex-wrap gap-1 mt-2">
+                            {["@reggaeton", "@trap", "@urban"].map((tag) => (
+                              <span key={tag} className="px-2 py-0.5 rounded-full bg-white/10 border border-white/15 text-[8px] font-bold text-zinc-200">
+                                {tag}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+
+                        {/* Direct URL Button to Event Page */}
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            const slug = (evt as any).slug || evt.id;
+                            window.location.href = `/storm/${slug}`;
+                          }}
+                          className="w-full py-2.5 px-3 rounded-xl bg-white text-black font-black uppercase text-[9px] sm:text-[10px] tracking-wider hover:bg-[#e10075] hover:text-white transition-all duration-300 shadow-md flex items-center justify-center gap-1.5 mt-2 group cursor-pointer"
+                        >
+                          <span>Ir al Evento</span>
+                          <span className="group-hover:translate-x-1 transition-transform">&rarr;</span>
+                        </button>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* MERCH OFICIAL SECTION - Seamless continuation */}
+          <OutfitBuilderSection />
         </div>
       </section>
-
-      <OutfitBuilderSection />
 
       {showFarewell && (
         <PurchaseFarewell name={farewellName} onComplete={() => { setShowFarewell(false); setFarewellName(""); }} />
@@ -864,42 +1147,31 @@ export default function HomePage({ initialConfig }: HomePageProps) {
         )}
       </AnimatePresence>
 
-      {/* Monochromatic minimalist footer */}
+      {/* Electric Purple Pop Footer */}
       <footer
         id="support"
-        className="relative z-10 -mx-4 border-t border-white/[0.04] px-4 py-16 sm:-mx-8 sm:px-6 md:-mx-14 md:px-12 lg:-mx-20 lg:px-16 backdrop-blur-xl"
-        style={{
-          background: "linear-gradient(to bottom, transparent 0%, rgba(39, 39, 42, 0.08) 50%, rgba(255, 255, 255, 0.02) 100%), radial-gradient(circle at bottom, rgba(255, 255, 255, 0.04) 0%, transparent 80%)",
-        }}
+        className="relative z-10 -mx-4 border-t border-white/20 px-4 py-16 sm:-mx-8 sm:px-6 md:-mx-14 md:px-12 lg:-mx-20 lg:px-16 bg-[#8b5cf6] text-white"
       >
         <div className="mx-auto flex w-full max-w-[1600px] flex-col items-center text-center gap-4">
-          {/* Logo brand */}
-          <div className="flex items-center gap-3 select-none mb-2">
-            <svg
-              className="h-6 w-auto select-none"
-              viewBox="0 0 100 100"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              {/* Two pink dots */}
-              <circle cx="15" cy="31" r="10" fill="#e10075" />
-              <circle cx="15" cy="69" r="10" fill="#e10075" />
-              {/* White lowercase n arch */}
-              <path
-                d="M 50.5,71 L 50.5,48 A 19,19 0 0 1 88.5,48 L 88.5,71"
-                stroke="#ffffff"
-                strokeWidth="16"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
-            <span className="flex items-center text-[22px] font-semibold font-quicksand lowercase tracking-normal leading-none select-none">
-              <span className="text-white">now</span>
-              <span style={{ color: "#e10075" }}>tickets</span>
+          {/* Logo brand StormGo */}
+          <div className="flex items-center gap-2.5 select-none mb-2">
+            <div className="w-9 h-9 flex items-center justify-center shrink-0 drop-shadow-md">
+              <svg className="w-full h-full select-none" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M25 68 C15 68, 10 58, 15 48 C10 38, 20 28, 32 30 C38 18, 55 15, 65 24 C75 16, 88 24, 88 36 C95 44, 92 58, 82 68 Z" fill="#ffffff" stroke="#1e1b4b" strokeWidth="6" strokeLinejoin="round" />
+                <path d="M30 32 L44 30" stroke="#1e1b4b" strokeWidth="5" strokeLinecap="round" />
+                <path d="M56 30 L70 32" stroke="#1e1b4b" strokeWidth="5" strokeLinecap="round" />
+                <path d="M24 44 C24 44, 46 38, 50 46 C54 38, 76 44, 76 44 L72 58 C72 58, 54 62, 50 56 C46 62, 28 58, 28 58 Z" fill="#111111" stroke="#1e1b4b" strokeWidth="4" strokeLinejoin="round" />
+                <line x1="30" y1="46" x2="42" y2="52" stroke="#ffffff" strokeWidth="3" strokeLinecap="round" />
+                <line x1="56" y1="46" x2="68" y2="52" stroke="#ffffff" strokeWidth="3" strokeLinecap="round" />
+              </svg>
+            </div>
+            <span className="flex items-center text-xl font-black tracking-tight leading-none select-none text-black">
+              <span className="text-black font-black">Storm</span>
+              <span className="text-black font-black">Go</span>
             </span>
           </div>
 
-          <p className="text-xl font-black uppercase tracking-[0.4em] text-white/90">
+          <p className="text-xl font-black uppercase tracking-[0.4em] text-black/90">
             {config.footer.brand}
           </p>
           <a
@@ -1020,6 +1292,13 @@ export default function HomePage({ initialConfig }: HomePageProps) {
         </motion.div>
       </div>
 
+      {/* Meet2Go Style Glassmorphic Quick Preview Modal */}
+      <QuickPreviewModal
+        event={quickPreviewEvent}
+        isOpen={showQuickPreview}
+        onClose={() => setShowQuickPreview(false)}
+      />
+
       {/* Premium Cinematic Event Detail Overlay */}
       {showDetailOverlay && (
         <EventDetailOverlay
@@ -1046,6 +1325,14 @@ export default function HomePage({ initialConfig }: HomePageProps) {
         eventName={selectedCarouselEvent?.title || activeEvent.title}
         venueName={selectedCarouselEvent?.venue || activeEvent.venue}
         drinks={selectedCarouselEvent?.drinks || activeEvent?.drinks}
+      />
+
+      {/* Ticket Recovery Modal */}
+      <TicketRecoveryModal
+        isOpen={showRecoveryModal}
+        onClose={() => setShowRecoveryModal(false)}
+        eventId={selectedCarouselEvent?.id || activeEvent.id}
+        eventName={selectedCarouselEvent?.title || activeEvent.title}
       />
 
       {/* POS Door Ticket Sales Modal */}
@@ -1149,6 +1436,96 @@ export default function HomePage({ initialConfig }: HomePageProps) {
               </div>
             </motion.div>
           </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* User Profile Floating Glass Dropdown Menu (Identical to User Reference Image) */}
+      <AnimatePresence>
+        {showUserMenu && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setShowUserMenu(false)}
+              className="fixed inset-0 z-[360] bg-black/60 backdrop-blur-sm"
+            />
+            <motion.div
+              initial={{ opacity: 0, x: 80, scale: 0.95 }}
+              animate={{ opacity: 1, x: 0, scale: 1 }}
+              exit={{ opacity: 0, x: 80, scale: 0.95 }}
+              transition={{ type: "spring", damping: 25, stiffness: 300 }}
+              className="fixed top-16 right-4 z-[370] w-72 rounded-3xl border border-white/20 bg-[#0d0d12]/95 backdrop-blur-2xl p-5 shadow-2xl space-y-4"
+            >
+              {/* Header with SG Avatar & Close Button */}
+              <div className="flex items-center justify-between pb-3 border-b border-white/10">
+                <div className="flex items-center gap-3">
+                  <div className="h-10 w-10 rounded-full bg-[#c2d902] text-black font-black flex items-center justify-center text-sm shadow-md">
+                    SG
+                  </div>
+                  <div>
+                    <h4 className="text-xs font-black uppercase text-white tracking-wider">Mi Cuenta</h4>
+                    <p className="text-[9px] font-bold text-zinc-400">usuario@stormgo.app</p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setShowUserMenu(false)}
+                  className="text-zinc-400 hover:text-white cursor-pointer"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+
+              {/* Menu Items */}
+              <div className="space-y-1">
+                {[
+                  {
+                    icon: <Ticket className="h-4 w-4 text-[#c2d902]" />,
+                    label: "Mis Entradas & Pases",
+                    action: () => { setShowUserMenu(false); setShowPassesModal(true); }
+                  },
+                  {
+                    icon: <CreditCard className="h-4 w-4 text-emerald-400" />,
+                    label: "Historial de Compras",
+                    action: () => { setShowUserMenu(false); setShowPassesModal(true); }
+                  },
+                  {
+                    icon: <Key className="h-4 w-4 text-purple-400" />,
+                    label: "Recuperar Entrada",
+                    action: () => { setShowUserMenu(false); setShowRecoveryModal(true); }
+                  },
+                  {
+                    icon: <Settings className="h-4 w-4 text-zinc-400" />,
+                    label: "Ajustes de Cuenta",
+                    action: () => { setShowUserMenu(false); }
+                  },
+                ].map((item, i) => (
+                  <button
+                    key={i}
+                    type="button"
+                    onClick={item.action}
+                    className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-left text-xs font-black uppercase tracking-wider text-zinc-300 hover:bg-white/10 hover:text-white transition-colors cursor-pointer"
+                  >
+                    {item.icon}
+                    <span>{item.label}</span>
+                  </button>
+                ))}
+              </div>
+
+              {/* Footer: Cerrar Sesión */}
+              <div className="pt-2 border-t border-white/10">
+                <button
+                  type="button"
+                  onClick={() => setShowUserMenu(false)}
+                  className="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-left text-xs font-black uppercase tracking-wider text-red-400 hover:bg-red-950/30 transition-colors cursor-pointer"
+                >
+                  <LogOut className="h-4 w-4" />
+                  <span>Cerrar Sesión</span>
+                </button>
+              </div>
+            </motion.div>
+          </>
         )}
       </AnimatePresence>
 

@@ -143,3 +143,60 @@ def decode_staff_session_jwt(token: str) -> Dict[str, Any]:
         raise ValueError("Token expirado.")
     except jwt.InvalidTokenError:
         raise ValueError("Token invalido.")
+
+
+# ─── Organizer JWT (multi-tenant) ──────────────────────────────────────────────
+
+ORGANIZER_JWT_EXPIRY_HOURS = 24
+ORGANIZER_JWT_REFRESH_DAYS = 7
+
+def hash_password(password: str) -> str:
+    """Hash de contraseña con bcrypt."""
+    return bcrypt.hashpw(password.encode("utf-8"), bcrypt.gensalt()).decode("utf-8")
+
+
+def verify_password(password: str, hashed: str) -> bool:
+    """Verifica contraseña contra hash bcrypt."""
+    return bcrypt.checkpw(password.encode("utf-8"), hashed.encode("utf-8"))
+
+
+def create_organizer_token(organizer_id: str, email_hash: str) -> str:
+    """
+    Crea un JWT de acceso para un organizador.
+    Expira en 24 horas.
+    """
+    payload = {
+        "sub": organizer_id,
+        "email_hash": email_hash,
+        "role": "organizer",
+        "iat": datetime.utcnow(),
+        "exp": datetime.utcnow() + timedelta(hours=ORGANIZER_JWT_EXPIRY_HOURS),
+    }
+    return jwt.encode(payload, get_jwt_secret(), algorithm="HS256")
+
+
+def create_organizer_refresh_token(organizer_id: str) -> str:
+    """
+    Crea un refresh token para un organizador.
+    Expira en 7 días.
+    """
+    payload = {
+        "sub": organizer_id,
+        "role": "organizer_refresh",
+        "iat": datetime.utcnow(),
+        "exp": datetime.utcnow() + timedelta(days=ORGANIZER_JWT_REFRESH_DAYS),
+    }
+    return jwt.encode(payload, get_jwt_secret(), algorithm="HS256")
+
+
+def decode_organizer_token(token: str) -> Dict[str, Any]:
+    """Decodifica y valida un JWT de organizador."""
+    try:
+        payload = jwt.decode(token, get_jwt_secret(), algorithms=["HS256"])
+        if payload.get("role") not in ("organizer", "organizer_refresh"):
+            raise ValueError("Token no es de organizador.")
+        return payload
+    except jwt.ExpiredSignatureError:
+        raise ValueError("Token expirado.")
+    except jwt.InvalidTokenError:
+        raise ValueError("Token invalido.")

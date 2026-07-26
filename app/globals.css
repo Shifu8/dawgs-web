@@ -7,7 +7,7 @@
 @import "tailwindcss";
 
 :root {
-  --background: #050505;
+  --background: #8b5cf6;
   --foreground: #ffffff;
 }
 
@@ -24,7 +24,7 @@ html {
 }
 
 body {
-  background: #050505;
+  background: #8b5cf6;
   color: white;
   font-family: Arial, Helvetica, sans-serif;
   overflow-x: hidden;
@@ -104,6 +104,24 @@ body {
   100% {
     transform: translateY(0px);
   }
+}
+
+@keyframes marqueeSlow {
+  0% {
+    transform: translate3d(0, 0, 0);
+  }
+  100% {
+    transform: translate3d(-50%, 0, 0);
+  }
+}
+
+.animate-marquee-slow {
+  animation: marqueeSlow 220s linear infinite;
+  will-change: transform;
+}
+
+.animate-marquee-slow:hover {
+  animation-play-state: paused;
 }
 
 @keyframes smokeMove {

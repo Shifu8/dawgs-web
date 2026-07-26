@@ -354,8 +354,8 @@ export default function DrinksSalesModal({
     const totalRevenue = filteredTx.reduce((acc, tx) => acc + (tx.quantity * tx.price), 0);
 
     const titleText = targetBartender 
-      ? `NOWTICKETS — CIERRE DE CAJA INDIVIDUAL: ${targetBartender.toUpperCase()}`
-      : `NOWTICKETS — REPORTE DE CIERRE DE CAJA DE BARRA (CONSOLIDADO)`;
+      ? `NOW4GO — CIERRE DE CAJA INDIVIDUAL: ${targetBartender.toUpperCase()}`
+      : `NOW4GO — REPORTE DE CIERRE DE CAJA DE BARRA (CONSOLIDADO)`;
 
     const html = `
       <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">

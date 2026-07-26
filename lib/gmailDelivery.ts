@@ -36,6 +36,7 @@ type TicketPdfEmailInput = {
   eventName?: string;
   eventDate?: string;
   eventVenue?: string;
+  eventId?: string;
 };
 
 type GmailAttachment = {
@@ -162,6 +163,9 @@ function ticketHtml(input: TicketPdfEmailInput): string {
   const eventDate = escapeHtml(input.eventDate || "18 JUN 2026");
   const eventVenue = escapeHtml(input.eventVenue || "San Juan");
 
+  const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000").replace(/\/$/, "");
+  const eventUrl = input.eventId ? `${siteUrl}/?event=${encodeURIComponent(input.eventId)}` : siteUrl;
+
   const serialsHtml = serials.map((s) => `
                     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-top:12px;background-color:#f4f4f5;border:1px solid #e4e4e7;border-radius:12px;">
                       <tr>
@@ -184,7 +188,7 @@ function ticketHtml(input: TicketPdfEmailInput): string {
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1.0" />
-  <title>NENEZ</title>
+  <title>Now4Go</title>
 </head>
 <body style="margin:0;padding:0;background-color:#ffffff;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;color:#18181b;">
   <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:#ffffff;padding:24px 0;">
@@ -193,7 +197,7 @@ function ticketHtml(input: TicketPdfEmailInput): string {
         <table role="presentation" width="560" cellpadding="0" cellspacing="0" style="max-width:560px;width:100%;border:1px solid #e4e4e7;border-radius:24px;background-color:#ffffff;box-shadow:0 4px 12px rgba(0,0,0,0.03);overflow:hidden;">
           <tr>
             <td style="padding:40px 32px 20px;text-align:center;">
-              <p style="margin:0;font-size:11px;font-weight:900;letter-spacing:4px;text-transform:uppercase;color:#71717a;">NENEZ</p>
+              <p style="margin:0;font-size:11px;font-weight:900;letter-spacing:2px;text-transform:uppercase;color:#71717a;">Now4Go</p>
               <h1 style="margin:12px 0 0;font-size:26px;line-height:1.2;font-weight:800;letter-spacing:-0.5px;color:#18181b;">${headingText}</h1>
               <p style="margin:8px 0 0;font-size:13px;font-weight:600;color:#71717a;">${eventTitle} - ${eventName}</p>
             </td>
@@ -205,6 +209,9 @@ function ticketHtml(input: TicketPdfEmailInput): string {
                   <td style="font-size:14px;line-height:1.6;color:#3f3f46;">
                     <p style="margin:0;font-size:15px;color:#18181b;">Hola <strong>${fullName}</strong>,</p>
                     <p style="margin:12px 0 0;">${bodyText}</p>
+                    <p style="margin:16px 0 0;font-size:16px;font-weight:bold;color:#18181b;">
+                      ¡Nos vemos en <a href="${eventUrl}" style="color:#18181b;text-decoration:underline;font-weight:800;">${eventTitle}</a>!
+                    </p>
                     
                     ${serialsHtml}
 
@@ -230,9 +237,8 @@ function ticketHtml(input: TicketPdfEmailInput): string {
           </tr>
           <tr>
             <td style="padding:28px 32px;text-align:center;font-size:11px;color:#71717a;line-height:1.6;border-top:1px solid #f4f4f5;background-color:#fafafa;">
-              <p style="margin:0;">Este es un mensaje de confirmación de compra transaccional enviado automáticamente por el sistema de tickets de NENEZ.</p>
-              <p style="margin:6px 0 0;">Si tienes alguna duda o necesitas soporte con tus pases de acceso, contáctanos escribiendo directamente a <a href="mailto:soporte.nenez@gmail.com" style="color: #18181b; text-decoration: underline; font-weight: bold;">soporte.nenez@gmail.com</a>.</p>
-              <p style="margin:10px 0 0;font-weight:bold;color:#18181b;">NENEZ ® · Loja, Ecuador</p>
+              <p style="margin:0;">Este es un mensaje de confirmación de compra transaccional enviado automáticamente por el sistema de entradas de Now4Go.</p>
+              <p style="margin:10px 0 0;font-weight:bold;color:#18181b;">Now4Go ® · Loja, Ecuador</p>
             </td>
           </tr>
         </table>
@@ -252,6 +258,9 @@ function ticketText(input: TicketPdfEmailInput): string {
   const eventDate = input.eventDate || "18 JUN 2026";
   const eventVenue = input.eventVenue || "San Juan";
 
+  const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000").replace(/\/$/, "");
+  const eventUrl = input.eventId ? `${siteUrl}/?event=${encodeURIComponent(input.eventId)}` : siteUrl;
+
   const serialsTextStr = serials.map((s, idx) => `- Pase ${idx + 1} (Serial): ${s}`).join("\n");
 
   const isPlural = quantity > 1;
@@ -266,6 +275,9 @@ Hola ${fullName},
 
 ${bodyText}
 
+¡Nos vemos en ${eventTitle}!
+( Enlace al evento: ${eventUrl} )
+
 Detalles de los pases:
 ${serialsTextStr}
 - Evento: ${eventTitle} - ${eventName}
@@ -274,10 +286,9 @@ ${serialsTextStr}
 
 Por razones de seguridad, te recomendamos no compartir capturas de pantalla ni reenviar este archivo a terceros antes del espectáculo.
 
-Este es un mensaje de confirmación de compra transaccional enviado automáticamente por el sistema de tickets de NENEZ.
-Si tienes alguna duda o necesitas soporte con tus pases de acceso, contáctanos escribiendo directamente a soporte.nenez@gmail.com.
+Este es un mensaje de confirmación de compra transaccional enviado automáticamente por el sistema de entradas de Now4Go.
 
-NENEZ ® · Loja, Ecuador`;
+Now4Go ® · Loja, Ecuador`;
 }
 
 function buildMimeMessage(input: GmailMessageInput): string {

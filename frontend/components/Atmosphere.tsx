@@ -6,15 +6,9 @@
 
 export default function Atmosphere() {
   return (
-    <div aria-hidden className="pointer-events-none fixed inset-0 z-0 overflow-hidden bg-[#0c0c0e]">
-      {/* Luxury studio floor & wall ambient backdrop blending */}
-      <div
-        className="absolute inset-0"
-        style={{
-          background:
-            "linear-gradient(180deg, #09090b 0%, #16161a 35%, #0f0f12 70%, #08080a 100%)",
-        }}
-      />
+    <div aria-hidden className="pointer-events-none fixed inset-0 z-0 overflow-hidden bg-black">
+      {/* Luxury solid black backdrop */}
+      <div className="absolute inset-0 bg-black" />
       
       {/* Soft white-to-gray radial glows to add volumetric depth behind sections */}
       <div

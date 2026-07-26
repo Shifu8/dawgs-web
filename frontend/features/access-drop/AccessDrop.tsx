@@ -969,15 +969,21 @@ const AccessDrop = forwardRef<AccessDropHandle, { onClose?: () => void; onFarewe
                           filter: selectedDesignIndex === null ? "grayscale(1) opacity(0.4)" : "none",
                         }}
                       >
-                        <img
-                          src={
-                            selectedDesignIndex !== null && designs[selectedDesignIndex]
-                              ? designs[selectedDesignIndex].photo
-                              : designs[0]?.photo || ""
-                          }
-                          alt="Ticket preview"
-                          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                        />
+                        {selectedDesignIndex !== null && designs[selectedDesignIndex] && designs[selectedDesignIndex].photo ? (
+                          <img
+                            src={designs[selectedDesignIndex].photo}
+                            alt="Ticket preview"
+                            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                          />
+                        ) : designs[0]?.photo ? (
+                          <img
+                            src={designs[0].photo}
+                            alt="Ticket preview"
+                            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                          />
+                        ) : (
+                          <div className="w-full h-full bg-zinc-900" />
+                        )}
                         <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
                         <div
                           className="absolute inset-x-0 bottom-0 h-0.5"
@@ -1063,7 +1069,7 @@ const AccessDrop = forwardRef<AccessDropHandle, { onClose?: () => void; onFarewe
                 <div className="flex justify-between items-center z-10">
                   <div className="flex items-center gap-1.5">
                     <span className="h-1 w-1 rounded-full bg-[#e10075] animate-pulse" />
-                    <span className="text-[7px] font-black uppercase tracking-[0.25em] text-white">NowTickets</span>
+                    <span className="text-[7px] font-black uppercase tracking-[0.25em] text-white">Now4Go</span>
                   </div>
                   <span className="text-[6px] font-mono text-zinc-600">#{Math.floor(100000 + Math.random() * 900000)}</span>
                 </div>

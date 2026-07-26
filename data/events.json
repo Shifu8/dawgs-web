@@ -5,9 +5,9 @@
     "title": "DAWG NIGHT",
     "subtitle": "OMAR COURTZ EXPERIENCE",
     "location": "Loja",
-    "date": "2026-07-18",
+    "date": "2026-07-25",
     "time": "22:00",
-    "countdownDate": "2026-08-15",
+    "countdownDate": "2026-07-25",
     "price": 10,
     "imageUrl": "/uploads/events/event-3dd063e3-5858-4215-9416-bda3ea04ba35.png",
     "description": "Voz única y flows de la calle. Autenticidad reggaetonera premium en una atmósfera brutal de luz cenital diseñada para vivirse al límite.",
@@ -22,7 +22,7 @@
     "badge": "TRENDING PRESET",
     "accentColor": "#ffffff",
     "miniImage": "/images/omar_courtz_card_bg.jpg",
-    "organizer": "NENEZ",
+    "organizer": "NOW",
     "venue": "Mónaco Nightclub · Av. Pío Jaramillo Alvarado, Loja",
     "category": "Reggaetón / Urban",
     "ageRestriction": "18+",
@@ -149,7 +149,7 @@
       }
     ],
     "createdAt": "2026-06-03T23:57:02.581Z",
-    "updatedAt": "2026-07-21T18:46:33.388Z"
+    "updatedAt": "2026-07-25T01:50:12.826Z"
   },
   {
     "id": "trap-eclipse",
@@ -174,7 +174,7 @@
     "badge": "SPECIAL PASS",
     "accentColor": "#ffffff",
     "miniImage": "/images/roa_artist_1779161704881.png",
-    "organizer": "NENEZ",
+    "organizer": "bresh",
     "venue": "Arena Loja",
     "category": "R&B / Trap",
     "ageRestriction": "18+",
@@ -246,7 +246,9 @@
       }
     ],
     "createdAt": "2026-06-03T23:57:02.581Z",
-    "updatedAt": "2026-07-11T18:52:55.503Z"
+    "updatedAt": "2026-07-25T01:28:10.821Z",
+    "onlineSalesCutoffTime": "14:00",
+    "drinks": []
   },
   {
     "id": "trap-loud",
@@ -270,7 +272,7 @@
     "badge": "LIVE ACCESS",
     "accentColor": "#ffffff",
     "miniImage": "/images/yan_block_artist_1779161408288.png",
-    "organizer": "NENEZ",
+    "organizer": "lequiat",
     "venue": "Venue Privado · Loja",
     "category": "Trap / Urban",
     "ageRestriction": "18+",
@@ -373,7 +375,7 @@
     "badge": "ALT ACCESS",
     "accentColor": "#ffffff",
     "miniImage": "/images/trap_loud_anuel_1778966415162.png",
-    "organizer": "NENEZ",
+    "organizer": "NOW",
     "venue": "Stadium Loja",
     "category": "Rock / Alt",
     "ageRestriction": "18+",
@@ -442,5 +444,170 @@
     ],
     "createdAt": "2026-06-03T23:57:02.581Z",
     "updatedAt": "2026-06-03T23:58:28.823Z"
+  },
+  {
+    "id": "latin-loud-badbunny",
+    "slug": "latin-loud-badbunny",
+    "title": "LATIN LOUD",
+    "subtitle": "BAD BUNNY & RAUW ALEJANDRO",
+    "location": "Quito",
+    "date": "2026-12-10",
+    "time": "20:00",
+    "countdownDate": "2026-12-10",
+    "price": 15,
+    "imageUrl": "/images/latin_loud_bad_bunny_1778966469259.png",
+    "description": "Energía sin límites y orgullo latino. Una experiencia masiva, brillante y premium que redefine la fiesta urbana a gran escala.",
+    "lineup": [
+      "BAD BUNNY",
+      "RAUW ALEJANDRO"
+    ],
+    "position": 4,
+    "status": "active",
+    "isFeatured": false,
+    "isAvailable": true,
+    "badge": "GLOBAL WAVE",
+    "accentColor": "#ffffff",
+    "miniImage": "/images/latin_loud_bad_bunny_1778966469259.png",
+    "organizer": "NOW",
+    "venue": "Estadio Atahualpa · Quito",
+    "category": "Reggaetón / Urban",
+    "ageRestriction": "18+",
+    "about": [
+      "Una noche masiva de reggaetón y ritmos caribeños con los mayores referentes globales."
+    ],
+    "detailedLineup": [
+      {
+        "name": "BAD BUNNY",
+        "role": "Headliner",
+        "image": "/images/latin_loud_bad_bunny_1778966469259.png"
+      }
+    ],
+    "drinks": [],
+    "merch": [],
+    "createdAt": "2026-07-25T12:00:00.000Z",
+    "updatedAt": "2026-07-25T12:00:00.000Z"
+  },
+  {
+    "id": "rnb-loud-brent",
+    "slug": "rnb-loud-brent",
+    "title": "RNB LOUD",
+    "subtitle": "BRENT FAIYAZ NIGHT VISIONS",
+    "location": "Guayaquil",
+    "date": "2026-11-05",
+    "time": "21:30",
+    "countdownDate": "2026-11-05",
+    "price": 12,
+    "imageUrl": "/images/rnb_loud_brent_1778966427864.png",
+    "description": "Vibras lujosas y nocturnas. R&B sensual y futurista en una atmósfera envolvente donde el sonido marca la pauta.",
+    "lineup": [
+      "BRENT FAIYAZ"
+    ],
+    "position": 5,
+    "status": "active",
+    "isFeatured": false,
+    "isAvailable": true,
+    "badge": "NIGHT VISIONS",
+    "accentColor": "#ffffff",
+    "miniImage": "/images/rnb_loud_brent_1778966427864.png",
+    "organizer": "NENEZ",
+    "venue": "Explanada Guayaquil",
+    "category": "R&B / Soul",
+    "ageRestriction": "18+",
+    "about": [
+      "La mejor experiencia de R&B contemporáneo con producción de nivel internacional."
+    ],
+    "detailedLineup": [
+      {
+        "name": "BRENT FAIYAZ",
+        "role": "Headliner",
+        "image": "/images/rnb_loud_brent_1778966427864.png"
+      }
+    ],
+    "drinks": [],
+    "merch": [],
+    "createdAt": "2026-07-25T12:00:00.000Z",
+    "updatedAt": "2026-07-25T12:00:00.000Z"
+  },
+  {
+    "id": "urban-drop-roa",
+    "slug": "urban-drop-roa",
+    "title": "URBAN DROP",
+    "subtitle": "ROA LIVE EXPERIENCE",
+    "location": "Cuenca",
+    "date": "2026-09-18",
+    "time": "22:00",
+    "countdownDate": "2026-09-18",
+    "price": 10,
+    "imageUrl": "/images/roa_artist_1779161704881.png",
+    "description": "El futuro de la escena urbana. Versatilidad y melodías adictivas en un concierto imperdible.",
+    "lineup": [
+      "ROA"
+    ],
+    "position": 6,
+    "status": "active",
+    "isFeatured": false,
+    "isAvailable": true,
+    "badge": "URBAN WAVE",
+    "accentColor": "#ffffff",
+    "miniImage": "/images/roa_artist_1779161704881.png",
+    "organizer": "NOW",
+    "venue": "Centro de Convenciones · Cuenca",
+    "category": "Urban / Trap",
+    "ageRestriction": "18+",
+    "about": [
+      "Concierto exclusivo en Cuenca presentando lo nuevo del género urbano."
+    ],
+    "detailedLineup": [
+      {
+        "name": "ROA",
+        "role": "Headliner",
+        "image": "/images/roa_artist_1779161704881.png"
+      }
+    ],
+    "drinks": [],
+    "merch": [],
+    "createdAt": "2026-07-25T12:00:00.000Z",
+    "updatedAt": "2026-07-25T12:00:00.000Z"
+  },
+  {
+    "id": "trap-loud-sanjuan",
+    "slug": "trap-loud-sanjuan",
+    "title": "TRAP LOUD",
+    "subtitle": "SAN JUAN SPECIAL DROP",
+    "location": "Manta",
+    "date": "2026-08-28",
+    "time": "21:00",
+    "countdownDate": "2026-08-28",
+    "price": 10,
+    "imageUrl": "/images/trap_loud_event_1779161392003.png",
+    "description": "Edición especial frente al mar. Trap pesado, bajos retumbantes y energía de costa.",
+    "lineup": [
+      "DJ OFICIAL NENEZ"
+    ],
+    "position": 7,
+    "status": "active",
+    "isFeatured": false,
+    "isAvailable": true,
+    "badge": "SPECIAL DROP",
+    "accentColor": "#ffffff",
+    "miniImage": "/images/trap_loud_event_1779161392003.png",
+    "organizer": "NENEZ",
+    "venue": "Playa Murciélago · Manta",
+    "category": "Trap / Urban",
+    "ageRestriction": "18+",
+    "about": [
+      "Edición especial de Trap Loud en la playa de Manta."
+    ],
+    "detailedLineup": [
+      {
+        "name": "DJ OFICIAL NENEZ",
+        "role": "Headliner",
+        "image": "/images/trap_loud_event_1779161392003.png"
+      }
+    ],
+    "drinks": [],
+    "merch": [],
+    "createdAt": "2026-07-25T12:00:00.000Z",
+    "updatedAt": "2026-07-25T12:00:00.000Z"
   }
 ]

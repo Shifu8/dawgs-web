@@ -1,34 +1,37 @@
 "use client";
 
 /**
- * EventDetailOverlay — Premium cinematic full-screen event detail experience.
- * NENEZ Platform — Designed to feel like Apple keynote × Awwwards editorial.
+ * EventDetailOverlay — Next-Level StormGo Full-Screen Event Detail Experience.
  */
 
 import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
-import { motion, useDragControls } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { gsap } from "gsap";
 import {
-  X,
   MapPin,
-  Calendar,
   Clock,
   Tag,
   Users,
   Music,
   Globe,
-  ShoppingBag,
-  ChevronRight,
-  ChevronLeft,
   Ticket,
   Shield,
   ExternalLink,
-  Wine,
+  User,
+  Plus,
+  Minus,
+  ShoppingBag,
+  X,
+  CreditCard,
+  Key,
+  Settings,
+  LogOut,
   Sparkles,
+  Eye,
+  Maximize2,
 } from "lucide-react";
 import type { Event } from "@/frontend/types/domain";
-import { CAROUSEL_EVENTS } from "@/frontend/components/EventTicketCarousel";
 
 interface EventDetailOverlayProps {
   event: Event;
@@ -46,64 +49,24 @@ const ROLE_ORDER = ["Headliner", "Supporting", "Guest", "DJ", "Live Act", "Surpr
 function StatusBadge({ status }: { status?: string }) {
   if (!status) return null;
   const map = {
-    available: { label: "Disponible", cls: "border-white/20 bg-white/[0.06] text-white" },
+    available: { label: "Disponible", cls: "border-emerald-500/30 bg-emerald-950/40 text-emerald-400" },
     "sold-out": { label: "Agotado", cls: "border-red-500/30 bg-red-950/40 text-red-400" },
     "coming-soon": { label: "Próximamente", cls: "border-white/10 bg-white/[0.03] text-zinc-400" },
   };
   const s = map[status as keyof typeof map] || map.available;
   return (
     <span className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-[8px] font-black uppercase tracking-[0.25em] ${s.cls}`}>
-      <span className={`h-1.5 w-1.5 rounded-full ${status === "available" ? "bg-white animate-pulse" : status === "sold-out" ? "bg-red-400" : "bg-zinc-500"}`} />
+      <span className={`h-1.5 w-1.5 rounded-full ${status === "available" ? "bg-emerald-400 animate-pulse" : status === "sold-out" ? "bg-red-400" : "bg-zinc-500"}`} />
       {s.label}
     </span>
   );
 }
 
-function SocialIcon({ platform }: { platform: string }) {
-  const icons: Record<string, React.ReactNode> = {
-    instagram: (
-      <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <rect x="2" y="2" width="20" height="20" rx="5" ry="5"/>
-        <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/>
-        <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/>
-      </svg>
-    ),
-    tiktok: (
-      <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor">
-        <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-2.88 2.5 2.89 2.89 0 0 1-2.89-2.89 2.89 2.89 0 0 1 2.89-2.89c.28 0 .54.04.79.1V9.01a6.34 6.34 0 0 0-.79-.05 6.34 6.34 0 0 0-6.34 6.34 6.34 6.34 0 0 0 6.34 6.34 6.34 6.34 0 0 0 6.33-6.34V9.07a8.16 8.16 0 0 0 4.77 1.52V7.14a4.85 4.85 0 0 1-1-.45z"/>
-      </svg>
-    ),
-    spotify: (
-      <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor">
-        <path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/>
-      </svg>
-    ),
-    appleMusic: (
-      <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor">
-        <path d="M23.997 6.124a9.23 9.23 0 0 0-.24-2.19c-.317-1.31-1.062-2.31-2.18-3.043a5.022 5.022 0 0 0-1.877-.726 10.496 10.496 0 0 0-1.564-.15c-.04-.003-.083-.01-.124-.013H5.988c-.152.01-.303.017-.455.026C4.786.07 4.043.15 3.34.428 2.004.958 1.04 1.88.475 3.208a4.98 4.98 0 0 0-.35 1.58c-.06.737-.068 1.473-.07 2.21v9.56c.002.76.01 1.518.064 2.275.047.664.165 1.313.448 1.92.596 1.287 1.591 2.152 2.967 2.519a5.9 5.9 0 0 0 1.44.195c.498.022.995.032 1.492.033h11.42c.5-.001.997-.01 1.496-.035a7.68 7.68 0 0 0 1.52-.215c1.358-.367 2.33-1.21 2.93-2.47.243-.521.356-1.08.415-1.65.07-.73.086-1.463.086-2.197V8.49c0-.79-.008-1.577-.063-2.366zm-8.754 10.23c-.226 0-.451.01-.676-.035-.518-.103-.935-.522-1.039-1.042a2.437 2.437 0 0 1-.03-.406c-.001-2.31-.001-4.618.001-6.928 0-.11.017-.222.045-.33.12-.455.48-.765.946-.798.37-.025.74-.014 1.113.016.555.045 1.004.437 1.15.98a2.33 2.33 0 0 1 .066.573c.007 1.57.007 3.14.003 4.71-.003.792.003 1.583-.005 2.374a1.39 1.39 0 0 1-.047.344c-.14.52-.59.866-1.126.895-.135.008-.27.002-.4-.354zm-3.688-6.72a1.2 1.2 0 1 1-2.4 0 1.2 1.2 0 0 1 2.4 0z"/>
-      </svg>
-    ),
-    youtube: (
-      <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor">
-        <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
-      </svg>
-    ),
-    website: <Globe className="h-4 w-4" />,
-  };
-  return icons[platform] || <ExternalLink className="h-4 w-4" />;
-}
-
-function SocialLabel({ platform }: { platform: string }) {
-  const labels: Record<string, string> = {
-    instagram: "Instagram",
-    tiktok: "TikTok",
-    spotify: "Spotify",
-    appleMusic: "Apple Music",
-    youtube: "YouTube",
-    website: "Website",
-  };
-  return <>{labels[platform] || platform}</>;
-}
+const TICKET_TIERS = [
+  { id: "gen", name: "General Access Mónaco", price: 15, desc: "Acceso a la pista general del evento.", status: "Disponible" },
+  { id: "vip", name: "VIP Stage Mónaco", price: 30, desc: "Frente al escenario con barra preferencial.", status: "Disponible" },
+  { id: "ultra", name: "Ultra Box + Botella", price: 60, desc: "Mesa reservada en Mónaco + 1 Botella Premium a elección.", status: "Disponible" },
+];
 
 export default function EventDetailOverlay({
   event,
@@ -115,118 +78,68 @@ export default function EventDetailOverlay({
   isOpen = true,
   isCheckoutOpen = false,
 }: EventDetailOverlayProps) {
-  const scrollRef = useRef<HTMLDivElement>(null);
-  const backdropRef = useRef<HTMLDivElement>(null);
   const modalRef = useRef<HTMLDivElement>(null);
-
-  const [scrolled, setScrolled] = useState(false);
+  const scrollRef = useRef<HTMLDivElement>(null);
   const [isClosing, setIsClosing] = useState(false);
-  const [activeMerchIdx, setActiveMerchIdx] = useState(0);
-  const relatedEvents = allEvents.filter((e) => e.id !== event.id);
-  const dragControls = useDragControls();
+  const [scrolled, setScrolled] = useState(false);
+  const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
+
+  const [isLightboxOpen, setIsLightboxOpen] = useState(false);
+
+  // Ticket quantities state
+  const [ticketCounts, setTicketCounts] = useState<Record<string, number>>({
+    "General Access Mónaco": 1,
+    "VIP Stage Mónaco": 0,
+    "Ultra Box + Botella": 0,
+  });
 
   const handleClose = () => {
     if (isClosing) return;
-
-    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    if (reduceMotion || !modalRef.current || !backdropRef.current) {
-      onClose();
-      return;
-    }
-
     setIsClosing(true);
-    gsap.killTweensOf([modalRef.current, backdropRef.current]);
-
-    gsap.to(backdropRef.current, {
-      autoAlpha: 0,
-      duration: 0.24,
-      ease: "power2.inOut",
-    });
-
-    gsap.to(modalRef.current, {
-      opacity: 0,
-      y: 18,
-      scale: 0.82,
-      filter: "blur(8px)",
-      transformOrigin: "center bottom",
-      duration: 0.34,
-      ease: "power3.in",
-      onComplete: () => {
-        onClose();
-      },
-    });
-  };
-
-  const handleGoToMerch = () => {
-    handleClose();
-    setTimeout(() => {
-      document.getElementById("wear")?.scrollIntoView({ behavior: "smooth" });
-    }, 150);
+    if (modalRef.current) {
+      gsap.to(modalRef.current, {
+        y: "100%",
+        opacity: 0,
+        duration: 0.35,
+        ease: "power3.in",
+        onComplete: onClose,
+      });
+    } else {
+      onClose();
+    }
   };
 
   useEffect(() => {
-    document.body.style.overflow = "hidden";
-    return () => {
-      document.body.style.overflow = "";
-    };
-  }, []);
-
-  // GSAP enter animation
-  useEffect(() => {
-    if (!isClosing && modalRef.current && backdropRef.current) {
-      const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-
-      gsap.killTweensOf([modalRef.current, backdropRef.current]);
-
-      gsap.fromTo(
-        backdropRef.current,
-        { autoAlpha: 0 },
-        { autoAlpha: 1, duration: reduceMotion ? 0 : 0.24, ease: "power2.out" }
-      );
-
+    if (modalRef.current) {
       gsap.fromTo(
         modalRef.current,
-        {
-          opacity: 0,
-          y: 18,
-          scale: reduceMotion ? 1 : 1.14,
-          filter: reduceMotion ? "none" : "blur(8px)",
-          transformOrigin: "center bottom",
-        },
-        {
-          opacity: 1,
-          y: 0,
-          scale: 1,
-          filter: "blur(0px)",
-          duration: reduceMotion ? 0 : 0.48,
-          ease: "power3.out",
-        }
+        { y: "100%", opacity: 0 },
+        { y: "0%", opacity: 1, duration: 0.45, ease: "power3.out" }
       );
     }
   }, []);
-
-  // Handle checkout drawer opening over details
-  useEffect(() => {
-    if (modalRef.current && !isClosing) {
-      gsap.to(modalRef.current, {
-        opacity: isCheckoutOpen ? 0.4 : 1,
-        scale: isCheckoutOpen ? 0.95 : 1,
-        y: isCheckoutOpen ? -12 : 0,
-        duration: 0.3,
-        ease: "power2.out",
-      });
-    }
-  }, [isCheckoutOpen, isClosing]);
 
   useEffect(() => {
     const el = scrollRef.current;
     if (!el) return;
-    const handler = () => setScrolled(el.scrollTop > 60);
+    const handler = () => setScrolled(el.scrollTop > 50);
     el.addEventListener("scroll", handler, { passive: true });
     return () => el.removeEventListener("scroll", handler);
   }, []);
 
-  // Group lineup by role
+  const updateQuantity = (name: string, delta: number) => {
+    setTicketCounts((prev) => {
+      const current = prev[name] || 0;
+      const next = Math.max(0, current + delta);
+      return { ...prev, [name]: next };
+    });
+  };
+
+  // Calculations
+  const totalQuantity = Object.values(ticketCounts).reduce((a, b) => a + b, 0);
+  const totalPrice = TICKET_TIERS.reduce((sum, tier) => sum + (ticketCounts[tier.name] || 0) * tier.price, 0);
+
+  // Group lineup
   const groupedLineup = (event.detailedLineup || []).reduce(
     (acc, artist) => {
       if (!acc[artist.role]) acc[artist.role] = [];
@@ -237,484 +150,484 @@ export default function EventDetailOverlay({
   );
 
   const sortedRoles = ROLE_ORDER.filter((r) => groupedLineup[r]?.length);
-  const hasMerch = event.merch && event.merch.length > 0;
-  const hasSchedule = event.schedule && event.schedule.length > 0;
-  const hasSocials =
-    event.socialLinks &&
-    Object.values(event.socialLinks).some((v) => v);
-  const hasImportantInfo = event.importantInfo && event.importantInfo.length > 0;
   const hasDrinks = event.drinks && event.drinks.length > 0;
 
   return (
-    <div className="fixed inset-0 z-[300] flex items-end md:items-center justify-center">
-      {/* Backdrop */}
-      <div
-        ref={backdropRef}
-        className="absolute inset-0 bg-black/88 backdrop-blur-2xl"
-        onClick={handleClose}
-      />
-
-      {/* Modal Container */}
-      <motion.div
-        ref={modalRef}
-        drag="y"
-        dragControls={dragControls}
-        dragListener={false}
-        dragConstraints={{ top: 0, bottom: 0 }}
-        dragElastic={{ top: 0.05, bottom: 0.85 }}
-        onDragEnd={(e, info) => {
-          if (info.offset.y > 150 || info.velocity.y > 500) {
-            handleClose();
-          }
-        }}
-        className="relative w-full h-[96dvh] md:h-[96vh] md:max-w-[860px] overflow-hidden flex flex-col rounded-t-[32px] md:rounded-[36px] bg-[#060606] z-10"
-        style={{
-          border: "1px solid rgba(255,255,255,0.07)",
-          boxShadow: "0 -20px 80px rgba(0,0,0,0.8), 0 60px 180px rgba(0,0,0,0.95)",
-        }}
-      >
-        {/* Drag handle — mobile only */}
-        <div
-          className="md:hidden flex justify-center pt-3 pb-3 shrink-0 cursor-grab active:cursor-grabbing touch-none"
-          onPointerDown={(e) => dragControls.start(e)}
-        >
-          <div className="h-1.5 w-12 rounded-full bg-white/20" />
-        </div>
-        {/* Sticky close button — always on top */}
+    <div className="fixed inset-0 z-[300] bg-[#070709] overflow-hidden flex flex-col font-sans">
+      {/* ─── FIXED TOP HEADER BAR ─── */}
+      <header className="h-16 w-full bg-black/90 border-b border-white/10 flex items-center justify-between px-6 z-[350] shrink-0 backdrop-blur-xl">
+        {/* Left: StormGo Logo Button (Clean Logo matching screenshot) */}
         <button
-          onClick={handleClose}
-          aria-label="Cerrar detalle"
-          className={`absolute right-4 top-4 z-50 flex h-10 w-10 items-center justify-center rounded-full transition-all duration-300 ${
-            scrolled
-              ? "bg-black/90 border border-white/15 shadow-lg"
-              : "bg-black/50 border border-white/10"
-          } text-white/70 hover:text-white hover:border-white/30 hover:bg-black/80`}
+          type="button"
+          onClick={() => {
+            handleClose();
+            if (window.location.pathname !== "/") {
+              window.location.href = "/";
+            }
+          }}
+          className="group flex items-center gap-2 hover:scale-105 transition-all duration-300 cursor-pointer"
+          aria-label="StormGo Inicio"
         >
-          <X className="h-4 w-4" />
+          <div className="w-7 h-7 shrink-0">
+            <svg className="w-full h-full select-none drop-shadow-md" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M25 68 C15 68, 10 58, 15 48 C10 38, 20 28, 32 30 C38 18, 55 15, 65 24 C75 16, 88 24, 88 36 C95 44, 92 58, 82 68 Z" fill="#ffffff" stroke="#1e1b4b" strokeWidth="6" strokeLinejoin="round" />
+              <path d="M30 32 L44 30" stroke="#1e1b4b" strokeWidth="5" strokeLinecap="round" />
+              <path d="M56 30 L70 32" stroke="#1e1b4b" strokeWidth="5" strokeLinecap="round" />
+              <path d="M24 44 C24 44, 46 38, 50 46 C54 38, 76 44, 76 44 L72 58 C72 58, 54 62, 50 56 C46 62, 28 58, 28 58 Z" fill="#111111" stroke="#1e1b4b" strokeWidth="4" strokeLinejoin="round" />
+              <line x1="30" y1="46" x2="42" y2="52" stroke="#ffffff" strokeWidth="3" strokeLinecap="round" />
+              <line x1="56" y1="46" x2="68" y2="52" stroke="#ffffff" strokeWidth="3" strokeLinecap="round" />
+            </svg>
+          </div>
+          <span className="text-base font-black tracking-tight text-white flex items-center leading-none">
+            <span>Storm</span>
+            <span className="text-[#c2d902]">Go</span>
+          </span>
         </button>
 
-        {/* Scrollable content */}
-        <div
-          ref={scrollRef}
-          className="flex-1 overflow-y-auto no-scrollbar"
-          style={{ scrollBehavior: "smooth" }}
+        {/* Right: User Profile Icon Dropdown Trigger */}
+        <button
+          type="button"
+          onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
+          className={`h-10 w-10 rounded-full border transition-all duration-300 cursor-pointer flex items-center justify-center ${
+            isProfileMenuOpen
+              ? "bg-[#c2d902] text-black border-[#c2d902] scale-105"
+              : "border-white/20 bg-white/10 text-white hover:bg-white hover:text-black"
+          }`}
+          aria-label="Menú de Perfil"
         >
-          {/* ─── HERO ─── */}
-          <motion.div
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, ease: "easeOut" }}
-            className="relative h-[52vw] min-h-[280px] max-h-[400px] w-full overflow-hidden"
-          >
-            {event.poster ? (
-              <Image
-                src={event.poster}
-                alt={event.title}
-                fill
-                sizes="860px"
-                className="object-cover brightness-[0.65] scale-105"
-                priority
-              />
-            ) : (
-              <div className="absolute inset-0 bg-gradient-to-br from-zinc-900 to-zinc-950 flex flex-col items-center justify-center">
-                <span className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-700">Próximamente</span>
-              </div>
-            )}
-            {/* Cinematic gradient overlay */}
-            <div className="absolute inset-0 bg-gradient-to-t from-[#060606] via-[#060606]/60 to-transparent" />
-            <div className="absolute inset-0 bg-gradient-to-r from-[#060606]/40 via-transparent to-transparent" />
+          <User className="h-5 w-5" />
+        </button>
+      </header>
 
-            {/* Hero text */}
-            <div className="absolute bottom-0 left-0 right-0 p-8">
-              {event.organizer && (
-                <p className="text-[8px] font-black uppercase tracking-[0.45em] text-zinc-500 mb-2">
-                  {event.organizer} presenta
-                </p>
-              )}
-              <h1 className="text-4xl sm:text-5xl font-black uppercase leading-none tracking-tighter text-white">
-                {event.title}
-              </h1>
-              <p className="text-[10px] font-bold uppercase tracking-[0.35em] text-zinc-400 mt-1.5">
-                {event.subtitle}
-              </p>
-              <div className="flex flex-wrap items-center gap-2 mt-4">
-                <StatusBadge status={event.status} />
-                <span className="inline-flex items-center rounded-full border border-white/10 bg-white/[0.04] px-3 py-1 text-[8px] font-black uppercase tracking-[0.2em] text-zinc-300">
-                  {event.dateLabel}
-                </span>
-                <span className="inline-flex items-center rounded-full border border-white/10 bg-white/[0.04] px-3 py-1 text-[8px] font-black uppercase tracking-[0.2em] text-zinc-300">
-                  {event.city}
-                </span>
-                {event.time && (
-                  <span className="inline-flex items-center rounded-full border border-white/10 bg-white/[0.04] px-3 py-1 text-[8px] font-black uppercase tracking-[0.2em] text-zinc-300">
-                    {event.time}
-                  </span>
-                )}
-              </div>
-            </div>
-          </motion.div>
-
-          {/* ─── MAIN CONTENT ─── */}
-          <div className="px-6 sm:px-8 pb-16 space-y-10 mt-2">
-
-            {/* ─── EVENT INFORMATION CARDS ─── */}
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.07, ease: "easeOut" }}>
-              <SectionLabel>Información del Evento</SectionLabel>
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 mt-4">
-                {[
-                  { icon: <Tag className="h-3.5 w-3.5" />, label: "Evento", value: event.title },
-                  { icon: <Users className="h-3.5 w-3.5" />, label: "Artista Principal", value: event.detailedLineup?.find(a => a.role === "Headliner")?.name || event.lineup[0] },
-                  { icon: <Clock className="h-3.5 w-3.5" />, label: "Hora", value: event.time || "Por confirmar" },
-                  { icon: <MapPin className="h-3.5 w-3.5" />, label: "Ciudad", value: event.city },
-                  { icon: <MapPin className="h-3.5 w-3.5" />, label: "Lugar / Venue", value: event.venue ? event.venue.split("·")[0].trim() : "Por confirmar" },
-                  { icon: <Music className="h-3.5 w-3.5" />, label: "Categoría", value: event.category || "Urban" },
-                  { icon: <Shield className="h-3.5 w-3.5" />, label: "Edad", value: event.ageRestriction || "18+" },
-                  { icon: <Ticket className="h-3.5 w-3.5" />, label: "Estado", value: event.status === "available" ? "Disponible" : event.status === "sold-out" ? "Agotado" : "Próximamente" },
-                ].map((item, i) => (
-                  <div
-                    key={i}
-                    className="group relative overflow-hidden rounded-2xl border border-white/[0.06] bg-white/[0.025] p-4 transition-all duration-300 hover:border-white/[0.12] hover:bg-white/[0.04]"
-                  >
-                    <div className="flex items-center text-zinc-600 mb-2 group-hover:text-zinc-400 transition-colors">
-                      <span className="text-[7px] font-black uppercase tracking-[0.25em]">{item.label}</span>
-                    </div>
-                    <p className="text-[11px] font-black text-white uppercase tracking-wide leading-tight truncate">
-                      {item.value}
-                    </p>
+      {/* ─── PROFILE SLIDE-OUT DROPDOWN MENU ─── */}
+      <AnimatePresence>
+        {isProfileMenuOpen && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setIsProfileMenuOpen(false)}
+              className="fixed inset-0 z-[360] bg-black/60 backdrop-blur-sm"
+            />
+            <motion.div
+              initial={{ opacity: 0, x: 100 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: 100 }}
+              transition={{ type: "spring", damping: 25, stiffness: 300 }}
+              className="fixed top-16 right-4 z-[370] w-72 rounded-3xl border border-white/20 bg-[#0d0d12]/95 backdrop-blur-2xl p-5 shadow-2xl space-y-4"
+            >
+              <div className="flex items-center justify-between pb-3 border-b border-white/10">
+                <div className="flex items-center gap-3">
+                  <div className="h-10 w-10 rounded-full bg-[#c2d902] text-black font-black flex items-center justify-center text-sm">
+                    SG
                   </div>
+                  <div>
+                    <h4 className="text-xs font-black uppercase text-white tracking-wider">Mi Cuenta</h4>
+                    <p className="text-[9px] font-bold text-zinc-400">usuario@stormgo.app</p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setIsProfileMenuOpen(false)}
+                  className="text-zinc-400 hover:text-white"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+
+              <div className="space-y-1">
+                {[
+                  { icon: <Ticket className="h-4 w-4 text-[#c2d902]" />, label: "Mis Entradas & Pases" },
+                  { icon: <CreditCard className="h-4 w-4 text-emerald-400" />, label: "Historial de Compras" },
+                  { icon: <Key className="h-4 w-4 text-purple-400" />, label: "Recuperar Entrada" },
+                  { icon: <Settings className="h-4 w-4 text-zinc-400" />, label: "Ajustes de Cuenta" },
+                ].map((item, i) => (
+                  <button
+                    key={i}
+                    type="button"
+                    onClick={() => {
+                      setIsProfileMenuOpen(false);
+                    }}
+                    className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-left text-xs font-black uppercase tracking-wider text-zinc-300 hover:bg-white/10 hover:text-white transition-colors cursor-pointer"
+                  >
+                    {item.icon}
+                    <span>{item.label}</span>
+                  </button>
                 ))}
               </div>
 
-              {/* Recordatorio de Cédula */}
-              <div className="mt-3.5 rounded-2xl border border-white/10 bg-white/[0.03] p-4 backdrop-blur-md">
-                <h4 className="text-[10px] font-black uppercase tracking-wider text-white">Documento Físico Obligatorio</h4>
-                <p className="text-[9px] font-bold uppercase tracking-widest text-zinc-400 mt-0.5">
-                  No olvides llevar tu cédula o documento de identidad físico el día del evento para tu ingreso.
-                </p>
+              <div className="pt-2 border-t border-white/10">
+                <button
+                  type="button"
+                  onClick={() => setIsProfileMenuOpen(false)}
+                  className="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-left text-xs font-black uppercase tracking-wider text-red-400 hover:bg-red-950/30 transition-colors cursor-pointer"
+                >
+                  <LogOut className="h-4 w-4" />
+                  <span>Cerrar Sesión</span>
+                </button>
               </div>
             </motion.div>
+          </>
+        )}
+      </AnimatePresence>
 
-            {/* ─── UBICACIÓN & GOOGLE MAPS ─── */}
-            {event.venue && (
-              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.14, ease: "easeOut" }}>
-                <SectionLabel>Ubicación & Dirección</SectionLabel>
-                <div className="mt-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 rounded-2xl border border-white/[0.08] bg-white/[0.025] p-5 backdrop-blur-md transition-all duration-300 hover:border-white/20 hover:bg-white/[0.04]">
-                  <div className="space-y-1">
-                    <div className="flex items-center gap-2">
-                      <MapPin className="h-4 w-4 text-white shrink-0" />
-                      <h4 className="text-sm font-black uppercase text-white tracking-wide">
-                        {event.venue.split("·")[0]?.trim() || event.venue}
-                      </h4>
-                    </div>
-                    <p className="text-[10px] font-bold uppercase tracking-widest text-zinc-400 pl-6">
-                      {event.venue.includes("·")
-                        ? event.venue.split("·").slice(1).join("·").trim()
-                        : `${event.venue}, ${event.city}`}
-                    </p>
+      {/* ─── MAIN SCROLLABLE CONTAINER ─── */}
+      <div ref={scrollRef} className="flex-1 overflow-y-auto no-scrollbar pb-32">
+        <div className="max-w-6xl mx-auto w-full px-4 sm:px-8 py-8">
+          <div className="w-full space-y-12">
+
+            {/* HERO BANNER CARD */}
+            <div className="relative h-[48vh] min-h-[380px] max-h-[550px] w-full rounded-3xl overflow-hidden border border-white/10 shadow-2xl">
+                {event.poster ? (
+                  <Image
+                    src={event.poster}
+                    alt={event.title}
+                    fill
+                    sizes="(max-width: 1024px) 100vw, 70vw"
+                    className="object-cover brightness-[0.7] scale-105"
+                    priority
+                  />
+                ) : (
+                  <div className="absolute inset-0 bg-gradient-to-br from-zinc-900 to-zinc-950 flex flex-col items-center justify-center">
+                    <span className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-700">Próximamente</span>
                   </div>
-                  <a
-                    href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
-                      `${event.venue}, ${event.city}`
-                    )}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center gap-2 h-10 px-6 rounded-full border border-white/20 bg-white/10 text-[9px] font-black uppercase tracking-[0.2em] text-white hover:bg-white hover:text-black transition duration-300 shrink-0"
-                  >
-                    <span>Ver en Google Maps</span>
-                    <ExternalLink className="h-3 w-3" />
-                  </a>
-                </div>
-              </motion.div>
-            )}
+                )}
+                <div className="absolute inset-0 bg-gradient-to-t from-[#070709] via-black/40 to-transparent" />
 
-            {/* ─── LINEUP ─── */}
-            {sortedRoles.length > 0 && (
-              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.21, ease: "easeOut" }}>
-                <SectionLabel>Lineup</SectionLabel>
-                <div className="mt-4 space-y-5">
-                  {sortedRoles.map((role) => (
-                    <div key={role}>
-                      <p className="text-[8px] font-black uppercase tracking-[0.35em] text-zinc-600 mb-3">{role}</p>
-                      <div className="flex flex-wrap gap-3">
-                        {groupedLineup[role]!.map((artist) => (
-                          <div
-                            key={artist.name}
-                            className="group flex items-center gap-3 rounded-2xl border border-white/[0.07] bg-white/[0.025] px-4 py-3 transition-all duration-300 hover:border-white/[0.15] hover:bg-white/[0.05]"
-                          >
-                            {artist.image && (
-                              <div className="relative h-10 w-10 shrink-0 overflow-hidden rounded-full border border-white/10">
-                                <Image
-                                  src={artist.image}
-                                  alt={artist.name}
-                                  fill
-                                  sizes="40px"
-                                  className="object-cover grayscale"
-                                />
-                              </div>
-                            )}
-                            <div>
-                              <p className="text-[11px] font-black text-white uppercase tracking-wide">
-                                {artist.name}
-                              </p>
-                              <p className="text-[7px] font-bold text-zinc-600 uppercase tracking-widest mt-0.5">
-                                {role}
-                              </p>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </motion.div>
-            )}
-
-            {/* ─── SCHEDULE ─── */}
-            {hasSchedule && (
-              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.28, ease: "easeOut" }}>
-                <SectionLabel>Horario del Evento</SectionLabel>
-                <div className="mt-4 relative">
-                  {/* Timeline line */}
-                  <div className="absolute left-[60px] top-0 bottom-0 w-px bg-gradient-to-b from-transparent via-white/[0.08] to-transparent" />
-                  <div className="space-y-1">
-                    {event.schedule!.map((item, i) => (
-                      <div key={i} className="flex items-center gap-5 py-3">
-                        <span className="w-[60px] shrink-0 text-right text-[9px] font-black text-zinc-500 uppercase tracking-wider">
-                          {item.time}
-                        </span>
-                        <div className="relative z-10 h-2 w-2 shrink-0 rounded-full bg-white/30 ring-2 ring-black ring-offset-1 ring-offset-black ml-0.5" />
-                        <p className="text-[11px] font-black text-white uppercase tracking-wide">
-                          {item.label}
-                        </p>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </motion.div>
-            )}
-
-            {/* ─── BAR & DRINKS BUTTON ─── */}
-            {hasDrinks && (
-              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.35, ease: "easeOut" }}>
-                <SectionLabel>Servicio de Bar</SectionLabel>
-                <div className="mt-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 rounded-2xl border border-white/[0.08] bg-white/[0.025] p-5 backdrop-blur-md transition-all duration-300 hover:border-white/20 hover:bg-white/[0.04]">
-                  <div>
-                    <h4 className="text-xs font-black uppercase text-white tracking-wider">
-                      Bar & Carta de Bebidas
-                    </h4>
-                    <p className="text-[9px] font-bold uppercase tracking-widest text-zinc-500 mt-1">
-                      Consulta los tragos especiales y servicio de botellas
-                    </p>
-                  </div>
-                  <motion.button
-                    whileHover={{ scale: 1.04 }}
-                    whileTap={{ scale: 0.96 }}
+                {/* Eye Icon Button to View Full Poster Artwork */}
+                {event.poster && (
+                  <button
                     type="button"
-                    onClick={() => {
-                      onOpenDrinks?.();
-                    }}
-                    className="h-10 px-6 rounded-full border border-white/20 bg-white/10 text-[9px] font-black uppercase tracking-[0.2em] text-white hover:bg-white hover:text-black transition-colors duration-300 cursor-pointer shrink-0"
+                    onClick={() => setIsLightboxOpen(true)}
+                    className="absolute top-4 right-4 z-20 flex items-center gap-2 px-3.5 py-2 rounded-full bg-black/70 border border-white/20 text-white text-[10px] font-black uppercase tracking-wider backdrop-blur-md hover:bg-white hover:text-black hover:scale-105 transition-all duration-300 cursor-pointer shadow-xl"
+                    title="Ver afiche/banner completo"
                   >
-                    Ir al Bar
-                  </motion.button>
+                    <Eye className="h-4 w-4 text-[#c2d902]" />
+                    <span className="hidden sm:inline">Ver Imagen Completa</span>
+                  </button>
+                )}
+
+                {/* Hero Overlay Text */}
+                <div className="absolute bottom-0 left-0 right-0 p-6 sm:p-10">
+                  {event.organizer && (
+                    <p className="text-[9px] font-black uppercase tracking-[0.45em] text-[#c2d902] mb-2">
+                      {event.organizer} presenta
+                    </p>
+                  )}
+                  <h1 className="text-3xl sm:text-5xl md:text-6xl font-black uppercase leading-none tracking-tighter text-white">
+                    {event.title}
+                  </h1>
+                  <p className="text-xs sm:text-sm font-bold uppercase tracking-[0.3em] text-zinc-300 mt-2">
+                    {event.subtitle}
+                  </p>
+                  <div className="flex flex-wrap items-center gap-2.5 mt-4">
+                    <StatusBadge status={event.status} />
+                    <span className="inline-flex items-center rounded-full border border-white/15 bg-black/60 px-3.5 py-1.5 text-[9px] font-black uppercase tracking-[0.2em] text-white backdrop-blur-md">
+                      {event.dateLabel}
+                    </span>
+                    <span className="inline-flex items-center rounded-full border border-white/15 bg-black/60 px-3.5 py-1.5 text-[9px] font-black uppercase tracking-[0.2em] text-white backdrop-blur-md">
+                      {event.city}
+                    </span>
+                  </div>
                 </div>
-              </motion.div>
-            )}
+              </div>
 
-
-
-            {/* ─── SOCIAL LINKS ─── */}
-            {hasSocials && (
-              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.42, ease: "easeOut" }}>
-                <SectionLabel>Links Oficiales</SectionLabel>
-                <div className="mt-4 flex flex-wrap gap-2.5">
-                  {Object.entries(event.socialLinks!).map(([platform, url]) => {
-                    if (!url || platform === 'spotify') return null;
+              {/* ─── SELECCIÓN DE TICKETS ─── */}
+              <div className="space-y-4">
+                <SectionLabel>Selección de Tickets</SectionLabel>
+                <div className="space-y-3 mt-4">
+                  {TICKET_TIERS.map((tier) => {
+                    const count = ticketCounts[tier.name] || 0;
                     return (
-                      <a
-                        key={platform}
-                        href={url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="group flex items-center gap-2.5 rounded-full border border-white/[0.08] bg-white/[0.03] px-4 py-2.5 text-[8px] font-black uppercase tracking-[0.2em] text-zinc-400 transition-all duration-300 hover:border-white/[0.2] hover:bg-white/[0.07] hover:text-white"
+                      <div
+                        key={tier.id}
+                        className={`group relative overflow-hidden rounded-2xl border p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 transition-all duration-300 ${
+                          count > 0
+                            ? "border-[#c2d902] bg-[#c2d902]/[0.06] shadow-lg shadow-[#c2d902]/5 ring-1 ring-[#c2d902]/40"
+                            : "border-white/10 bg-white/[0.03] hover:border-white/20 hover:bg-white/[0.05]"
+                        }`}
                       >
-                        <span className="text-zinc-500 group-hover:text-white transition-colors">
-                          <SocialIcon platform={platform} />
-                        </span>
-                        <SocialLabel platform={platform} />
-                        <ExternalLink className="h-2.5 w-2.5 opacity-40 group-hover:opacity-80 transition-opacity" />
-                      </a>
+                        <div className="flex items-center gap-4">
+                          <div className="h-11 px-4 rounded-xl bg-[#c2d902] text-black font-black text-lg flex items-center justify-center shrink-0 shadow-md">
+                            ${tier.price}.00
+                          </div>
+                          <div>
+                            <h4 className="text-sm sm:text-base font-black uppercase text-white tracking-wide group-hover:text-[#c2d902] transition-colors">
+                              {tier.name}
+                            </h4>
+                            <p className="text-[10px] font-bold text-zinc-400 mt-0.5">{tier.desc}</p>
+                          </div>
+                        </div>
+
+                        {/* Quantity Counter Controls */}
+                        <div className="flex items-center gap-3 w-full sm:w-auto justify-between sm:justify-end border-t sm:border-t-0 border-white/10 pt-3 sm:pt-0">
+                          <span className="text-[9px] font-black uppercase tracking-wider text-emerald-400">
+                            {tier.status}
+                          </span>
+                          <div className="flex items-center gap-2 bg-black/80 border border-white/15 rounded-full p-1 shadow-inner">
+                            <button
+                              type="button"
+                              onClick={() => updateQuantity(tier.name, -1)}
+                              disabled={count === 0}
+                              className="h-8 w-8 rounded-full bg-white/10 text-white flex items-center justify-center hover:bg-white hover:text-black transition-colors disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
+                            >
+                              <Minus className="h-3.5 w-3.5" />
+                            </button>
+                            <span className="w-6 text-center text-sm font-black text-white">{count}</span>
+                            <button
+                              type="button"
+                              onClick={() => updateQuantity(tier.name, 1)}
+                              className="h-8 w-8 rounded-full bg-[#c2d902] text-black flex items-center justify-center hover:scale-110 active:scale-95 transition-transform cursor-pointer shadow-md"
+                            >
+                              <Plus className="h-3.5 w-3.5" />
+                            </button>
+                          </div>
+                        </div>
+                      </div>
                     );
                   })}
                 </div>
-              </motion.div>
-            )}
+              </div>
 
-            {/* ─── MERCH CAROUSEL ─── */}
-            {hasMerch && (
-              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.49, ease: "easeOut" }}>
-                <div className="flex items-center justify-between mb-4">
-                  <SectionLabel>Merch Oficial</SectionLabel>
-                  <button
-                    onClick={handleGoToMerch}
-                    className="text-[8px] font-black uppercase tracking-[0.25em] text-zinc-400 hover:text-white transition-colors"
-                  >
-                    Ver Todo
-                  </button>
+              {/* ─── EVENT INFORMATION GRID ─── */}
+              <div className="space-y-4">
+                <SectionLabel>Información del Evento</SectionLabel>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-4">
+                  {[
+                    { icon: <Tag className="h-3.5 w-3.5" />, label: "Evento", value: event.title },
+                    { icon: <Users className="h-3.5 w-3.5" />, label: "Artista Principal", value: event.detailedLineup?.find(a => a.role === "Headliner")?.name || event.lineup[0] },
+                    { icon: <Clock className="h-3.5 w-3.5" />, label: "Hora", value: event.time || "22:00 HS" },
+                    { icon: <MapPin className="h-3.5 w-3.5" />, label: "Ciudad", value: event.city },
+                    { icon: <MapPin className="h-3.5 w-3.5" />, label: "Lugar / Venue", value: event.venue ? event.venue.split("·")[0].trim() : "Mónaco Night Club" },
+                    { icon: <Music className="h-3.5 w-3.5" />, label: "Categoría", value: event.category || "Urban / Reggaeton" },
+                    { icon: <Shield className="h-3.5 w-3.5" />, label: "Edad", value: event.ageRestriction || "+18 Obligatorio" },
+                    { icon: <Ticket className="h-3.5 w-3.5" />, label: "Estado", value: event.status === "available" ? "Disponible" : "Agotado" },
+                  ].map((item, i) => (
+                    <div
+                      key={i}
+                      className="group relative overflow-hidden rounded-2xl border border-white/[0.07] bg-white/[0.025] p-4 transition-all duration-300 hover:border-white/[0.15] hover:bg-white/[0.05]"
+                    >
+                      <div className="flex items-center text-zinc-500 mb-2 group-hover:text-zinc-300 transition-colors">
+                        <span className="text-[7px] font-black uppercase tracking-[0.25em]">{item.label}</span>
+                      </div>
+                      <p className="text-[11px] font-black text-white uppercase tracking-wide leading-tight truncate">
+                        {item.value}
+                      </p>
+                    </div>
+                  ))}
                 </div>
-                <div className="overflow-x-auto no-scrollbar -mx-6 sm:-mx-8">
-                  <div className="flex gap-3 px-6 sm:px-8">
-                    {event.merch!.map((product, i) => (
-                      <div
-                        key={product.id}
-                        className="group shrink-0 w-[160px] rounded-[20px] border border-white/[0.06] opacity-90 hover:opacity-100 hover:border-white/25 hover:shadow-[0_0_40px_rgba(255,255,255,0.04)] overflow-hidden cursor-pointer transition-all duration-400"
-                        onClick={handleGoToMerch}
-                      >
-                        <div className="relative h-[180px] bg-zinc-900 overflow-hidden">
-                          {product.image ? (
-                            <Image
-                              src={product.image}
-                              alt={product.name}
-                              fill
-                              sizes="160px"
-                              className="object-cover grayscale brightness-75 group-hover:brightness-85 transition-all duration-500 group-hover:scale-105"
-                            />
-                          ) : (
-                            <div className="h-full w-full flex items-center justify-center">
-                              <ShoppingBag className="h-8 w-8 text-zinc-700" />
+
+                {/* Recordatorio de Cédula */}
+                <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-4 backdrop-blur-md flex items-center gap-3 mt-3">
+                  <Shield className="h-5 w-5 text-[#c2d902] shrink-0" />
+                  <div>
+                    <h4 className="text-[10px] font-black uppercase tracking-wider text-white">Cédula o Documento Físico Obligatorio</h4>
+                    <p className="text-[9px] font-bold uppercase tracking-widest text-zinc-400 mt-0.5">
+                      Para ingresar al venue se requerirá presentar documento de identidad físico original.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* ─── LINEUP ─── */}
+              {sortedRoles.length > 0 && (
+                <div className="space-y-4">
+                  <SectionLabel>Lineup Oficial</SectionLabel>
+                  <div className="mt-4 space-y-5">
+                    {sortedRoles.map((role) => (
+                      <div key={role}>
+                        <p className="text-[8px] font-black uppercase tracking-[0.35em] text-zinc-500 mb-3">{role}</p>
+                        <div className="flex flex-wrap gap-3">
+                          {groupedLineup[role]!.map((artist) => (
+                            <div
+                              key={artist.name}
+                              className="group flex items-center gap-3 rounded-2xl border border-white/[0.08] bg-white/[0.025] px-4 py-3 transition-all duration-300 hover:border-white/20 hover:bg-white/[0.05]"
+                            >
+                              {artist.image && (
+                                <div className="relative h-10 w-10 shrink-0 overflow-hidden rounded-full border border-white/10">
+                                  <Image
+                                    src={artist.image}
+                                    alt={artist.name}
+                                    fill
+                                    sizes="40px"
+                                    className="object-cover grayscale"
+                                  />
+                                </div>
+                              )}
+                              <div>
+                                <p className="text-[11px] font-black text-white uppercase tracking-wide">
+                                  {artist.name}
+                                </p>
+                                <p className="text-[7px] font-bold text-zinc-500 uppercase tracking-widest mt-0.5">
+                                  {role}
+                                </p>
+                              </div>
                             </div>
-                          )}
-                          <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent" />
-                          <div className="absolute top-2 left-2 rounded-full border border-white/10 bg-black/60 px-2 py-1 text-[7px] font-black uppercase tracking-widest text-zinc-400 backdrop-blur-md">
-                            {product.category}
-                          </div>
-                        </div>
-                        <div className="bg-[#0a0a0a] p-3 border-t border-white/[0.05]">
-                          <p className="text-[9px] font-black text-white uppercase tracking-wide truncate">{product.name}</p>
-                          <p className="text-[10px] font-black text-white/60 mt-0.5">{product.price}</p>
+                          ))}
                         </div>
                       </div>
                     ))}
                   </div>
                 </div>
-              </motion.div>
-            )}
+              )}
 
-            {/* ─── RELATED EVENTS ─── */}
-            {relatedEvents.length > 0 && (
-              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.56, ease: "easeOut" }}>
-                <SectionLabel>Otros Eventos NENEZ</SectionLabel>
-                <div className="overflow-x-auto no-scrollbar -mx-6 sm:-mx-8 mt-4">
-                  <div className="flex gap-3 px-6 sm:px-8">
-                    {relatedEvents.map((rel) => (
-                      <button
-                        key={rel.id}
-                        disabled={rel.status !== "available"}
-                        onClick={() => onSelectEvent(rel)}
-                        className={`group shrink-0 w-[200px] rounded-[20px] border overflow-hidden transition-all duration-300 text-left ${
-                          rel.status === "available"
-                            ? "border-white/[0.07] bg-white/[0.02] hover:border-white/[0.15] hover:bg-white/[0.05] cursor-pointer"
-                            : "border-zinc-800/40 bg-zinc-950/10 opacity-70 cursor-not-allowed"
-                        }`}
-                      >
-                        <div className="relative h-[120px] overflow-hidden">
-                          {rel.poster ? (
-                            <Image
-                              src={rel.poster}
-                              alt={rel.title}
-                              fill
-                              sizes="200px"
-                              className="object-cover grayscale brightness-50 transition-all duration-500"
-                            />
-                          ) : (
-                            <div className="absolute inset-0 bg-gradient-to-br from-zinc-900 to-zinc-950 flex flex-col items-center justify-center">
-                              <span className="text-[8px] font-black uppercase tracking-[0.25em] text-zinc-700">Próximamente</span>
-                            </div>
-                          )}
-                          <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent" />
-                          <div className="absolute bottom-0 left-0 right-0 p-3">
-                            <p className="text-[8px] font-black uppercase tracking-[0.3em] text-zinc-500 mb-0.5">
-                              {rel.dateLabel}
-                            </p>
-                            <p className="text-[12px] font-black text-white uppercase tracking-tight leading-none">
-                              {rel.title}
-                            </p>
-                          </div>
-                        </div>
-                        <div className="p-3 border-t border-white/[0.05]">
-                          <p className="text-[8px] font-bold text-zinc-500 uppercase tracking-wider flex items-center">
-                            {rel.city}
-                          </p>
-                          <div className="flex items-center justify-between mt-2">
-                            <span className="text-[7px] font-black text-white/40 uppercase tracking-wider">
-                              {rel.status === "available" ? "Ver detalles" : "Próximamente"}
-                            </span>
-                          </div>
-                        </div>
-                      </button>
-                    ))}
+              {/* ─── DRINKS & BAR SERVICE ─── */}
+              {hasDrinks && (
+                <div className="space-y-4">
+                  <SectionLabel>Servicio de Bar & Botellas VIP</SectionLabel>
+                  <div className="mt-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 rounded-2xl border border-white/[0.08] bg-white/[0.025] p-5 backdrop-blur-md transition-all duration-300 hover:border-white/20 hover:bg-white/[0.04]">
+                    <div>
+                      <h4 className="text-xs font-black uppercase text-white tracking-wider">
+                        Carta de Licores Mónaco
+                      </h4>
+                      <p className="text-[9px] font-bold uppercase tracking-widest text-zinc-400 mt-1">
+                        Whisky Old Parr, Tequila Don Julio, Vodka Absolut, Gin Tanqueray
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => onOpenDrinks?.()}
+                      className="h-10 px-6 rounded-full border border-white/20 bg-white/10 text-[9px] font-black uppercase tracking-[0.2em] text-white hover:bg-white hover:text-black transition-colors duration-300 cursor-pointer shrink-0"
+                    >
+                      Ver Carta de Bar
+                    </button>
                   </div>
                 </div>
-              </motion.div>
-            )}
+              )}
 
+              {/* ─── UBICACIÓN ─── */}
+              {event.venue && (
+                <div className="space-y-4">
+                  <SectionLabel>Ubicación & Dirección</SectionLabel>
+                  <div className="mt-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 rounded-2xl border border-white/[0.08] bg-white/[0.025] p-5 backdrop-blur-md transition-all duration-300 hover:border-white/20 hover:bg-white/[0.04]">
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2">
+                        <MapPin className="h-4 w-4 text-white shrink-0" />
+                        <h4 className="text-sm font-black uppercase text-white tracking-wide">
+                          {event.venue.split("·")[0]?.trim() || event.venue}
+                        </h4>
+                      </div>
+                      <p className="text-[10px] font-bold uppercase tracking-widest text-zinc-400 pl-6">
+                        {event.venue.includes("·")
+                          ? event.venue.split("·").slice(1).join("·").trim()
+                          : `${event.venue}, ${event.city}`}
+                      </p>
+                    </div>
+                    <a
+                      href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+                        `${event.venue}, ${event.city}`
+                      )}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-2 h-10 px-6 rounded-full border border-white/20 bg-white/10 text-[9px] font-black uppercase tracking-[0.2em] text-white hover:bg-white hover:text-black transition duration-300 shrink-0"
+                    >
+                      <span>Ver en Google Maps</span>
+                      <ExternalLink className="h-3 w-3" />
+                    </a>
+                  </div>
+                </div>
+              )}
           </div>
         </div>
+      </div>
 
-        {/* ─── STICKY BOTTOM CTA ─── */}
-        <div
-          className="shrink-0 flex items-center gap-3 px-6 py-4 border-t border-white/[0.06]"
-          style={{ background: "rgba(6,6,6,0.95)", backdropFilter: "blur(20px)" }}
-        >
-          <div className="flex-1 min-w-0">
-            <p className="text-[7px] font-black uppercase tracking-[0.35em] text-zinc-600">
-              {event.organizer || "NENEZ"}
-            </p>
-            <p className="text-[11px] font-black text-white uppercase tracking-wide truncate">
-              {event.title} · {event.dateLabel}
-            </p>
-          </div>
-          <div className="flex items-center gap-2 shrink-0">
-            <button
-              onClick={onClose}
-              className="flex h-11 px-4 items-center justify-center rounded-full border border-white/10 bg-white/[0.03] text-[8px] font-black uppercase tracking-[0.2em] text-zinc-400 transition hover:border-white/20 hover:text-white"
+      {/* ─── ANIMATED FLOATING CART WIDGET (LEVITATING ANIMATION & HIGHER POSITION) ─── */}
+      <AnimatePresence>
+        {totalQuantity > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 50, scale: 0.9 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 50, scale: 0.9 }}
+            transition={{ type: "spring", damping: 22, stiffness: 300 }}
+            className="fixed bottom-10 left-8 sm:bottom-12 sm:left-10 lg:bottom-16 lg:left-12 z-[400] max-w-xl w-[calc(100vw-4rem)] sm:w-auto"
+          >
+            {/* Floating Levitating Glass Card Container */}
+            <motion.div
+              animate={{
+                y: [0, -10, 0],
+              }}
+              transition={{
+                duration: 3.5,
+                repeat: Infinity,
+                ease: "easeInOut",
+              }}
+              className="rounded-3xl border border-white/25 bg-[#060608]/95 backdrop-blur-2xl p-4 sm:p-5 shadow-[0_30px_90px_rgba(0,0,0,0.95),0_0_60px_rgba(255,255,255,0.12)] flex items-center justify-between gap-5 md:scale-110 lg:scale-120 md:origin-bottom-left transition-transform"
             >
-              Cerrar
-            </button>
-            
-            {event.status === "sold-out" ? (
-              <button
-                disabled
-                className="flex h-11 px-6 items-center justify-center rounded-full bg-white/10 text-[8px] font-black uppercase tracking-[0.2em] text-zinc-500 disabled:opacity-40 disabled:cursor-not-allowed"
-              >
-                Agotado
-              </button>
-            ) : event.status === "coming-soon" ? (
-              <button
-                disabled
-                className="flex h-11 px-6 items-center justify-center rounded-full bg-white/10 text-[8px] font-black uppercase tracking-[0.2em] text-zinc-500 disabled:opacity-40 disabled:cursor-not-allowed"
-              >
-                Próximamente
-              </button>
-            ) : (
-              <div className="relative p-[2px] rounded-full overflow-hidden bg-zinc-950 flex items-center justify-center shadow-[0_0_20px_rgba(225,0,117,0.15)] hover:shadow-[0_0_25px_rgba(225,0,117,0.35)] transition-all duration-300 group">
-                {/* Línea giratoria */}
-                <div className="absolute inset-[-150%] animate-[spin_3s_linear_infinite] bg-[conic-gradient(from_0deg,transparent_35%,#e10075_50%,transparent_65%)] pointer-events-none" />
-                
-                <button
-                  onClick={() => onBuy(event)}
-                  className="relative z-10 flex h-[40px] px-6 items-center justify-center rounded-full bg-zinc-950 text-[8px] font-black uppercase tracking-[0.2em] text-white hover:bg-white hover:text-black transition-all duration-300"
-                  style={{
-                    transition: "all 300ms cubic-bezier(0.4, 0, 0.2, 1)",
-                  }}
-                >
-                  Comprar Entrada
-                </button>
+              
+              <div className="flex items-center gap-4">
+                {/* Poster Thumbnail */}
+                {event.poster && (
+                  <div className="relative h-12 w-12 rounded-2xl overflow-hidden border border-white/20 shrink-0 shadow-md hidden sm:block">
+                    <Image
+                      src={event.poster}
+                      alt={event.title}
+                      fill
+                      sizes="48px"
+                      className="object-cover"
+                    />
+                  </div>
+                )}
+
+                {/* White Pill Number Badge */}
+                <div className="h-12 w-12 rounded-2xl bg-white text-black font-black flex items-center justify-center text-xl shrink-0 shadow-lg shadow-white/10">
+                  {totalQuantity}
+                </div>
+
+                <div>
+                  <h4 className="text-xs sm:text-sm font-black uppercase text-white tracking-wide flex items-center gap-1.5">
+                    <span>{totalQuantity === 1 ? "1 Entrada Seleccionada" : `${totalQuantity} Entradas Seleccionadas`}</span>
+                  </h4>
+                  <p className="text-xs sm:text-sm font-bold text-zinc-300 mt-0.5">
+                    Total: <span className="text-[#c2d902] font-black text-sm sm:text-base">${totalPrice}.00 USD</span>
+                  </p>
+                </div>
               </div>
-            )}
-          </div>
-        </div>
-      </motion.div>
+
+              {/* Fast Checkout CTA Button */}
+              <button
+                type="button"
+                onClick={() => onBuy(event)}
+                className="h-12 px-6 rounded-2xl bg-[#c2d902] text-black font-black uppercase text-xs tracking-[0.18em] hover:bg-white hover:scale-105 active:scale-95 transition-all duration-200 shrink-0 cursor-pointer shadow-2xl flex items-center gap-2"
+              >
+                <ShoppingBag className="h-4 w-4" />
+                <span>Comprar</span>
+                <span className="bg-black/15 px-2 py-0.5 rounded-md text-[10px]">${totalPrice}</span>
+              </button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+      {/* ─── FULL SCREEN POSTER LIGHTBOX MODAL ─── */}
+      <AnimatePresence>
+        {isLightboxOpen && event.poster && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[500] bg-black/95 backdrop-blur-2xl flex items-center justify-center p-4"
+            onClick={() => setIsLightboxOpen(false)}
+          >
+            <button
+              type="button"
+              onClick={() => setIsLightboxOpen(false)}
+              className="absolute top-6 right-6 h-12 w-12 rounded-full bg-white/10 border border-white/20 text-white flex items-center justify-center hover:bg-white hover:text-black transition-all cursor-pointer z-[510]"
+            >
+              <X className="h-6 w-6" />
+            </button>
+            <div className="relative max-w-5xl max-h-[90vh] w-full h-full flex items-center justify-center" onClick={(e) => e.stopPropagation()}>
+              <Image
+                src={event.poster}
+                alt={event.title}
+                width={1200}
+                height={1200}
+                className="max-w-full max-h-[85vh] w-auto h-auto object-contain rounded-2xl shadow-2xl border border-white/15 select-none"
+                priority
+              />
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
@@ -722,8 +635,8 @@ export default function EventDetailOverlay({
 function SectionLabel({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex items-center gap-3">
-      <p className="text-[8px] font-black uppercase tracking-[0.4em] text-zinc-600">{children}</p>
-      <div className="flex-1 h-px bg-white/[0.05]" />
+      <p className="text-[9px] font-black uppercase tracking-[0.35em] text-[#c2d902]">{children}</p>
+      <div className="flex-1 h-px bg-white/10" />
     </div>
   );
 }

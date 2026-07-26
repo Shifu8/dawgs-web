@@ -96,3 +96,29 @@ def _forbidden() -> AuthError:
 
 def _csrf_failed() -> AuthError:
     return AuthError(403, "Token CSRF invalido.", "CSRF_FAILED")
+
+
+# ─── Organizer Auth Dependency ─────────────────────────────────────────────────
+
+from app.security import decode_organizer_token  # noqa: E402 (avoid circular import)
+
+
+def require_organizer(request: Request) -> dict:
+    """
+    Dependencia FastAPI: requiere JWT Bearer válido de un organizador.
+    Devuelve el payload con sub=organizer_id, role='organizer'.
+    """
+    auth_header = request.headers.get("authorization", "")
+    if not auth_header.lower().startswith("bearer "):
+        raise AuthError(401, "Token de organizador requerido.", "UNAUTHORIZED")
+
+    token = auth_header[7:]
+    try:
+        payload = decode_organizer_token(token)
+    except ValueError as exc:
+        raise AuthError(401, str(exc), "UNAUTHORIZED")
+
+    if payload.get("role") != "organizer":
+        raise AuthError(403, "Acceso solo para organizadores.", "FORBIDDEN")
+
+    return payload

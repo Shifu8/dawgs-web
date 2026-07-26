@@ -105,6 +105,7 @@ export async function POST(request: Request) {
       eventName: event.eventName,
       eventDate: event.dateLabel,
       eventVenue: event.venue,
+      eventId: event.slug || event.id,
     });
 
     if (!delivery.success) {

@@ -30,12 +30,18 @@ type TicketRecoveryProps = {
   embedded?: boolean;
   className?: string;
   pulse?: boolean;
+  eventId?: string;
 };
 
 const genericMessage =
   "Código enviado. Si tu compra con este correo ya fue aprobada, recibirás el PIN de 6 dígitos en tu bandeja de entrada.";
 
-export default function TicketRecovery({ embedded = false, className = "", pulse = false }: TicketRecoveryProps) {
+export default function TicketRecovery({
+  embedded = false,
+  className = "",
+  pulse = false,
+  eventId,
+}: TicketRecoveryProps) {
   const [phase, setPhase] = useState<RecoveryPhase>("email");
   const [email, setEmail] = useState("");
   const [code, setCode] = useState("");
@@ -75,7 +81,7 @@ export default function TicketRecovery({ embedded = false, className = "", pulse
       const response = await fetch("/api/tickets/recovery/request", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, turnstileToken }),
+        body: JSON.stringify({ email, turnstileToken, eventId }),
       });
       const data = (await response.json()) as { error?: string; message?: string };
       if (!response.ok) throw new Error(data.error || "No pudimos procesar la solicitud.");
@@ -112,7 +118,7 @@ export default function TicketRecovery({ embedded = false, className = "", pulse
       const response = await fetch("/api/tickets/recovery/verify", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, code, turnstileToken: verifyTurnstileTokenVal }),
+        body: JSON.stringify({ email, code, turnstileToken: verifyTurnstileTokenVal, eventId }),
       });
       const data = (await response.json()) as {
         error?: string;
@@ -201,36 +207,49 @@ export default function TicketRecovery({ embedded = false, className = "", pulse
       }
     >
       <div
-        className={`relative overflow-hidden rounded-[32px] border border-white/10 bg-black/45 p-5 backdrop-blur-2xl sm:p-7 lg:p-9 shadow-2xl ${embedded
-          ? "flex flex-col gap-6"
-          : "grid gap-10 lg:grid-cols-[0.9fr_1.1fr] lg:items-center"
-          } ${pulse ? "recovery-card-pulse" : ""}`}
-        style={{ boxShadow: "0 24px 90px rgba(255, 255, 255, 0.01)" }}
+        className={
+          embedded
+            ? `relative overflow-hidden w-full flex flex-col gap-4 ${pulse ? "recovery-card-pulse" : ""}`
+            : `relative overflow-hidden rounded-[32px] border border-white/10 bg-black/45 p-5 backdrop-blur-2xl sm:p-7 lg:p-9 shadow-2xl grid gap-10 lg:grid-cols-[0.9fr_1.1fr] lg:items-center ${pulse ? "recovery-card-pulse" : ""}`
+        }
+        style={embedded ? {} : { boxShadow: "0 24px 90px rgba(255, 255, 255, 0.01)" }}
       >
         {/* Soft static monochrome lighting vignette details */}
-        <div className="pointer-events-none absolute -right-20 top-1/2 h-64 w-64 -translate-y-1/2 rounded-full bg-white/[0.01] blur-3xl" />
-        <div className="pointer-events-none absolute -left-24 bottom-0 h-52 w-52 rounded-full bg-white/[0.005] blur-3xl" />
+        {!embedded && (
+          <>
+            <div className="pointer-events-none absolute -right-20 top-1/2 h-64 w-64 -translate-y-1/2 rounded-full bg-white/[0.01] blur-3xl" />
+            <div className="pointer-events-none absolute -left-24 bottom-0 h-52 w-52 rounded-full bg-white/[0.005] blur-3xl" />
+          </>
+        )}
 
         {/* Left Column: Perfectly symmetrical layout headers */}
-        <div className="relative flex flex-col justify-center">
-          <p className="inline-flex w-fit items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-[9px] font-black uppercase tracking-[0.3em] text-white">
-            Recuperar entrada
-          </p>
-          <h2 className="mt-4 text-3xl font-black uppercase leading-[0.9] tracking-[-0.05em] text-white sm:text-4xl">
-            ¿Perdiste tu
-            <br />
-            entrada digital?
-          </h2>
-          <p className="mt-5 inline-flex items-center text-xl font-black uppercase tracking-[-0.03em] text-white">
-            Recupérala al instante
-          </p>
-          <p className="mt-5 max-w-lg text-sm leading-7 text-zinc-400">
-            Si no te llegó tu entrada o no la encuentras, ingresa el correo que usaste para la compra y la recibirás de inmediato.
-          </p>
-        </div>
+        {!embedded && (
+          <div className="relative flex flex-col justify-center">
+            <p className="inline-flex w-fit items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-[9px] font-black uppercase tracking-[0.3em] text-white">
+              Recuperar entrada
+            </p>
+            <h2 className="mt-4 text-3xl font-black uppercase leading-[0.9] tracking-[-0.05em] text-white sm:text-4xl">
+              ¿Perdiste tu
+              <br />
+              entrada digital?
+            </h2>
+            <p className="mt-5 inline-flex items-center text-xl font-black uppercase tracking-[-0.03em] text-white">
+              Recupérala al instante
+            </p>
+            <p className="mt-5 max-w-lg text-sm leading-7 text-zinc-400">
+              Si no te llegó tu entrada o no la encuentras, ingresa el correo que usaste para la compra y la recibirás de inmediato.
+            </p>
+          </div>
+        )}
 
         {/* Right Column: Steps Tracker + Active Form Container */}
-        <div className="relative z-10 w-full flex flex-col gap-6">
+        <div className="relative z-10 w-full flex flex-col gap-4">
+          
+          {embedded && (
+            <p className="text-[10px] sm:text-xs text-zinc-400 leading-relaxed text-center max-w-md mx-auto mb-1">
+              Si no te llegó tu entrada o no la encuentras, ingresa el correo que usaste para la compra para recibirla al instante.
+            </p>
+          )}
 
           {/* Recovery Process Cards Tracker */}
           <div className="grid grid-cols-3 gap-2 sm:gap-3 w-full">
@@ -244,7 +263,7 @@ export default function TicketRecovery({ embedded = false, className = "", pulse
               return (
                 <article
                   key={number}
-                  className={`rounded-[16px] sm:rounded-[24px] border p-3 sm:p-5 shadow-[0_12px_32px_rgba(0,0,0,0.4)] transition duration-300 ${isActive
+                  className={`rounded-[12px] sm:rounded-[24px] border p-2 sm:p-5 shadow-[0_12px_32px_rgba(0,0,0,0.4)] transition duration-300 ${isActive
                     ? "border-white/20 bg-white/5"
                     : "border-white/[0.06] bg-white/[0.01]"
                     }`}
@@ -254,15 +273,15 @@ export default function TicketRecovery({ embedded = false, className = "", pulse
                       {number}
                     </span>
                   </div>
-                  <h3 className="mt-4 sm:mt-8 text-xs sm:text-lg font-black uppercase text-white">{title}</h3>
-                  <p className="mt-1 sm:mt-2 text-[8px] sm:text-[10px] leading-normal sm:leading-5 text-zinc-500">{copy}</p>
+                  <h3 className="mt-2 sm:mt-8 text-[9px] sm:text-lg font-black uppercase text-white leading-tight">{title}</h3>
+                  <p className="mt-0.5 sm:mt-2 text-[7px] sm:text-[10px] leading-normal sm:leading-5 text-zinc-500 truncate">{copy}</p>
                 </article>
               );
             })}
           </div>
 
           {/* Symmetrical Form / Result Card */}
-          <div className="relative rounded-[24px] border border-white/10 bg-black/60 p-6 sm:p-8 backdrop-blur-2xl shadow-xl flex flex-col justify-between overflow-hidden">
+          <div className="relative rounded-[20px] sm:rounded-[24px] border border-white/10 bg-black/60 p-4 sm:p-8 backdrop-blur-2xl shadow-xl flex flex-col justify-between overflow-hidden">
             {showSuccessOverlay && (
               <div className="absolute inset-0 z-50 bg-black/95 flex flex-col items-center justify-center p-6 text-center animate-smooth-fade">
                 <div className="flex flex-col items-center justify-center animate-smooth-scale">
@@ -291,10 +310,10 @@ export default function TicketRecovery({ embedded = false, className = "", pulse
             )}
 
             {phase === "email" && (
-              <form onSubmit={requestCode} className="space-y-6">
+              <form onSubmit={requestCode} className={embedded ? "space-y-4" : "space-y-6"}>
                 <div>
                   <label className="text-[9px] font-black uppercase tracking-[0.26em] text-zinc-400">correo de compra</label>
-                  <div className="mt-2 flex items-center rounded-2xl border border-white/10 bg-black/40 px-4 py-1 transition-all duration-300 focus-within:border-white/30 focus-within:bg-black/70">
+                  <div className={`mt-2 flex items-center rounded-xl sm:rounded-2xl border border-white/10 bg-black/40 px-3 sm:px-4 py-0.5 sm:py-1 transition-all duration-300 focus-within:border-white/30 focus-within:bg-black/70`}>
                     <Mail className="h-4 w-4 text-zinc-500 shrink-0" />
                     <input
                       required
@@ -307,7 +326,7 @@ export default function TicketRecovery({ embedded = false, className = "", pulse
                       value={email}
                       onChange={(event) => setEmail(cleanEmailInput(event.target.value))}
                       placeholder="tu@gmail.com"
-                      className="h-12 w-full bg-transparent px-3 text-sm font-bold text-white outline-none placeholder:text-zinc-700"
+                      className={`${embedded ? "h-10 text-xs" : "h-12 text-sm"} w-full bg-transparent px-3 font-bold text-white outline-none placeholder:text-zinc-700`}
                     />
                   </div>
 
@@ -347,37 +366,37 @@ export default function TicketRecovery({ embedded = false, className = "", pulse
                 <button
                   type="submit"
                   disabled={loading}
-                  className="inline-flex h-12 w-full items-center justify-between rounded-2xl bg-white px-6 text-[9px] font-black uppercase tracking-[0.2em] text-black transition hover:bg-zinc-200 disabled:cursor-not-allowed disabled:opacity-50"
+                  className={`inline-flex ${embedded ? "h-10" : "h-12"} w-full items-center justify-between rounded-xl sm:rounded-2xl bg-white px-6 text-[9px] font-black uppercase tracking-[0.2em] text-black transition hover:bg-zinc-200 disabled:cursor-not-allowed disabled:opacity-50`}
                 >
                   <span>{loading ? "Procesando..." : "Enviar código"}</span>
                   <ArrowRight className="h-3.5 w-3.5" />
                 </button>
-                <p className="text-[7.5px] text-zinc-500 text-center font-bold uppercase tracking-[0.08em] mt-3">
+                <p className="text-[7px] sm:text-[7.5px] text-zinc-500 text-center font-bold uppercase tracking-[0.08em] mt-2">
                   * Límite de seguridad: máximo 2 recuperaciones de entrada por evento.
                 </p>
               </form>
             )}
 
             {phase === "code" && (
-              <form onSubmit={verifyCode} className="space-y-6">
-                <div className="flex justify-between items-center mb-4 border-b border-white/5 pb-2">
+              <form onSubmit={verifyCode} className={embedded ? "space-y-4" : "space-y-6"}>
+                <div className="flex justify-between items-center mb-2 sm:mb-4 border-b border-white/5 pb-1.5 sm:pb-2">
                   <button
                     type="button"
                     onClick={resetRecovery}
-                    className="text-[8px] font-black uppercase tracking-[0.18em] text-zinc-400 hover:text-white transition inline-flex items-center gap-1.5"
+                    className="text-[7.5px] sm:text-[8px] font-black uppercase tracking-[0.18em] text-zinc-400 hover:text-white transition inline-flex items-center gap-1"
                   >
                     <ChevronLeft className="h-3 w-3" /> Cambiar correo
                   </button>
                 </div>
 
-                <div className="rounded-2xl border border-white/[0.06] bg-white/[0.02] px-4 py-3">
-                  <p className="text-[8px] font-black uppercase tracking-[0.2em] text-zinc-500">verificando</p>
-                  <p className="mt-1 truncate text-xs font-bold text-zinc-300">{email}</p>
+                <div className="rounded-xl sm:rounded-2xl border border-white/[0.06] bg-white/[0.02] px-3 sm:px-4 py-2 sm:py-3">
+                  <p className="text-[7px] sm:text-[8px] font-black uppercase tracking-[0.2em] text-zinc-500">verificando</p>
+                  <p className="mt-0.5 sm:mt-1 truncate text-xs font-bold text-zinc-300">{email}</p>
                 </div>
 
                 <div>
                   <label className="text-[9px] font-black uppercase tracking-[0.26em] text-zinc-400">código de 6 dígitos</label>
-                  <div className="mt-2 flex items-center rounded-2xl border border-white/10 bg-black/40 px-4 py-1 transition-all duration-300 focus-within:border-white/30 focus-within:bg-black/70">
+                  <div className="mt-2 flex items-center rounded-xl sm:rounded-2xl border border-white/10 bg-black/40 px-4 py-0.5 sm:py-1 transition-all duration-300 focus-within:border-white/30 focus-within:bg-black/70">
                     <KeyRound className="h-4 w-4 text-zinc-500 shrink-0" />
                     <input
                       required
@@ -388,7 +407,7 @@ export default function TicketRecovery({ embedded = false, className = "", pulse
                       value={code}
                       onChange={(event) => setCode(event.target.value.replace(/\D/g, ""))}
                       placeholder="000000"
-                      className="h-12 w-full bg-transparent px-3 text-center text-xl font-black tracking-[0.2em] text-white outline-none placeholder:text-zinc-800"
+                      className={`${embedded ? "h-10 text-lg" : "h-12 text-xl"} w-full bg-transparent px-3 text-center font-black tracking-[0.2em] text-white outline-none placeholder:text-zinc-800`}
                     />
                   </div>
                 </div>
@@ -405,7 +424,7 @@ export default function TicketRecovery({ embedded = false, className = "", pulse
                 <button
                   type="submit"
                   disabled={loading || code.length !== 6}
-                  className="inline-flex h-12 w-full items-center justify-between rounded-2xl bg-white px-6 text-[9px] font-black uppercase tracking-[0.2em] text-black transition hover:bg-zinc-200 disabled:cursor-not-allowed disabled:opacity-50"
+                  className={`inline-flex ${embedded ? "h-10" : "h-12"} w-full items-center justify-between rounded-xl sm:rounded-2xl bg-white px-6 text-[9px] font-black uppercase tracking-[0.2em] text-black transition hover:bg-zinc-200 disabled:cursor-not-allowed disabled:opacity-50`}
                 >
                   <span>{loading ? "Validando..." : "Verificar código"}</span>
                   <ArrowRight className="h-3.5 w-3.5" />

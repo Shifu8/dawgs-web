@@ -7,7 +7,7 @@ import { sendTicketPdfViaGmailWithLimit } from "@/lib/gmailDelivery";
 import crypto from "crypto";
 import fs from "fs";
 import path from "path";
-import { getActiveTicketEvent } from "@/lib/tickets/activeEvent";
+import { getActiveTicketEvent, getTicketEventById } from "@/lib/tickets/activeEvent";
 
 export const runtime = "nodejs";
 
@@ -131,6 +131,7 @@ export async function POST(
           deliveryStatus: "ticket-generated",
         });
 
+        const targetEvent = getTicketEventById(eventId) || event;
         const gmailResult = await sendTicketPdfViaGmailWithLimit({
           to: existing.email,
           firstName: existing.firstName,
@@ -138,10 +139,11 @@ export async function POST(
           serialNumber: serialsString,
           quantity: existing.quantity,
           pdfBuffer: pngBuffers,
-          eventTitle: event.title,
-          eventName: event.eventName,
-          eventDate: event.dateLabel,
-          eventVenue: event.venue,
+          eventTitle: targetEvent.title,
+          eventName: targetEvent.eventName,
+          eventDate: targetEvent.dateLabel,
+          eventVenue: targetEvent.venue,
+          eventId: targetEvent.slug || targetEvent.id,
         });
 
         patchReceipt(id, {

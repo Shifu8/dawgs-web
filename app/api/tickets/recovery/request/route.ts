@@ -23,7 +23,7 @@ import {
   secureLog,
 } from "@/lib/security";
 import { verifyTurnstileToken } from "@/lib/turnstile";
-import { getActiveTicketEvent } from "@/lib/tickets/activeEvent";
+import { getActiveTicketEvent, getTicketEventById } from "@/lib/tickets/activeEvent";
 import { findRecoverableTicketByEmail } from "@/lib/tickets/recoveryTicket";
 
 export const runtime = "nodejs";
@@ -31,6 +31,7 @@ export const runtime = "nodejs";
 const requestSchema = z.object({
   email: z.string().trim().toLowerCase().email().max(120),
   turnstileToken: z.string().max(4096).optional(),
+  eventId: z.string().optional(),
 });
 
 function genericOk() {
@@ -53,7 +54,15 @@ export async function POST(request: Request) {
     const body = await readJson(request, requestSchema);
     const email = normalizeRecoveryEmail(body.email);
     const emailHash = recoveryEmailHash(email);
-    const event = getActiveTicketEvent();
+    
+    let event = getActiveTicketEvent();
+    if (body.eventId) {
+      const matched = getTicketEventById(body.eventId);
+      if (matched) {
+        event = matched;
+      }
+    }
+
     const ip = getClientIp(request);
     const userAgent = request.headers.get("user-agent") || "unknown";
     const ipHash = hashLookup(ip);
