@@ -39,6 +39,8 @@ import {
   Zap,
   MapPinned,
   Home,
+  ShoppingBag,
+  HelpCircle,
 } from "lucide-react";
 import { AnimatePresence, motion, useDragControls } from "framer-motion";
 import Atmosphere from "@/frontend/components/Atmosphere";
@@ -79,6 +81,8 @@ const FILTER_TABS = [
   { id: "all", label: "All Shows", icon: Zap },
   { id: "fiestas", label: "Fiestas", icon: Music2 },
   { id: "conciertos", label: "Conciertos", icon: Music },
+  { id: "merch", label: "Merch", icon: ShoppingBag },
+  { id: "support", label: "Soporte", icon: HelpCircle },
 ] as const;
 
 type FilterTabId = (typeof FILTER_TABS)[number]["id"];
@@ -813,39 +817,7 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
             )}
           </div>
 
-          {/* Centered nav links */}
-          <nav className="hidden items-center gap-7 lg:flex">
-            {HOME_NAV_ITEMS.map((item) => {
-              const targetId = item.id === "home" ? "show" : item.id === "explore" ? "explore" : item.id === "wear" ? "wear" : "support";
-              const isActive = activeSection === item.id;
-              return (
-                <button
-                  type="button"
-                  key={item.id}
-                  onClick={() => {
-                    if (item.id === "support") {
-                      window.dispatchEvent(new CustomEvent("open-ai-chatbot"));
-                      const el = document.getElementById("support");
-                      if (el) el.scrollIntoView({ behavior: "smooth" });
-                    } else {
-                      const el = document.getElementById(targetId);
-                      if (el) el.scrollIntoView({ behavior: "smooth" });
-                    }
-                  }}
-                  className={`relative py-2 text-[10px] font-black uppercase tracking-[0.28em] transition-colors ${
-                    isActive ? "text-white font-black" : "text-white/70 hover:text-white"
-                  }`}
-                >
-                  {item.label}
-                  <span
-                    className={`absolute inset-x-0 -bottom-0.5 h-0.5 bg-[#c2d902] transition-transform duration-300 ${
-                      isActive ? "scale-x-100" : "scale-x-0"
-                    }`}
-                  />
-                </button>
-              );
-            })}
-          </nav>
+          {/* Desktop nav REMOVED — functionality merged into pill tabs below */}
 
           {/* Right side actions */}
           <div className="flex shrink-0 items-center gap-2 sm:gap-3">
@@ -903,29 +875,43 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
 
         {/* ── Glassmorphic Segmented Control / Pill Tabs ── */}
         <div className="border-t border-white/10 bg-[#7c3aed]/60 backdrop-blur-md px-4 py-2 sm:px-6">
-          <div className="mx-auto flex w-full max-w-[1600px] items-center">
-            {/* Scrollable pill container */}
-            <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-none w-full pb-0.5">
+          <div className="mx-auto flex w-full max-w-[1600px] items-center justify-center">
+            {/* Pill container — scrollable on mobile, centered on desktop */}
+            <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-none pb-0.5 lg:overflow-visible lg:flex-wrap lg:justify-center">
               {FILTER_TABS.map((tab) => {
                 const isActive = activeFilterTab === tab.id;
                 const Icon = tab.icon;
+                // Special tabs: merch + support scroll to sections, don't open overlay
+                const isSpecial = tab.id === "merch" || tab.id === "support";
                 return (
                   <button
                     key={tab.id}
                     type="button"
                     id={`filter-tab-${tab.id}`}
                     onClick={() => {
-                      setActiveFilterTab(tab.id);
-                      // Don't scroll — events screen is fixed overlay, no scroll needed
+                      if (tab.id === "merch") {
+                        setActiveFilterTab("inicio");
+                        const el = document.getElementById("wear");
+                        if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+                      } else if (tab.id === "support") {
+                        setActiveFilterTab("inicio");
+                        window.dispatchEvent(new CustomEvent("open-ai-chatbot"));
+                        const el = document.getElementById("support");
+                        if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+                      } else {
+                        setActiveFilterTab(tab.id);
+                      }
                     }}
                     className={`relative flex shrink-0 items-center gap-1.5 rounded-full px-4 py-1.5 text-[10px] font-black uppercase tracking-wider transition-all duration-300 cursor-pointer select-none ${
                       isActive
                         ? "bg-white text-black shadow-[0_2px_14px_rgba(255,255,255,0.35)] scale-105"
+                        : isSpecial
+                        ? "bg-white/5 text-white/60 hover:bg-white/15 hover:text-white border border-white/15 backdrop-blur-sm"
                         : "bg-white/10 text-white/80 hover:bg-white/20 hover:text-white border border-white/20 backdrop-blur-sm"
                     }`}
                     aria-pressed={isActive}
                   >
-                    <Icon className={`w-3 h-3 shrink-0 ${isActive ? "text-black" : "text-white/70"}`} />
+                    <Icon className={`w-3 h-3 shrink-0 ${isActive ? "text-black" : isSpecial ? "text-white/50" : "text-white/70"}`} />
                     <span>{tab.label}</span>
                     {isActive && (
                       <motion.span
