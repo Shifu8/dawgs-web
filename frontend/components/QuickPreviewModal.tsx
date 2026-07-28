@@ -3,7 +3,7 @@
 import React from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
-import { EventItem } from "@/types/events";
+import type { Event as EventItem } from "@/frontend/types/domain";
 
 interface QuickPreviewModalProps {
   event: EventItem | null;
@@ -16,6 +16,15 @@ export const QuickPreviewModal: React.FC<QuickPreviewModalProps> = ({
   isOpen,
   onClose,
 }) => {
+  React.useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isOpen, onClose]);
+
   if (!isOpen || !event) return null;
 
   const handleGoToEventPage = () => {

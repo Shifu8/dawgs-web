@@ -32,6 +32,13 @@ import {
   Key,
   Settings,
   LogOut,
+  Bell,
+  BellRing,
+  Music,
+  Music2,
+  Zap,
+  MapPinned,
+  Home,
 } from "lucide-react";
 import { AnimatePresence, motion, useDragControls } from "framer-motion";
 import Atmosphere from "@/frontend/components/Atmosphere";
@@ -43,6 +50,7 @@ import OutfitBuilderSection from "@/frontend/features/merch/OutfitBuilderSection
 import StaffModal from "@/frontend/features/staff/StaffModal";
 import BoxOfficeSalesModal from "@/frontend/features/staff/BoxOfficeSalesModal";
 import DrinksSalesModal from "@/frontend/features/staff/DrinksSalesModal";
+import PublishEventModal from "@/frontend/components/PublishEventModal";
 import EventTicketCarousel, { CAROUSEL_EVENTS } from "@/frontend/components/EventTicketCarousel";
 import EventDetailOverlay from "@/frontend/features/events/EventDetailOverlay";
 import InstallApp from "@/frontend/components/InstallApp";
@@ -59,12 +67,21 @@ import { getOnlineSalesStatus } from "@/frontend/utils/cutoff";
 const HOME_NAV_ITEMS = [
   { id: "home", label: "Home" },
   { id: "explore", label: "Shows" },
-  { id: "access", label: "Access" },
   { id: "wear", label: "Merch" },
   { id: "support", label: "Support" },
 ] as const;
 
 type HomeNavId = (typeof HOME_NAV_ITEMS)[number]["id"];
+
+// Segmented control / pill tabs for content filtering
+const FILTER_TABS = [
+  { id: "inicio", label: "Inicio", icon: Home },
+  { id: "all", label: "All Shows", icon: Zap },
+  { id: "fiestas", label: "Fiestas", icon: Music2 },
+  { id: "conciertos", label: "Conciertos", icon: Music },
+] as const;
+
+type FilterTabId = (typeof FILTER_TABS)[number]["id"];
 
 interface HomePageProps {
   initialConfig: HomepageConfig;
@@ -106,13 +123,23 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
   const manualActiveUntil = useRef(0);
 
   const [events, setEvents] = useState<Event[]>(fallbackEvents);
-  const [activeSection, setActiveSection] = useState<HomeNavId>("show");
+  const [activeSection, setActiveSection] = useState<HomeNavId>("home");
+  const [activeFilterTab, setActiveFilterTab] = useState<FilterTabId>("inicio");
   const [showHiddenMenu, setShowHiddenMenu] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [isStaffModalOpen, setIsStaffModalOpen] = useState(false);
   const [isPosModalOpen, setIsPosModalOpen] = useState(false);
   const [isDrinksPosModalOpen, setIsDrinksPosModalOpen] = useState(false);
   const [isTicketModalOpen, setIsTicketModalOpen] = useState(false);
+
+  // Simulated user session (replace with real auth later)
+  const [loggedUser] = useState<{ name: string; initials: string; notifications: number } | null>(() => {
+    if (typeof window === "undefined") return null;
+    try {
+      const stored = sessionStorage.getItem("sg_user");
+      return stored ? JSON.parse(stored) : null;
+    } catch { return null; }
+  });
   const [showFarewell, setShowFarewell] = useState(false);
   const [farewellName, setFarewellName] = useState("");
   const accessDropRef = useRef<AccessDropHandle>(null);
@@ -126,6 +153,7 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
   const [expandedCardId, setExpandedCardId] = useState<string | null>(null);
   const [showDrinksModal, setShowDrinksModal] = useState(false);
   const [showRecoveryModal, setShowRecoveryModal] = useState(false);
+  const [isPublishModalOpen, setIsPublishModalOpen] = useState(false);
   const [selectedCarouselEvent, setSelectedCarouselEvent] = useState<Event>(CAROUSEL_EVENTS[0]);
 
   // Auto-open EventDetailOverlay if initialEventSlug is specified
@@ -134,7 +162,7 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
       const targetSlug = String(initialEventSlug).toLowerCase();
       const match = events.find((e) => {
         if (!e) return false;
-        const slugMatch = typeof e.slug === "string" && e.slug.toLowerCase() === targetSlug;
+        const slugMatch = typeof (e as any).slug === "string" && (e as any).slug.toLowerCase() === targetSlug;
         const idMatch = typeof e.id === "string" && e.id.toLowerCase() === targetSlug;
         return slugMatch || idMatch;
       });
@@ -159,6 +187,34 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
     });
   };
 
+  // Classify events by type for filter tabs (strict, non-overlapping)
+  const classifyEventType = (evt: Event): "fiesta" | "concierto" | "other" => {
+    const titleLower = evt.title.toLowerCase();
+    const subtitleLower = (evt.subtitle || "").toLowerCase();
+    const combined = titleLower + " " + subtitleLower;
+    // Fiestas: trap, urban, rnb, drop, night — underground party vibes
+    if (
+      combined.includes("trap") ||
+      combined.includes("urban drop") ||
+      combined.includes("rnb") ||
+      combined.includes("r&b") ||
+      combined.includes("night vision") ||
+      combined.includes("night")
+    ) {
+      return "fiesta";
+    }
+    // Conciertos: latin, live, wave, concert — bigger show formats
+    if (
+      combined.includes("latin") ||
+      combined.includes("live experience") ||
+      combined.includes("global wave") ||
+      combined.includes("wave")
+    ) {
+      return "concierto";
+    }
+    return "other";
+  };
+
   const filteredCatalogEvents = events.filter((evt) => {
     const matchesSearch =
       !searchQuery ||
@@ -167,17 +223,47 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
       (evt.venue && evt.venue.toLowerCase().includes(searchQuery.toLowerCase())) ||
       evt.city.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesCity = selectedCity === "Todas" || evt.city.toLowerCase() === selectedCity.toLowerCase();
-    return matchesSearch && matchesCity;
-  });
+
+    // Tab-based filtering
+    let matchesTab = true;
+    if (activeFilterTab === "fiestas") {
+      matchesTab = classifyEventType(evt) === "fiesta";
+    } else if (activeFilterTab === "conciertos") {
+      matchesTab = classifyEventType(evt) === "concierto";
+    } else if (activeFilterTab === "ciudad") {
+      // For city tab, city filter applies strictly
+      matchesTab = true;
+    }
+    // "inicio" shows featured events (first 4), "all" shows all
+    return matchesSearch && matchesCity && matchesTab;
+  }).slice(0, activeFilterTab === "inicio" ? 4 : undefined);
 
   // Custom states for 3D Carousel & Premium visual effects
   const [activeIndex, setActiveIndex] = useState(0);
   const [trendingIndex, setTrendingIndex] = useState(0);
   const activeEvent = events[activeIndex] || selectedCarouselEvent;
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(() => {
+    if (typeof window !== "undefined") {
+      const isSkipParam = window.location.search.includes("skipLoader");
+      const isSkipStorage = sessionStorage.getItem("skip_stormgo_loader") === "true";
+      const isFromOrganizer = document.referrer.includes("/organizer");
+      if (isSkipParam || isSkipStorage || isFromOrganizer) {
+        try {
+          sessionStorage.removeItem("skip_stormgo_loader");
+          if (isSkipParam) {
+            window.history.replaceState({}, "", "/");
+          }
+        } catch (e) {}
+        return false;
+      }
+    }
+    return true;
+  });
 
-  // Clear loader on mount & popstate (browser back/forward navigation)
+  // Clear loader on mount & popstate if needed
   useEffect(() => {
+    if (!isLoading) return;
+
     const timer = setTimeout(() => {
       setIsLoading(false);
     }, 1200);
@@ -194,7 +280,41 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
       window.removeEventListener("pageshow", handlePageShow);
       window.removeEventListener("popstate", handlePageShow);
     };
-  }, []);
+  }, [isLoading]);
+
+  // Listen for Escape key to close all active floating menus/modals across the website
+  useEffect(() => {
+    const handleGlobalKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        if (showUserMenu) setShowUserMenu(false);
+        if (showHiddenMenu) setShowHiddenMenu(false);
+        if (showRecoveryModal) setShowRecoveryModal(false);
+        if (showDrinksModal) setShowDrinksModal(false);
+        if (showDetailOverlay) setShowDetailOverlay(false);
+        if (isTicketModalOpen) setIsTicketModalOpen(false);
+        if (isStaffModalOpen) setIsStaffModalOpen(false);
+        if (isPosModalOpen) setIsPosModalOpen(false);
+        if (isDrinksPosModalOpen) setIsDrinksPosModalOpen(false);
+        if (isPublishModalOpen) setIsPublishModalOpen(false);
+        window.dispatchEvent(new CustomEvent("close-ai-chatbot"));
+      }
+    };
+
+    window.addEventListener("keydown", handleGlobalKeyDown);
+    return () => window.removeEventListener("keydown", handleGlobalKeyDown);
+  }, [
+    showUserMenu,
+    showHiddenMenu,
+    showRecoveryModal,
+    showDrinksModal,
+    showDetailOverlay,
+    isTicketModalOpen,
+    isStaffModalOpen,
+    isPosModalOpen,
+    isDrinksPosModalOpen,
+    isPublishModalOpen,
+  ]);
+
   const [checkoutState, setCheckoutState] = useState<string>("register");
 
   // Auto-advance Featured Trending Presale Card every 5 seconds
@@ -378,22 +498,22 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
       }
 
       const showSection = document.getElementById("show");
-      const accessSection = document.getElementById("access");
+      const exploreSection = document.getElementById("explore");
       const wearSection = document.getElementById("wear");
 
       const showTop = showSection ? showSection.getBoundingClientRect().top + window.scrollY : 0;
-      const accessTop = accessSection ? accessSection.getBoundingClientRect().top + window.scrollY : 0;
+      const exploreTop = exploreSection ? exploreSection.getBoundingClientRect().top + window.scrollY : 0;
       const wearTop = wearSection ? wearSection.getBoundingClientRect().top + window.scrollY : 0;
 
       const scrollPosition = window.scrollY + window.innerHeight * 0.45;
 
-      let currentSection: HomeNavId = "show";
-      if (scrollPosition >= wearTop) {
+      let currentSection: HomeNavId = "home";
+      if (scrollPosition >= wearTop - 100) {
         currentSection = "wear";
-      } else if (scrollPosition >= accessTop - 100) {
-        currentSection = "access";
+      } else if (scrollPosition >= exploreTop - 100) {
+        currentSection = "explore";
       } else {
-        currentSection = "show";
+        currentSection = "home";
       }
 
       setActiveSection(currentSection);
@@ -475,7 +595,7 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
   };
 
   const getNavIdForTarget = (id: string): HomeNavId =>
-    HOME_NAV_ITEMS.some((item) => item.id === id) ? (id as HomeNavId) : "show";
+    HOME_NAV_ITEMS.some((item) => item.id === id) ? (id as HomeNavId) : "home";
 
   const scrollToSection = (
     id: string,
@@ -488,7 +608,7 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
   };
 
   const scrollToTicketCard = () => {
-    scrollToSection("tickets-stage", "center", "show");
+    scrollToSection("tickets-stage", "center", "home");
     setIsTicketPulse(true);
     window.setTimeout(() => {
       setIsTicketPulse(false);
@@ -515,6 +635,42 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
     // Also update the carousel index if event exists in carousel
     const idx = events.findIndex(e => e.id === event.id);
     if (idx !== -1) setActiveIndex(idx);
+  };
+
+  // ── Events screen: events shown when a non-home tab is active ──
+  const filteredTabEvents = events.filter((evt) => {
+    const matchesSearch =
+      !searchQuery ||
+      evt.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (evt.subtitle && evt.subtitle.toLowerCase().includes(searchQuery.toLowerCase())) ||
+      evt.city.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesCity = selectedCity === "Todas" || evt.city.toLowerCase() === selectedCity.toLowerCase();
+
+    let matchesTab = true;
+    if (activeFilterTab === "fiestas") {
+      matchesTab = classifyEventType(evt) === "fiesta";
+    } else if (activeFilterTab === "conciertos") {
+      matchesTab = classifyEventType(evt) === "concierto";
+    }
+    // "all" and "ciudad" show everything (city filter handles ciudad)
+    return matchesSearch && matchesCity && matchesTab;
+  });
+
+  // Glow color per tab for the screen transition
+  const TAB_GLOW: Record<string, string> = {
+    all:        "rgba(139,92,246,0.55)",
+    fiestas:    "rgba(225,0,117,0.55)",
+    conciertos: "rgba(194,217,2,0.45)",
+  };
+  const TAB_LABEL: Record<string, string> = {
+    all:        "All Shows",
+    fiestas:    "Fiestas",
+    conciertos: "Conciertos",
+  };
+  const TAB_SUB: Record<string, string> = {
+    all:        "Toda la cartelera disponible",
+    fiestas:    "Trap · Urban · RnB · Nocturno",
+    conciertos: "Latin · Live · Concerts",
   };
 
   return (
@@ -612,20 +768,19 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
       <header className="fixed inset-x-0 top-0 z-50 border-b border-white/15 bg-[#8b5cf6]/95 backdrop-blur-2xl shadow-lg">
         <div className="mx-auto flex w-full max-w-[1600px] items-center justify-between gap-3 px-4 py-2.5 sm:px-6 md:px-12 lg:px-16">
           
-          {/* Cool Cloud Mascot Character Logo for StormGo */}
-          <div className="flex min-w-0 items-center">
+          {/* Logo + Greeting block */}
+          <div className="flex min-w-0 items-center gap-3">
             <button
               type="button"
               onClick={() => {
                 const el = document.getElementById("show");
                 if (el) el.scrollIntoView({ behavior: "smooth" });
               }}
-              className="group flex select-none items-center gap-2.5 outline-none hover:scale-105 transition-all duration-300 cursor-pointer"
+              className="group flex select-none items-center gap-2 outline-none hover:scale-105 transition-all duration-300 cursor-pointer"
               style={{ WebkitTapHighlightColor: "transparent" }}
               aria-label="stormgo"
             >
-              {/* Cool Cloud with Sunglasses Mascot SVG (Matching Reference Image) */}
-              <div className="relative w-10 h-10 sm:w-11 sm:h-11 flex items-center justify-center shrink-0 drop-shadow-[0_4px_12px_rgba(0,0,0,0.3)]">
+              <div className="relative w-8 h-8 sm:w-9 sm:h-9 flex items-center justify-center shrink-0">
                 <svg className="w-full h-full select-none" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <path d="M25 68 C15 68, 10 58, 15 48 C10 38, 20 28, 32 30 C38 18, 55 15, 65 24 C75 16, 88 24, 88 36 C95 44, 92 58, 82 68 Z" fill="#ffffff" stroke="#1e1b4b" strokeWidth="6" strokeLinejoin="round" />
                   <path d="M30 32 L44 30" stroke="#1e1b4b" strokeWidth="5" strokeLinecap="round" />
@@ -635,27 +790,47 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                   <line x1="56" y1="46" x2="68" y2="52" stroke="#ffffff" strokeWidth="3" strokeLinecap="round" />
                 </svg>
               </div>
-
-              {/* Brand Typography in Solid Black (Smaller & Compact) */}
-              <span className="logo-text flex items-center text-lg sm:text-xl font-black tracking-tight leading-none select-none text-black">
-                <span className="text-black font-black">Storm</span>
-                <span className="text-black font-black">Go</span>
+              <span className="logo-text flex items-center text-xs sm:text-sm font-extrabold tracking-tight leading-none select-none text-black">
+                StormGo
               </span>
             </button>
+
+            {/* Greeting — shown only when logged in */}
+            {loggedUser && (
+              <motion.div
+                initial={{ opacity: 0, x: -12 }}
+                animate={{ opacity: 1, x: 0 }}
+                className="hidden sm:flex items-center gap-2.5 ml-1"
+              >
+                <div className="h-8 w-8 rounded-full bg-black/30 border-2 border-white/40 flex items-center justify-center text-xs font-black text-white shadow-lg shrink-0 backdrop-blur-md">
+                  {loggedUser.initials}
+                </div>
+                <div className="flex flex-col leading-none">
+                  <span className="text-[9px] font-bold uppercase tracking-widest text-white/70">¡Hola de nuevo!</span>
+                  <span className="text-xs font-black text-white tracking-tight">{loggedUser.name}</span>
+                </div>
+              </motion.div>
+            )}
           </div>
 
-          {/* Centered nav links (Home -> Shows -> Access -> Merch -> Support) */}
+          {/* Centered nav links */}
           <nav className="hidden items-center gap-7 lg:flex">
             {HOME_NAV_ITEMS.map((item) => {
-              const targetId = item.id === "home" ? "show" : item.id;
-              const isActive = activeSection === item.id || (activeSection === "show" && item.id === "home");
+              const targetId = item.id === "home" ? "show" : item.id === "explore" ? "explore" : item.id === "wear" ? "wear" : "support";
+              const isActive = activeSection === item.id;
               return (
                 <button
                   type="button"
                   key={item.id}
                   onClick={() => {
-                    const el = document.getElementById(targetId);
-                    if (el) el.scrollIntoView({ behavior: "smooth" });
+                    if (item.id === "support") {
+                      window.dispatchEvent(new CustomEvent("open-ai-chatbot"));
+                      const el = document.getElementById("support");
+                      if (el) el.scrollIntoView({ behavior: "smooth" });
+                    } else {
+                      const el = document.getElementById(targetId);
+                      if (el) el.scrollIntoView({ behavior: "smooth" });
+                    }
                   }}
                   className={`relative py-2 text-[10px] font-black uppercase tracking-[0.28em] transition-colors ${
                     isActive ? "text-white font-black" : "text-white/70 hover:text-white"
@@ -672,49 +847,306 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
             })}
           </nav>
 
-          {/* Action buttons on the right */}
+          {/* Right side actions */}
           <div className="flex shrink-0 items-center gap-2 sm:gap-3">
             <button
               type="button"
-              onClick={scrollToTicketCard}
-              className="hidden sm:inline-flex h-9 items-center justify-center gap-1.5 rounded-full border border-[#e10075]/40 bg-[#e10075]/15 px-4 text-[8px] font-black uppercase tracking-[0.16em] text-white transition hover:bg-[#e10075]/30 hover:border-[#e10075] active:scale-95 shadow-[0_0_15px_rgba(225,0,117,0.3)] font-bold cursor-pointer"
-            >
-              <Ticket className="w-3.5 h-3.5 text-[#e10075]" />
-              <span>Comprar</span>
-            </button>
-
-            <button
-              type="button"
               onClick={() => router.push("/organizer/register")}
-              className="inline-flex h-9 items-center justify-center gap-1.5 rounded-full bg-white px-3.5 sm:px-4 text-[8px] font-black uppercase tracking-[0.16em] text-black transition hover:bg-zinc-200 active:scale-95 shadow-lg font-bold"
+              className="relative group inline-flex h-8 items-center justify-center gap-1.5 rounded-full bg-white px-3.5 text-[9px] font-black uppercase tracking-[0.16em] text-black transition-all duration-300 hover:bg-zinc-100 active:scale-95 shadow-[0_0_15px_rgba(255,255,255,0.4)] border border-white/60 hover:border-white ring-2 ring-white/30 cursor-pointer"
             >
-              <PlusCircle className="w-3.5 h-3.5" />
+              <PlusCircle className="w-3.5 h-3.5 text-black" />
               <span>Publicar Evento</span>
             </button>
 
-            {/* User Icon Avatar Button ("el muñequito del usuario a la derecha") */}
+            {/* Notification Bell — only when logged in */}
+            {loggedUser && (
+              <button
+                type="button"
+                className="relative inline-flex h-8 w-8 items-center justify-center rounded-full border border-white/25 bg-white/10 text-white hover:bg-white/20 hover:scale-105 active:scale-95 transition-all duration-300 shadow-md cursor-pointer"
+                aria-label="Notificaciones"
+                title="Notificaciones"
+              >
+                {loggedUser.notifications > 0 ? (
+                  <BellRing className="w-4 h-4 animate-[wiggle_1s_ease-in-out_infinite]" />
+                ) : (
+                  <Bell className="w-4 h-4" />
+                )}
+                {loggedUser.notifications > 0 && (
+                  <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-[#e10075] text-white text-[8px] font-black flex items-center justify-center shadow-lg border border-[#8b5cf6] animate-pulse">
+                    {loggedUser.notifications > 9 ? "9+" : loggedUser.notifications}
+                  </span>
+                )}
+              </button>
+            )}
+
+            {/* User / Profile button */}
             <button
               type="button"
               onClick={() => setShowUserMenu(!showUserMenu)}
-              className={`inline-flex h-9 w-9 items-center justify-center rounded-full border transition-all duration-300 shadow-lg cursor-pointer ${
+              className={`relative inline-flex h-8 w-8 items-center justify-center rounded-full border transition-all duration-300 shadow-md cursor-pointer overflow-hidden ${
                 showUserMenu
-                  ? "bg-[#c2d902] text-black border-[#c2d902] scale-105 shadow-[0_0_20px_rgba(194,217,2,0.6)]"
+                  ? "bg-[#8b5cf6] text-white border-[#8b5cf6] scale-105 shadow-[0_0_20px_rgba(139,92,246,0.6)]"
                   : "border-white/20 bg-white/10 text-white hover:bg-white/20 hover:scale-105 active:scale-95"
               }`}
-              title="Perfil / Iniciar Sesión / Panel"
-              aria-label="Perfil y panel de usuario"
+              title="Perfil / Iniciar Sesión / Registrarse"
+              aria-label="Perfil y cuenta de usuario"
             >
-              <User className="w-4 h-4" />
+              {loggedUser ? (
+                <span className="text-[10px] font-black text-white">{loggedUser.initials}</span>
+              ) : (
+                <User className="w-4 h-4" />
+              )}
             </button>
           </div>
 
         </div>
+
+        {/* ── Glassmorphic Segmented Control / Pill Tabs ── */}
+        <div className="border-t border-white/10 bg-[#7c3aed]/60 backdrop-blur-md px-4 py-2 sm:px-6">
+          <div className="mx-auto flex w-full max-w-[1600px] items-center">
+            {/* Scrollable pill container */}
+            <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-none w-full pb-0.5">
+              {FILTER_TABS.map((tab) => {
+                const isActive = activeFilterTab === tab.id;
+                const Icon = tab.icon;
+                return (
+                  <button
+                    key={tab.id}
+                    type="button"
+                    id={`filter-tab-${tab.id}`}
+                    onClick={() => {
+                      setActiveFilterTab(tab.id);
+                      // Don't scroll — events screen is fixed overlay, no scroll needed
+                    }}
+                    className={`relative flex shrink-0 items-center gap-1.5 rounded-full px-4 py-1.5 text-[10px] font-black uppercase tracking-wider transition-all duration-300 cursor-pointer select-none ${
+                      isActive
+                        ? "bg-white text-black shadow-[0_2px_14px_rgba(255,255,255,0.35)] scale-105"
+                        : "bg-white/10 text-white/80 hover:bg-white/20 hover:text-white border border-white/20 backdrop-blur-sm"
+                    }`}
+                    aria-pressed={isActive}
+                  >
+                    <Icon className={`w-3 h-3 shrink-0 ${isActive ? "text-black" : "text-white/70"}`} />
+                    <span>{tab.label}</span>
+                    {isActive && (
+                      <motion.span
+                        layoutId="active-pill-indicator"
+                        className="absolute inset-0 rounded-full bg-white/10 -z-10"
+                        transition={{ type: "spring", stiffness: 380, damping: 30 }}
+                      />
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        </div>
       </header>
+
+      {/* ══════════════════════════════════════════════════════
+          EVENTS SCREEN — Fixed overlay, only mounts/unmounts on inicio toggle
+          Key is fixed so switching tabs doesn't cause overlay to flash home
+          ══════════════════════════════════════════════════════ */}
+      <AnimatePresence>
+        {activeFilterTab !== "inicio" && (
+          <motion.div
+            key="events-screen"
+            initial={{ opacity: 0, filter: "blur(16px)" }}
+            animate={{ opacity: 1, filter: "blur(0px)" }}
+            exit={{ opacity: 0, filter: "blur(12px)" }}
+            transition={{ duration: 0.38, ease: [0.22, 1, 0.36, 1] }}
+            className="fixed inset-0 z-40 flex flex-col bg-[#050507] overflow-hidden"
+            style={{ paddingTop: "96px" }}
+          >
+            {/* Glow burst — animates on tab change, but overlay stays opaque */}
+            <AnimatePresence mode="sync">
+              <motion.div
+                key={`glow-${activeFilterTab}`}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.35, ease: "easeOut" }}
+                className="pointer-events-none absolute inset-0 -z-10"
+                style={{
+                  background: `radial-gradient(ellipse 70% 45% at 50% 0%, ${TAB_GLOW[activeFilterTab] ?? "rgba(139,92,246,0.5)"} 0%, transparent 70%)`,
+                }}
+              />
+            </AnimatePresence>
+
+            {/* Subtle grid lines — static, no animation needed */}
+            <div
+              className="pointer-events-none absolute inset-0 -z-10 opacity-[0.04]"
+              style={{
+                backgroundImage: "linear-gradient(rgba(255,255,255,.5) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.5) 1px, transparent 1px)",
+                backgroundSize: "40px 40px",
+              }}
+            />
+
+            {/* ── Screen Header — title/subtitle animate per tab ── */}
+            <div className="flex-shrink-0 px-4 sm:px-6 pt-4 pb-3 flex items-center justify-between gap-4 border-b border-white/10">
+              <div className="flex items-center gap-3">
+                {/* Back button */}
+                <button
+                  type="button"
+                  onClick={() => setActiveFilterTab("inicio")}
+                  className="inline-flex items-center justify-center h-9 w-9 rounded-full border border-white/20 bg-white/10 text-white hover:bg-white/20 transition-all active:scale-95 cursor-pointer"
+                  aria-label="Volver al inicio"
+                >
+                  <ChevronLeft className="w-4 h-4" />
+                </button>
+                <AnimatePresence mode="wait">
+                  <motion.div
+                    key={`header-${activeFilterTab}`}
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -8 }}
+                    transition={{ duration: 0.2, ease: "easeOut" }}
+                  >
+                    <h2 className="text-xl sm:text-2xl font-black uppercase tracking-tight text-white leading-none">
+                      {TAB_LABEL[activeFilterTab]}
+                    </h2>
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-white/50 mt-0.5">
+                      {TAB_SUB[activeFilterTab]}
+                    </p>
+                  </motion.div>
+                </AnimatePresence>
+              </div>
+
+              {/* Right: event count + search */}
+              <div className="flex items-center gap-2">
+                <span className="hidden sm:inline-flex text-[10px] font-black text-white/60 bg-white/10 border border-white/10 px-3 py-1.5 rounded-full">
+                  {filteredTabEvents.length} {filteredTabEvents.length === 1 ? "evento" : "eventos"}
+                </span>
+                <div className="relative flex items-center bg-white/5 border border-white/15 rounded-full px-3 py-2 gap-2 focus-within:border-white/35 transition">
+                  <Search className="w-3.5 h-3.5 text-zinc-400 shrink-0" />
+                  <input
+                    type="text"
+                    placeholder="Buscar..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="bg-transparent text-xs font-medium text-white placeholder-zinc-500 focus:outline-none w-28 sm:w-40"
+                  />
+                  {searchQuery && (
+                    <button onClick={() => setSearchQuery("")} className="text-[10px] text-zinc-400 hover:text-white font-bold cursor-pointer">✕</button>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* City filter chips — always shown, static (no re-mount) */}
+            <div className="flex-shrink-0 flex items-center gap-2 overflow-x-auto px-4 sm:px-6 py-2.5 border-b border-white/10 scrollbar-none">
+              {["Todas", "Loja", "Quito", "Guayaquil", "Cuenca", "Manta"].map((c) => (
+                <button
+                  key={c}
+                  type="button"
+                  onClick={() => setSelectedCity(c)}
+                  className={`flex-shrink-0 px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-wider border transition-all duration-200 cursor-pointer ${
+                    selectedCity === c
+                      ? "bg-white text-black border-white shadow-[0_0_12px_rgba(255,255,255,0.3)] scale-105"
+                      : "bg-white/8 border-white/20 text-white/80 hover:bg-white/15 hover:text-white"
+                  }`}
+                >
+                  {c}
+                </button>
+              ))}
+            </div>
+
+            {/* ── Events Grid — only the cards grid animates on tab change ── */}
+            <div className="flex-1 overflow-y-auto px-4 sm:px-6 pt-5 pb-8 no-scrollbar">
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={`grid-${activeFilterTab}-${selectedCity}`}
+                  initial={{ opacity: 0, y: 16 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  transition={{ duration: 0.25, ease: "easeOut" }}
+                >
+                  {filteredTabEvents.length === 0 ? (
+                    <div className="flex flex-col items-center justify-center h-64 text-center gap-3">
+                      <div className="w-14 h-14 rounded-2xl bg-white/8 border border-white/10 flex items-center justify-center">
+                        <Ticket className="w-7 h-7 text-white/40" />
+                      </div>
+                      <p className="text-sm font-black uppercase tracking-widest text-white/40">Sin eventos disponibles</p>
+                      <p className="text-xs text-white/25 font-medium">Prueba otra categoría o ciudad</p>
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-2 gap-3 sm:gap-4 max-w-2xl mx-auto">
+                      {filteredTabEvents.map((evt, idx) => (
+                        <motion.div
+                          key={evt.id}
+                          initial={{ opacity: 0, y: 24, scale: 0.96 }}
+                          animate={{ opacity: 1, y: 0, scale: 1 }}
+                          transition={{
+                            duration: 0.35,
+                            delay: idx * 0.055,
+                            ease: [0.22, 1, 0.36, 1],
+                          }}
+                          onClick={() => {
+                            setSelectedCarouselEvent(evt);
+                            setShowDetailOverlay(true);
+                          }}
+                          className="group relative flex flex-col rounded-2xl bg-zinc-950 border border-white/10 overflow-hidden cursor-pointer hover:border-white/30 transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_16px_40px_rgba(0,0,0,0.7)]"
+                        >
+                          {/* Poster */}
+                          <div className="relative w-full aspect-square overflow-hidden bg-zinc-900">
+                            {evt.poster ? (
+                              <Image
+                                src={evt.poster}
+                                alt={evt.title}
+                                fill
+                                className="object-cover group-hover:scale-105 transition-transform duration-500"
+                                sizes="(max-width: 640px) 50vw, 300px"
+                              />
+                            ) : (
+                              <div className="w-full h-full flex items-center justify-center bg-zinc-900">
+                                <span className="text-2xl font-black text-zinc-700">{evt.title.slice(0, 2).toUpperCase()}</span>
+                              </div>
+                            )}
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent" />
+                            {/* Price badge */}
+                            <span className="absolute top-2.5 right-2.5 px-2 py-0.5 rounded-full bg-white text-black text-[9px] font-black shadow">
+                              ${evt.price ?? "—"} USD
+                            </span>
+                            {/* City badge */}
+                            <span className="absolute top-2.5 left-2.5 px-2 py-0.5 rounded-full bg-black/70 border border-white/20 text-[8px] font-bold uppercase text-white/90 backdrop-blur-sm">
+                              {evt.city}
+                            </span>
+                            {/* Glow on hover */}
+                            <div
+                              className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                              style={{ background: `radial-gradient(ellipse 60% 50% at 50% 100%, ${TAB_GLOW[activeFilterTab] ?? "rgba(139,92,246,0.3)"} 0%, transparent 70%)` }}
+                            />
+                          </div>
+
+                          {/* Info */}
+                          <div className="p-3 flex flex-col gap-1 border-t border-white/5 bg-[#09090b]">
+                            <p className="text-[8px] font-black uppercase tracking-widest text-[#e10075] truncate">{evt.organizer ?? "StormGo"}</p>
+                            <h4 className="text-xs font-black uppercase text-white leading-tight line-clamp-1">{evt.title}</h4>
+                            <p className="text-[10px] text-zinc-400 font-medium line-clamp-1">{evt.subtitle}</p>
+                            <div className="flex items-center justify-between mt-2 pt-2 border-t border-white/5">
+                              <span className="text-[9px] font-bold text-zinc-400 flex items-center gap-1">
+                                <Calendar className="w-3 h-3 text-zinc-500" />
+                                {evt.dateLabel}
+                              </span>
+                              <span className="text-[9px] font-black text-white/80 group-hover:text-white flex items-center gap-0.5 transition-colors">
+                                Ver <ChevronRight className="w-3 h-3" />
+                              </span>
+                            </div>
+                          </div>
+                        </motion.div>
+                      ))}
+                    </div>
+                  )}
+                </motion.div>
+              </AnimatePresence>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Monochromatic 3D Concrete Room backdrop */}
       <section
         id="show"
-        className="relative z-10 flex w-full flex-col overflow-hidden px-4 pb-12 pt-14 sm:px-8 md:px-14 lg:px-20 justify-start"
+        className="relative z-10 flex w-full flex-col overflow-hidden px-4 pb-12 pt-24 sm:px-8 md:px-14 lg:px-20 justify-start"
       >
         {/* Electric Purple Ambient Backdrop (#8b5cf6) */}
         <div aria-hidden className="absolute inset-0 -z-20 overflow-hidden bg-[#8b5cf6] select-none pointer-events-none">
@@ -739,7 +1171,7 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
         {/* Hero Main Showcase: Chic Modern Pop-Art Hero Stage (Matching User Reference Image) */}
         <div className="relative z-10 w-full max-w-[1300px] mx-auto flex flex-col items-center justify-center text-center py-6 sm:py-10">
 
-          {/* Top Pill Badges (seasonal | treat box / NOW4GO | classics) */}
+          {/* Top Pill Badges */}
           <div className="flex items-center justify-center gap-3 sm:gap-4 mb-6 select-none">
             <span className="px-4 py-1.5 rounded-full border border-white/40 text-[10px] sm:text-xs font-bold uppercase tracking-wider text-white backdrop-blur-md">
               temporada 2026
@@ -748,11 +1180,11 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
               stormgo
             </span>
             <span className="px-4 py-1.5 rounded-full border border-white/40 text-[10px] sm:text-xs font-bold uppercase tracking-wider text-white backdrop-blur-md">
-              eventos 3d
+              tickets digitales
             </span>
           </div>
 
-          {/* Headline (Matching Reference Image Typography: Your dog deserves a treat! -> TUS EVENTOS MERECEN UNA EXPERIENCIA 3D!) */}
+          {/* Headline */}
           <div className="space-y-1 sm:space-y-2 max-w-4xl mx-auto select-none">
             <h1 className="text-4xl sm:text-6xl lg:text-7xl font-black uppercase text-black tracking-tighter leading-none">
               TUS EVENTOS
@@ -763,7 +1195,7 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
             <div className="flex items-center justify-center gap-2 sm:gap-4">
               <span className="text-[#c2d902] text-3xl sm:text-5xl font-black animate-pulse">✳</span>
               <h1 className="text-4xl sm:text-6xl lg:text-7xl font-black uppercase text-white tracking-tighter leading-none">
-                EXPERIENCIA 3D!
+                EXPERIENCIA!
               </h1>
               <span className="text-[#c2d902] text-3xl sm:text-5xl font-black animate-pulse">✳</span>
             </div>
@@ -773,6 +1205,7 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
           <div className="relative w-full max-w-[580px] h-[340px] sm:h-[440px] my-6 sm:my-8 flex items-center justify-center select-none">
             {/* Left Phone (Lime Green Frame, angled -10deg) */}
             <motion.div
+              initial={{ y: 0, rotate: -10 }}
               animate={{ y: [0, -12, 0], rotate: [-10, -7, -10] }}
               transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
               className="absolute left-[8%] sm:left-[12%] w-[200px] sm:w-[260px] aspect-[9/18.5] rounded-[38px] bg-[#c2d902] border-[4px] border-black p-2 shadow-[0_25px_60px_rgba(0,0,0,0.5)] z-20 overflow-hidden cursor-pointer"
@@ -798,6 +1231,7 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
 
             {/* Right Phone (Dark Violet Frame, angled 8deg) */}
             <motion.div
+              initial={{ y: 0, rotate: 7 }}
               animate={{ y: [0, -15, 0], rotate: [7, 10, 7] }}
               transition={{ duration: 5.5, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}
               className="absolute right-[8%] sm:right-[12%] w-[200px] sm:w-[260px] aspect-[9/18.5] rounded-[38px] bg-[#1e1b4b] border-[4px] border-black p-2 shadow-[0_25px_60px_rgba(0,0,0,0.5)] z-10 overflow-hidden cursor-pointer"
@@ -822,23 +1256,34 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
             </motion.div>
           </div>
 
-          <p className="text-xs sm:text-sm font-bold uppercase tracking-wider text-white/90 max-w-xl mx-auto leading-relaxed">
-            Explora la cartelera exclusiva de conciertos, festivales y fiestas en Ecuador. Entradas 3D oficiales con verificación instantánea.
+          <p className="text-xs sm:text-sm font-black uppercase tracking-wider text-white max-w-xl mx-auto leading-relaxed drop-shadow-md">
+            Explora la cartelera exclusiva de conciertos, festivales y fiestas en Ecuador. Tickets digitales oficiales con verificación instantánea.
           </p>
         </div>
 
         {/* Clean Spaced Catalog Section Below Presentation */}
         <div id="explore" className="relative z-20 w-full max-w-[1600px] mx-auto mt-6 sm:mt-10 pt-6 space-y-8">
           
-          {/* Section Header & Minimalist Search Bar with 3D Flame Mascot on the Right */}
+          {/* Section Header with current tab label + search bar */}
           <div className="relative flex flex-col md:flex-row items-start md:items-center justify-between gap-6 pb-4">
             <div>
-              <h2 className="text-3xl sm:text-4xl font-black uppercase tracking-tight text-white">
-                Explora Eventos &amp; Shows
+              <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black uppercase tracking-tight text-white drop-shadow-md">
+                {activeFilterTab === "inicio" && "Destacados"}
+                {activeFilterTab === "all" && "All Shows"}
+                {activeFilterTab === "fiestas" && "Fiestas"}
+                {activeFilterTab === "conciertos" && "Conciertos"}
+                {activeFilterTab === "ciudad" && "Por Ciudad"}
               </h2>
+              <p className="text-xs font-bold text-white/60 mt-1 uppercase tracking-widest">
+                {activeFilterTab === "inicio" && "Los eventos más populares"}
+                {activeFilterTab === "all" && "Toda la cartelera disponible"}
+                {activeFilterTab === "fiestas" && "Trap · Urban · Nocturno"}
+                {activeFilterTab === "conciertos" && "Latin · Live · Conciertos"}
+                {activeFilterTab === "ciudad" && "Filtra por tu ciudad"}
+              </p>
             </div>
 
-            {/* Minimalist Dark Search Bar */}
+            {/* Search Bar */}
             <div className="w-full md:w-auto flex-1 max-w-md">
               <div className="relative flex items-center bg-black/60 rounded-full border border-white/15 px-4 py-2.5 shadow-inner focus-within:border-white/40 transition">
                 <Search className="w-4 h-4 text-zinc-400 shrink-0" />
@@ -856,27 +1301,33 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                 )}
               </div>
             </div>
-
           </div>
 
-          {/* Filter Chips (Ciudades) */}
-          <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none">
-            <span className="text-[10px] font-black uppercase tracking-widest text-zinc-500 shrink-0 mr-2">Ciudad:</span>
-            {["Todas", "Loja", "Quito", "Guayaquil", "Cuenca", "Manta"].map((c) => (
-              <button
-                key={c}
-                type="button"
-                onClick={() => setSelectedCity(c)}
-                className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-wider border transition shrink-0 ${
-                  selectedCity === c
-                    ? "border-white bg-white text-black font-bold shadow-lg"
-                    : "border-white/10 bg-white/[0.03] text-zinc-400 hover:border-white/30 hover:text-white"
-                }`}
-              >
-                {c}
-              </button>
-            ))}
-          </div>
+          {/* City filter chips — shown only when "Por Ciudad" tab is active */}
+          {activeFilterTab === "ciudad" && (
+            <motion.div
+              initial={{ opacity: 0, y: -8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -8 }}
+              className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none my-2"
+            >
+              <span className="text-xs sm:text-sm font-black uppercase tracking-widest text-white shrink-0 mr-2 drop-shadow-sm">Ciudad:</span>
+              {["Todas", "Loja", "Quito", "Guayaquil", "Cuenca", "Manta"].map((c) => (
+                <button
+                  key={c}
+                  type="button"
+                  onClick={() => setSelectedCity(c)}
+                  className={`px-5 py-2 rounded-full text-xs font-black uppercase tracking-wider border transition shrink-0 cursor-pointer ${
+                    selectedCity === c
+                      ? "border-white bg-white text-black font-black shadow-xl scale-105"
+                      : "border-white/40 bg-black/30 text-white font-extrabold hover:bg-white hover:text-black backdrop-blur-md shadow-sm"
+                  }`}
+                >
+                  {c}
+                </button>
+              ))}
+            </motion.div>
+          )}
 
           {/* Featured Trending Presale Banner Card Showcase (Auto-rotates every 5 seconds) */}
           <div className="relative w-full max-w-[540px] mx-auto my-8 select-none px-2">
@@ -978,13 +1429,13 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
           </div>
 
           {/* Centered Cards Catalog Grid (Strictly 2 per row on Mobile, 4 per row on Desktop) */}
-          <div className="mt-10 pt-6 border-t border-white/10">
-            <div className="flex items-center justify-between mb-8 max-w-[1400px] mx-auto px-2">
-              <h3 className="text-base sm:text-lg font-black uppercase tracking-wider text-black flex items-center gap-2">
-                <span className="inline-block w-2.5 h-4 bg-black rounded-full" />
+          <div className="mt-10 pt-6 border-t border-white/15">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 mb-8 max-w-[1400px] mx-auto px-2">
+              <h3 className="text-2xl sm:text-3xl lg:text-4xl font-black uppercase tracking-tight text-white flex items-center gap-3 drop-shadow-md">
+                <span className="inline-block w-2.5 h-6 bg-[#c2d902] rounded-full shadow-md" />
                 Cartelera Completa &amp; Shows
               </h3>
-              <span className="text-[10px] font-black uppercase tracking-widest text-black/70">
+              <span className="text-xs font-black uppercase tracking-widest text-white/90 bg-black/25 border border-white/20 px-3.5 py-1.5 rounded-full backdrop-blur-md">
                 {filteredCatalogEvents.length} Eventos Disponibles
               </span>
             </div>
@@ -1122,6 +1573,7 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
 
       <AIChatbot />
       <StaffModal isOpen={isStaffModalOpen} onClose={() => setIsStaffModalOpen(false)} />
+      <PublishEventModal isOpen={isPublishModalOpen} onClose={() => setIsPublishModalOpen(false)} />
 
       {/* Premium Toast/Alert for Inactive/Upcoming Events */}
       <AnimatePresence>
@@ -1147,15 +1599,15 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
         )}
       </AnimatePresence>
 
-      {/* Electric Purple Pop Footer */}
+      {/* Electric Purple High Contrast Footer */}
       <footer
         id="support"
-        className="relative z-10 -mx-4 border-t border-white/20 px-4 py-16 sm:-mx-8 sm:px-6 md:-mx-14 md:px-12 lg:-mx-20 lg:px-16 bg-[#8b5cf6] text-white"
+        className="relative z-10 -mx-4 border-t border-black/20 px-4 py-16 sm:-mx-8 sm:px-6 md:-mx-14 md:px-12 lg:-mx-20 lg:px-16 bg-[#8b5cf6] text-black"
       >
         <div className="mx-auto flex w-full max-w-[1600px] flex-col items-center text-center gap-4">
           {/* Logo brand StormGo */}
-          <div className="flex items-center gap-2.5 select-none mb-2">
-            <div className="w-9 h-9 flex items-center justify-center shrink-0 drop-shadow-md">
+          <div className="flex items-center gap-2 select-none mb-1">
+            <div className="w-8 h-8 flex items-center justify-center shrink-0">
               <svg className="w-full h-full select-none" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path d="M25 68 C15 68, 10 58, 15 48 C10 38, 20 28, 32 30 C38 18, 55 15, 65 24 C75 16, 88 24, 88 36 C95 44, 92 58, 82 68 Z" fill="#ffffff" stroke="#1e1b4b" strokeWidth="6" strokeLinejoin="round" />
                 <path d="M30 32 L44 30" stroke="#1e1b4b" strokeWidth="5" strokeLinecap="round" />
@@ -1165,41 +1617,51 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                 <line x1="56" y1="46" x2="68" y2="52" stroke="#ffffff" strokeWidth="3" strokeLinecap="round" />
               </svg>
             </div>
-            <span className="flex items-center text-xl font-black tracking-tight leading-none select-none text-black">
-              <span className="text-black font-black">Storm</span>
-              <span className="text-black font-black">Go</span>
+            <span className="logo-text flex items-center text-sm sm:text-base font-extrabold tracking-tight leading-none select-none text-black">
+              StormGo
             </span>
           </div>
 
-          <p className="text-xl font-black uppercase tracking-[0.4em] text-black/90">
+          <p className="text-lg sm:text-xl font-black uppercase tracking-[0.35em] text-black">
             {config.footer.brand}
           </p>
+
           <a
             href={`https://mail.google.com/mail/?view=cm&fs=1&to=${config.footer.email}`}
             target="_blank"
             rel="noopener noreferrer"
-            className="group mt-2 inline-flex items-center gap-2 rounded-full border border-white/[0.08] bg-white/[0.03] px-5 py-2.5 text-[10px] font-black uppercase tracking-[0.18em] text-zinc-400 backdrop-blur-md transition hover:border-white/[0.2] hover:bg-white/[0.08] hover:text-white"
+            className="group mt-1 inline-flex items-center gap-2 rounded-full border border-black/25 bg-black/10 px-6 py-2.5 text-xs font-black uppercase tracking-[0.18em] text-black backdrop-blur-md transition hover:bg-black hover:text-white shadow-sm"
           >
             {config.footer.email}
           </a>
-          <p className="mt-2 text-[8px] font-bold tracking-wider text-zinc-600">
+
+          <button
+            type="button"
+            onClick={() => window.dispatchEvent(new CustomEvent("open-ai-chatbot"))}
+            className="mt-1 inline-flex items-center gap-2 rounded-full bg-white px-5 py-2.5 text-xs font-black uppercase tracking-wider text-black shadow-lg hover:bg-zinc-100 active:scale-95 transition cursor-pointer"
+          >
+            <MessageCircle className="w-4 h-4 text-[#8b5cf6]" />
+            <span>Soporte IA & Preguntas</span>
+          </button>
+
+          <p className="mt-2 text-xs font-black tracking-wider text-black/90">
             {config.footer.copyright}
           </p>
 
-          {/* DevEc Signature */}
-          <div className="mt-8 flex flex-col items-center gap-1 opacity-35 hover:opacity-85 transition-opacity duration-300 select-none">
-            <span className="text-[6px] font-black tracking-[0.25em] text-zinc-600 uppercase">Desarrollado por</span>
+          {/* DevEc Signature - Crystal Clear High Contrast */}
+          <div className="mt-6 flex flex-col items-center gap-1 opacity-95 hover:opacity-100 transition-opacity duration-300 select-none">
+            <span className="text-[9px] font-black tracking-[0.25em] text-black uppercase">Desarrollado por</span>
             <div className="flex flex-col items-center">
-              <svg className="h-[18px] w-auto" viewBox="0 0 110 35" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <text x="0" y="25" fill="#ffffff" fontSize="22" fontWeight="900" fontFamily="system-ui, -apple-system, sans-serif" letterSpacing="-0.02em">Dev</text>
-                <text x="41" y="25" fill="#ffffff" fontSize="22" fontWeight="900" fontFamily="system-ui, -apple-system, sans-serif" letterSpacing="-0.02em">E</text>
-                <text x="56" y="25" fill="#ffffff" fontSize="22" fontWeight="900" fontFamily="system-ui, -apple-system, sans-serif" letterSpacing="-0.02em">c</text>
+              <svg className="h-[20px] w-auto" viewBox="0 0 110 35" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <text x="0" y="25" fill="#000000" fontSize="22" fontWeight="900" fontFamily="system-ui, -apple-system, sans-serif" letterSpacing="-0.02em">Dev</text>
+                <text x="41" y="25" fill="#000000" fontSize="22" fontWeight="900" fontFamily="system-ui, -apple-system, sans-serif" letterSpacing="-0.02em">E</text>
+                <text x="56" y="25" fill="#000000" fontSize="22" fontWeight="900" fontFamily="system-ui, -apple-system, sans-serif" letterSpacing="-0.02em">c</text>
                 {/* Waving flag tail */}
-                <path d="M70 20 C78 20, 80 10, 92 10 C96 10, 98 14, 102 12" stroke="#FFDD00" strokeWidth="2.2" strokeLinecap="round" />
-                <path d="M70 23 C78 23, 80 13, 92 13 C96 13, 98 17, 102 15" stroke="#0033A0" strokeWidth="2.2" strokeLinecap="round" />
-                <path d="M70 26 C78 26, 80 16, 92 16 C96 16, 98 20, 102 18" stroke="#D52B1E" strokeWidth="2.2" strokeLinecap="round" />
+                <path d="M70 20 C78 20, 80 10, 92 10 C96 10, 98 14, 102 12" stroke="#FFDD00" strokeWidth="2.5" strokeLinecap="round" />
+                <path d="M70 23 C78 23, 80 13, 92 13 C96 13, 98 17, 102 15" stroke="#0033A0" strokeWidth="2.5" strokeLinecap="round" />
+                <path d="M70 26 C78 26, 80 16, 92 16 C96 16, 98 20, 102 18" stroke="#D52B1E" strokeWidth="2.5" strokeLinecap="round" />
               </svg>
-              <span className="text-[6px] font-black tracking-[0.3em] text-zinc-500 uppercase mt-0.5">
+              <span className="text-[7px] font-black tracking-[0.3em] text-black/90 uppercase mt-0.5">
                 SOFTWARE DEVELOPMENT
               </span>
             </div>
@@ -1333,6 +1795,7 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
         onClose={() => setShowRecoveryModal(false)}
         eventId={selectedCarouselEvent?.id || activeEvent.id}
         eventName={selectedCarouselEvent?.title || activeEvent.title}
+        allEvents={events}
       />
 
       {/* POS Door Ticket Sales Modal */}
@@ -1439,7 +1902,7 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
         )}
       </AnimatePresence>
 
-      {/* User Profile Floating Glass Dropdown Menu (Identical to User Reference Image) */}
+      {/* User Profile Floating Glass Dropdown Menu */}
       <AnimatePresence>
         {showUserMenu && (
           <>
@@ -1455,18 +1918,15 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
               animate={{ opacity: 1, x: 0, scale: 1 }}
               exit={{ opacity: 0, x: 80, scale: 0.95 }}
               transition={{ type: "spring", damping: 25, stiffness: 300 }}
-              className="fixed top-16 right-4 z-[370] w-72 rounded-3xl border border-white/20 bg-[#0d0d12]/95 backdrop-blur-2xl p-5 shadow-2xl space-y-4"
+              className="fixed top-16 right-4 z-[370] w-80 rounded-3xl border border-white/20 bg-[#0d0d12]/95 backdrop-blur-2xl p-5 shadow-2xl space-y-4 text-white"
             >
-              {/* Header with SG Avatar & Close Button */}
+              {/* Header with Purple Guest Avatar & Close Button (ONLY MI CUENTA) */}
               <div className="flex items-center justify-between pb-3 border-b border-white/10">
                 <div className="flex items-center gap-3">
-                  <div className="h-10 w-10 rounded-full bg-[#c2d902] text-black font-black flex items-center justify-center text-sm shadow-md">
-                    SG
+                  <div className="h-10 w-10 rounded-full bg-[#8b5cf6] text-white font-black flex items-center justify-center text-sm shadow-md">
+                    <User className="h-5 w-5" />
                   </div>
-                  <div>
-                    <h4 className="text-xs font-black uppercase text-white tracking-wider">Mi Cuenta</h4>
-                    <p className="text-[9px] font-bold text-zinc-400">usuario@stormgo.app</p>
-                  </div>
+                  <h4 className="text-sm font-black uppercase text-white tracking-wider leading-none">MI CUENTA</h4>
                 </div>
                 <button
                   type="button"
@@ -1477,51 +1937,66 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                 </button>
               </div>
 
-              {/* Menu Items */}
-              <div className="space-y-1">
-                {[
-                  {
-                    icon: <Ticket className="h-4 w-4 text-[#c2d902]" />,
-                    label: "Mis Entradas & Pases",
-                    action: () => { setShowUserMenu(false); setShowPassesModal(true); }
-                  },
-                  {
-                    icon: <CreditCard className="h-4 w-4 text-emerald-400" />,
-                    label: "Historial de Compras",
-                    action: () => { setShowUserMenu(false); setShowPassesModal(true); }
-                  },
-                  {
-                    icon: <Key className="h-4 w-4 text-purple-400" />,
-                    label: "Recuperar Entrada",
-                    action: () => { setShowUserMenu(false); setShowRecoveryModal(true); }
-                  },
-                  {
-                    icon: <Settings className="h-4 w-4 text-zinc-400" />,
-                    label: "Ajustes de Cuenta",
-                    action: () => { setShowUserMenu(false); }
-                  },
-                ].map((item, i) => (
-                  <button
-                    key={i}
-                    type="button"
-                    onClick={item.action}
-                    className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-left text-xs font-black uppercase tracking-wider text-zinc-300 hover:bg-white/10 hover:text-white transition-colors cursor-pointer"
-                  >
-                    {item.icon}
-                    <span>{item.label}</span>
-                  </button>
-                ))}
-              </div>
-
-              {/* Footer: Cerrar Sesión */}
-              <div className="pt-2 border-t border-white/10">
+              {/* Primary Auth Action Buttons in Green / Lime */}
+              <div className="grid grid-cols-2 gap-2">
                 <button
                   type="button"
-                  onClick={() => setShowUserMenu(false)}
-                  className="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-left text-xs font-black uppercase tracking-wider text-red-400 hover:bg-red-950/30 transition-colors cursor-pointer"
+                  onClick={() => {
+                    setShowUserMenu(false);
+                    router.push("/organizer/login");
+                  }}
+                  className="w-full py-2.5 px-3 rounded-2xl bg-white text-black font-black text-xs uppercase tracking-wider text-center hover:bg-zinc-100 transition-colors shadow-md cursor-pointer"
                 >
-                  <LogOut className="h-4 w-4" />
-                  <span>Cerrar Sesión</span>
+                  Iniciar Sesión
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowUserMenu(false);
+                    router.push("/organizer/register");
+                  }}
+                  className="w-full py-2.5 px-3 rounded-2xl bg-[#8b5cf6] text-white font-black text-xs uppercase tracking-wider text-center hover:bg-[#7c3aed] transition-colors shadow-md cursor-pointer"
+                >
+                  Registrarse
+                </button>
+              </div>
+
+              {/* Menu Items */}
+              <div className="space-y-1 pt-1">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowUserMenu(false);
+                    setShowRecoveryModal(true);
+                  }}
+                  className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-left text-xs font-black uppercase tracking-wider text-zinc-300 hover:bg-white/10 hover:text-white transition-colors cursor-pointer"
+                >
+                  <Key className="h-4 w-4 text-[#c2d902]" />
+                  <span>Recuperar Mis Entradas</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowUserMenu(false);
+                    window.dispatchEvent(new CustomEvent("open-ai-chatbot"));
+                  }}
+                  className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-left text-xs font-black uppercase tracking-wider text-zinc-300 hover:bg-white/10 hover:text-white transition-colors cursor-pointer"
+                >
+                  <MessageCircle className="w-4 h-4 text-[#8b5cf6]" />
+                  <span>Soporte IA & Preguntas</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowUserMenu(false);
+                    router.push("/organizer/register");
+                  }}
+                  className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-left text-xs font-black uppercase tracking-wider text-zinc-300 hover:bg-white/10 hover:text-white transition-colors cursor-pointer"
+                >
+                  <PlusCircle className="h-4 w-4 text-[#8b5cf6]" />
+                  <span>Publicar un Evento</span>
                 </button>
               </div>
             </motion.div>
@@ -1622,6 +2097,12 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
         }
         .ticket-pulse-active {
           animation: ticket-glow-pulse 1.2s ease-in-out infinite !important;
+        }
+        @keyframes wiggle {
+          0%, 100% { transform: rotate(-12deg); }
+          25% { transform: rotate(12deg); }
+          50% { transform: rotate(-8deg); }
+          75% { transform: rotate(8deg); }
         }
       `}} />
     </main>

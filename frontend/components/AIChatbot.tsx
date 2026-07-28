@@ -40,6 +40,30 @@ export default function AIChatbot() {
   }, [messages, isOpen]);
 
   useEffect(() => {
+    const handleOpen = () => {
+      setIsClosing(false);
+      setIsOpen(true);
+    };
+    const handleCloseEvent = () => closeChat();
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && isOpen) {
+        closeChat();
+      }
+    };
+
+    window.addEventListener("open-ai-chatbot", handleOpen);
+    window.addEventListener("close-ai-chatbot", handleCloseEvent);
+    window.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      window.removeEventListener("open-ai-chatbot", handleOpen);
+      window.removeEventListener("close-ai-chatbot", handleCloseEvent);
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [isOpen, isClosing]);
+
+  useEffect(() => {
     if (isOpen && !isClosing && chatRef.current) {
       const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 

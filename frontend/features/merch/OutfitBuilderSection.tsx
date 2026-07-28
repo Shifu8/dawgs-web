@@ -15,10 +15,10 @@ export default function OutfitBuilderSection() {
       {/* Header Info */}
       <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
         <div>
-          <p className="text-[10px] font-black uppercase tracking-[0.4em] text-black">
+          <p className="text-[10px] font-black uppercase tracking-[0.4em] text-white/90 drop-shadow-sm">
             MERCH OFICIAL · STORMGO
           </p>
-          <h3 className="text-2xl sm:text-4xl font-black uppercase tracking-tight text-black mt-1">
+          <h3 className="text-2xl sm:text-4xl font-black uppercase tracking-tight text-white mt-1 drop-shadow-md">
             Explora la Merch Oficial de StormGo
           </h3>
         </div>
@@ -83,10 +83,10 @@ export default function OutfitBuilderSection() {
           <h4 className="mt-4 text-3xl font-black uppercase leading-tight tracking-tight text-white sm:text-5xl">
             Timeless Apparel.
             <br />
-            NOW4GO x NENEZ
+            STORMGO x NENEZ
           </h4>
           <p className="mt-4 max-w-lg text-xs sm:text-sm leading-relaxed text-zinc-300 font-medium">
-            La marca oficial para ropa & merchandise exclusivo de NOW4GO. Prendas oversize con siluetas urbanas premium, confeccionadas con materiales de máxima calidad para tus festivales y eventos.
+            La marca oficial para ropa & merchandise exclusivo de STORMGO. Prendas oversize con siluetas urbanas premium, confeccionadas con materiales de máxima calidad para tus festivales y eventos.
           </p>
         </div>
 
