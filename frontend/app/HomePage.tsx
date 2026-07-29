@@ -53,6 +53,7 @@ import StaffModal from "@/frontend/features/staff/StaffModal";
 import BoxOfficeSalesModal from "@/frontend/features/staff/BoxOfficeSalesModal";
 import DrinksSalesModal from "@/frontend/features/staff/DrinksSalesModal";
 import PublishEventModal from "@/frontend/components/PublishEventModal";
+import OrganizerPublishScreen from "@/frontend/features/organizer/OrganizerPublishScreen";
 import EventTicketCarousel, { CAROUSEL_EVENTS } from "@/frontend/components/EventTicketCarousel";
 import EventDetailOverlay from "@/frontend/features/events/EventDetailOverlay";
 import InstallApp from "@/frontend/components/InstallApp";
@@ -77,15 +78,13 @@ type HomeNavId = (typeof HOME_NAV_ITEMS)[number]["id"];
 
 // Segmented control / pill tabs for content filtering
 const FILTER_TABS = [
-  { id: "inicio", label: "Inicio", icon: Home },
-  { id: "all", label: "All Shows", icon: Zap },
-  { id: "fiestas", label: "Fiestas", icon: Music2 },
-  { id: "conciertos", label: "Conciertos", icon: Music },
-  { id: "merch", label: "Merch", icon: ShoppingBag },
-  { id: "support", label: "Soporte", icon: HelpCircle },
+  { id: "inicio", label: "HOME" },
+  { id: "all", label: "Todo" },
+  { id: "fiestas", label: "Fiestas" },
+  { id: "conciertos", label: "Conciertos" },
 ] as const;
 
-type FilterTabId = (typeof FILTER_TABS)[number]["id"];
+type FilterTabId = (typeof FILTER_TABS)[number]["id"] | "ciudad" | "publish";
 
 interface HomePageProps {
   initialConfig: HomepageConfig;
@@ -157,7 +156,6 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
   const [expandedCardId, setExpandedCardId] = useState<string | null>(null);
   const [showDrinksModal, setShowDrinksModal] = useState(false);
   const [showRecoveryModal, setShowRecoveryModal] = useState(false);
-  const [isPublishModalOpen, setIsPublishModalOpen] = useState(false);
   const [selectedCarouselEvent, setSelectedCarouselEvent] = useState<Event>(CAROUSEL_EVENTS[0]);
 
   // Auto-open EventDetailOverlay if initialEventSlug is specified
@@ -299,7 +297,6 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
         if (isStaffModalOpen) setIsStaffModalOpen(false);
         if (isPosModalOpen) setIsPosModalOpen(false);
         if (isDrinksPosModalOpen) setIsDrinksPosModalOpen(false);
-        if (isPublishModalOpen) setIsPublishModalOpen(false);
         window.dispatchEvent(new CustomEvent("close-ai-chatbot"));
       }
     };
@@ -316,7 +313,6 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
     isStaffModalOpen,
     isPosModalOpen,
     isDrinksPosModalOpen,
-    isPublishModalOpen,
   ]);
 
   const [checkoutState, setCheckoutState] = useState<string>("register");
@@ -665,16 +661,19 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
     all:        "rgba(139,92,246,0.55)",
     fiestas:    "rgba(225,0,117,0.55)",
     conciertos: "rgba(194,217,2,0.45)",
+    publish:    "rgba(194,217,2,0.55)",
   };
   const TAB_LABEL: Record<string, string> = {
-    all:        "All Shows",
+    all:        "Todo",
     fiestas:    "Fiestas",
     conciertos: "Conciertos",
+    publish:    "Sube tu Evento",
   };
   const TAB_SUB: Record<string, string> = {
     all:        "Toda la cartelera disponible",
     fiestas:    "Trap · Urban · RnB · Nocturno",
     conciertos: "Latin · Live · Concerts",
+    publish:    "Publica y gestiona tus eventos en Ecuador",
   };
 
   return (
@@ -823,11 +822,15 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
           <div className="flex shrink-0 items-center gap-2 sm:gap-3">
             <button
               type="button"
-              onClick={() => router.push("/organizer/register")}
-              className="relative group inline-flex h-8 items-center justify-center gap-1.5 rounded-full bg-white px-3.5 text-[9px] font-black uppercase tracking-[0.16em] text-black transition-all duration-300 hover:bg-zinc-100 active:scale-95 shadow-[0_0_15px_rgba(255,255,255,0.4)] border border-white/60 hover:border-white ring-2 ring-white/30 cursor-pointer"
+              onClick={() => setActiveFilterTab("publish")}
+              className={`relative group inline-flex h-8 items-center justify-center gap-1.5 rounded-full px-3.5 text-[9px] font-black uppercase tracking-[0.16em] transition-all duration-300 active:scale-95 cursor-pointer border ${
+                activeFilterTab === "publish"
+                  ? "bg-white text-black border-white shadow-[0_0_20px_rgba(255,255,255,0.4)] scale-105"
+                  : "bg-white/10 text-white/90 border-white/25 hover:bg-white hover:text-black backdrop-blur-md shadow-md"
+              }`}
             >
-              <PlusCircle className="w-3.5 h-3.5 text-black" />
-              <span>Publicar Evento</span>
+              <PlusCircle className={`w-3.5 h-3.5 ${activeFilterTab === "publish" ? "text-black" : "text-white/80 group-hover:text-black"}`} />
+              <span>SUBE UN EVENTO</span>
             </button>
 
             {/* Notification Bell — only when logged in */}
@@ -880,38 +883,19 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
             <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-none pb-0.5 lg:overflow-visible lg:flex-wrap lg:justify-center">
               {FILTER_TABS.map((tab) => {
                 const isActive = activeFilterTab === tab.id;
-                const Icon = tab.icon;
-                // Special tabs: merch + support scroll to sections, don't open overlay
-                const isSpecial = tab.id === "merch" || tab.id === "support";
                 return (
                   <button
                     key={tab.id}
                     type="button"
                     id={`filter-tab-${tab.id}`}
-                    onClick={() => {
-                      if (tab.id === "merch") {
-                        setActiveFilterTab("inicio");
-                        const el = document.getElementById("wear");
-                        if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
-                      } else if (tab.id === "support") {
-                        setActiveFilterTab("inicio");
-                        window.dispatchEvent(new CustomEvent("open-ai-chatbot"));
-                        const el = document.getElementById("support");
-                        if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
-                      } else {
-                        setActiveFilterTab(tab.id);
-                      }
-                    }}
-                    className={`relative flex shrink-0 items-center gap-1.5 rounded-full px-4 py-1.5 text-[10px] font-black uppercase tracking-wider transition-all duration-300 cursor-pointer select-none ${
+                    onClick={() => setActiveFilterTab(tab.id)}
+                    className={`relative flex shrink-0 items-center justify-center rounded-full px-4 py-1.5 text-[10px] font-black uppercase tracking-wider transition-all duration-300 cursor-pointer select-none ${
                       isActive
                         ? "bg-white text-black shadow-[0_2px_14px_rgba(255,255,255,0.35)] scale-105"
-                        : isSpecial
-                        ? "bg-white/5 text-white/60 hover:bg-white/15 hover:text-white border border-white/15 backdrop-blur-sm"
                         : "bg-white/10 text-white/80 hover:bg-white/20 hover:text-white border border-white/20 backdrop-blur-sm"
                     }`}
                     aria-pressed={isActive}
                   >
-                    <Icon className={`w-3 h-3 shrink-0 ${isActive ? "text-black" : isSpecial ? "text-white/50" : "text-white/70"}`} />
                     <span>{tab.label}</span>
                     {isActive && (
                       <motion.span
@@ -997,44 +981,52 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                 </AnimatePresence>
               </div>
 
-              {/* Right: event count + search */}
-              <div className="flex items-center gap-2">
-                <span className="hidden sm:inline-flex text-[10px] font-black text-white/60 bg-white/10 border border-white/10 px-3 py-1.5 rounded-full">
-                  {filteredTabEvents.length} {filteredTabEvents.length === 1 ? "evento" : "eventos"}
-                </span>
-                <div className="relative flex items-center bg-white/5 border border-white/15 rounded-full px-3 py-2 gap-2 focus-within:border-white/35 transition">
-                  <Search className="w-3.5 h-3.5 text-zinc-400 shrink-0" />
-                  <input
-                    type="text"
-                    placeholder="Buscar..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="bg-transparent text-xs font-medium text-white placeholder-zinc-500 focus:outline-none w-28 sm:w-40"
-                  />
-                  {searchQuery && (
-                    <button onClick={() => setSearchQuery("")} className="text-[10px] text-zinc-400 hover:text-white font-bold cursor-pointer">✕</button>
-                  )}
+              {/* Right: event count + search (only for show catalog tabs) */}
+              {activeFilterTab !== "publish" && (
+                <div className="flex items-center gap-2">
+                  <span className="hidden sm:inline-flex text-[10px] font-black text-white/60 bg-white/10 border border-white/10 px-3 py-1.5 rounded-full">
+                    {filteredTabEvents.length} {filteredTabEvents.length === 1 ? "evento" : "eventos"}
+                  </span>
+                  <div className="relative flex items-center bg-white/5 border border-white/15 rounded-full px-3 py-2 gap-2 focus-within:border-white/35 transition">
+                    <Search className="w-3.5 h-3.5 text-zinc-400 shrink-0" />
+                    <input
+                      type="text"
+                      placeholder="Buscar..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      className="bg-transparent text-xs font-medium text-white placeholder-zinc-500 focus:outline-none w-28 sm:w-40"
+                    />
+                    {searchQuery && (
+                      <button onClick={() => setSearchQuery("")} className="text-[10px] text-zinc-400 hover:text-white font-bold cursor-pointer">✕</button>
+                    )}
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
 
-            {/* City filter chips — always shown, static (no re-mount) */}
-            <div className="flex-shrink-0 flex items-center gap-2 overflow-x-auto px-4 sm:px-6 py-2.5 border-b border-white/10 scrollbar-none">
-              {["Todas", "Loja", "Quito", "Guayaquil", "Cuenca", "Manta"].map((c) => (
-                <button
-                  key={c}
-                  type="button"
-                  onClick={() => setSelectedCity(c)}
-                  className={`flex-shrink-0 px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-wider border transition-all duration-200 cursor-pointer ${
-                    selectedCity === c
-                      ? "bg-white text-black border-white shadow-[0_0_12px_rgba(255,255,255,0.3)] scale-105"
-                      : "bg-white/8 border-white/20 text-white/80 hover:bg-white/15 hover:text-white"
-                  }`}
-                >
-                  {c}
-                </button>
-              ))}
-            </div>
+            {activeFilterTab === "publish" ? (
+              <div className="flex-1 overflow-y-auto no-scrollbar pb-12">
+                <OrganizerPublishScreen />
+              </div>
+            ) : (
+              <>
+                {/* City filter chips — shown in ALL SHOWS, FIESTAS, CONCIERTOS overlay screen */}
+                <div className="flex-shrink-0 flex items-center gap-2 overflow-x-auto px-4 sm:px-6 py-2.5 border-b border-white/10 scrollbar-none">
+                  {["Todas", "Loja", "Quito", "Guayaquil", "Cuenca", "Manta"].map((c) => (
+                    <button
+                      key={c}
+                      type="button"
+                      onClick={() => setSelectedCity(c)}
+                      className={`flex-shrink-0 px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-wider border transition-all duration-200 cursor-pointer ${
+                        selectedCity === c
+                          ? "bg-white text-black border-white shadow-[0_0_12px_rgba(255,255,255,0.3)] scale-105"
+                          : "bg-white/8 border-white/20 text-white/80 hover:bg-white/15 hover:text-white"
+                      }`}
+                    >
+                      {c}
+                    </button>
+                  ))}
+                </div>
 
             {/* ── Events Grid — only the cards grid animates on tab change ── */}
             <div className="flex-1 overflow-y-auto px-4 sm:px-6 pt-5 pb-8 no-scrollbar">
@@ -1125,9 +1117,11 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                 </motion.div>
               </AnimatePresence>
             </div>
-          </motion.div>
+          </>
         )}
-      </AnimatePresence>
+      </motion.div>
+    )}
+  </AnimatePresence>
 
       {/* Monochromatic 3D Concrete Room backdrop */}
       <section
@@ -1158,7 +1152,7 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
         <div className="relative z-10 w-full max-w-[1300px] mx-auto flex flex-col items-center justify-center text-center py-6 sm:py-10">
 
           {/* Top Pill Badges */}
-          <div className="flex items-center justify-center gap-3 sm:gap-4 mb-6 select-none">
+          <div className="flex items-center justify-center gap-3 sm:gap-4 mb-3 select-none">
             <span className="px-4 py-1.5 rounded-full border border-white/40 text-[10px] sm:text-xs font-bold uppercase tracking-wider text-white backdrop-blur-md">
               temporada 2026
             </span>
@@ -1168,6 +1162,33 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
             <span className="px-4 py-1.5 rounded-full border border-white/40 text-[10px] sm:text-xs font-bold uppercase tracking-wider text-white backdrop-blur-md">
               tickets digitales
             </span>
+          </div>
+
+          {/* Home Sub-Pill Shortcuts to Merch & Soporte */}
+          <div className="flex items-center justify-center gap-2 mb-6 select-none">
+            <button
+              type="button"
+              onClick={() => {
+                const el = document.getElementById("wear");
+                if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+              }}
+              className="flex items-center gap-1.5 px-4 py-1.5 rounded-full border border-white/20 bg-white/10 hover:bg-white hover:text-black text-[10px] sm:text-xs font-black uppercase tracking-wider text-white transition-all duration-200 active:scale-95 cursor-pointer shadow-sm"
+            >
+              <ShoppingBag className="w-3.5 h-3.5" />
+              <span>MERCH</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                window.dispatchEvent(new CustomEvent("open-ai-chatbot"));
+                const el = document.getElementById("support");
+                if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+              }}
+              className="flex items-center gap-1.5 px-4 py-1.5 rounded-full border border-white/20 bg-white/10 hover:bg-white hover:text-black text-[10px] sm:text-xs font-black uppercase tracking-wider text-white transition-all duration-200 active:scale-95 cursor-pointer shadow-sm"
+            >
+              <HelpCircle className="w-3.5 h-3.5" />
+              <span>SOPORTE</span>
+            </button>
           </div>
 
           {/* Headline */}
@@ -1255,7 +1276,7 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
             <div>
               <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black uppercase tracking-tight text-white drop-shadow-md">
                 {activeFilterTab === "inicio" && "Destacados"}
-                {activeFilterTab === "all" && "All Shows"}
+                {activeFilterTab === "all" && "Todo"}
                 {activeFilterTab === "fiestas" && "Fiestas"}
                 {activeFilterTab === "conciertos" && "Conciertos"}
                 {activeFilterTab === "ciudad" && "Por Ciudad"}
@@ -1559,7 +1580,6 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
 
       <AIChatbot />
       <StaffModal isOpen={isStaffModalOpen} onClose={() => setIsStaffModalOpen(false)} />
-      <PublishEventModal isOpen={isPublishModalOpen} onClose={() => setIsPublishModalOpen(false)} />
 
       {/* Premium Toast/Alert for Inactive/Upcoming Events */}
       <AnimatePresence>
