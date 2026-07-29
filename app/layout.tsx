@@ -30,16 +30,16 @@ const quicksand = Quicksand({
 });
 
 export const metadata: Metadata = {
-  title: "StormGo",
+  title: "4go",
   description:
-    "Descubre los mejores eventos, conciertos y experiencias en Ecuador con StormGo.",
+    "Descubre los mejores eventos, conciertos y experiencias en Ecuador con 4go.",
   manifest: "/manifest.json",
   icons: {
     icon: [
       { url: "/favicon.svg", type: "image/svg+xml" },
     ],
   },
-  appleWebApp: { capable: true, title: "StormGo", statusBarStyle: "black-translucent" },
+  appleWebApp: { capable: true, title: "4go", statusBarStyle: "black-translucent" },
   other: {
     "mobile-web-app-capable": "yes",
     "apple-mobile-web-app-capable": "yes",

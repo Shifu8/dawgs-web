@@ -266,7 +266,7 @@ export default function PublishEventModal({ isOpen, onClose }: PublishEventModal
 
           <div className="inline-flex items-center gap-2 rounded-full border border-[#c2d902]/50 bg-[#c2d902]/15 px-4 py-1 text-[10px] font-black uppercase tracking-[0.2em] text-[#c2d902] shadow-[0_0_20px_rgba(194,217,2,0.3)] mb-3">
             <Sparkles className="w-3.5 h-3.5 text-[#c2d902] animate-pulse" />
-            <span>Publica tus Eventos con StormGo</span>
+            <span>Publica tus Eventos con 4go</span>
           </div>
 
           <h2 className="text-2xl sm:text-4xl font-black uppercase tracking-tight text-white leading-tight">
@@ -360,7 +360,7 @@ export default function PublishEventModal({ isOpen, onClose }: PublishEventModal
                 Conoce Tap2Go
               </h4>
               <p className="mt-2.5 text-xs text-zinc-300 font-medium leading-relaxed">
-                El nuevo servicio dual cashless de StormGo. Recargas previas online y en sitio con NFC, integradas con tu boletería en una sola plataforma.
+                El nuevo servicio dual cashless de 4go. Recargas previas online y en sitio con NFC, integradas con tu boletería en una sola plataforma.
               </p>
             </div>
           </div>
@@ -657,7 +657,7 @@ export default function PublishEventModal({ isOpen, onClose }: PublishEventModal
             ¿Necesitas ayuda o asesoría personalizada para tu evento?
           </p>
           <a
-            href="https://wa.me/593988831372?text=Hola%20StormGo,%20deseo%20asesoria%20para%20publicar%20mi%20evento."
+            href="https://wa.me/593988831372?text=Hola%204go,%20deseo%20asesoria%20para%20publicar%20mi%20evento."
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center gap-2 px-5 py-2 rounded-full border border-white/20 bg-white/10 text-xs font-black uppercase tracking-wider text-white hover:bg-white hover:text-black transition cursor-pointer"

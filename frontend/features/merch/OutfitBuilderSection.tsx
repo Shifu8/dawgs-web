@@ -16,10 +16,10 @@ export default function OutfitBuilderSection() {
       <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
         <div>
           <p className="text-[10px] font-black uppercase tracking-[0.4em] text-white/90 drop-shadow-sm">
-            MERCH OFICIAL · STORMGO
+            MERCH OFICIAL · 4GO
           </p>
           <h3 className="text-2xl sm:text-4xl font-black uppercase tracking-tight text-white mt-1 drop-shadow-md">
-            Explora la Merch Oficial de StormGo
+            Explora la Merch Oficial de 4go
           </h3>
         </div>
         <a
@@ -38,7 +38,7 @@ export default function OutfitBuilderSection() {
         {/* Base Couch Photo - Vivid & Bright */}
         <Image
           src={STUDIO_HERO_IMAGE}
-          alt="Modelos NOW4GO x NENEZ usando ropa oversize de colección"
+          alt="Modelos 4GO x NENEZ usando ropa oversize de colección"
           fill
           sizes="(max-width: 1600px) 100vw, 1600px"
           className="object-cover object-[center_top] opacity-75 pointer-events-none"
@@ -83,10 +83,10 @@ export default function OutfitBuilderSection() {
           <h4 className="mt-4 text-3xl font-black uppercase leading-tight tracking-tight text-white sm:text-5xl">
             Timeless Apparel.
             <br />
-            STORMGO x NENEZ
+            4GO x NENEZ
           </h4>
           <p className="mt-4 max-w-lg text-xs sm:text-sm leading-relaxed text-zinc-300 font-medium">
-            La marca oficial para ropa & merchandise exclusivo de STORMGO. Prendas oversize con siluetas urbanas premium, confeccionadas con materiales de máxima calidad para tus festivales y eventos.
+            La marca oficial para ropa & merchandise exclusivo de 4go. Prendas oversize con siluetas urbanas premium, confeccionadas con materiales de máxima calidad para tus festivales y eventos.
           </p>
         </div>
 

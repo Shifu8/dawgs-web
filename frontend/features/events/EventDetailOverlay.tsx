@@ -156,7 +156,7 @@ export default function EventDetailOverlay({
     <div className="fixed inset-0 z-[300] bg-[#070709] overflow-hidden flex flex-col font-sans">
       {/* ─── FIXED TOP HEADER BAR ─── */}
       <header className="h-16 w-full bg-black/90 border-b border-white/10 flex items-center justify-between px-6 z-[350] shrink-0 backdrop-blur-xl">
-        {/* Left: StormGo Logo Button (Clean Logo matching screenshot) */}
+        {/* Left: 4go Logo Button (Clean Logo matching screenshot) */}
         <button
           type="button"
           onClick={() => {
@@ -166,21 +166,27 @@ export default function EventDetailOverlay({
             }
           }}
           className="group flex items-center gap-2 hover:scale-105 transition-all duration-300 cursor-pointer"
-          aria-label="StormGo Inicio"
+          aria-label="4go Inicio"
         >
           <div className="w-7 h-7 shrink-0">
-            <svg className="w-full h-full select-none drop-shadow-md" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M25 68 C15 68, 10 58, 15 48 C10 38, 20 28, 32 30 C38 18, 55 15, 65 24 C75 16, 88 24, 88 36 C95 44, 92 58, 82 68 Z" fill="#ffffff" stroke="#1e1b4b" strokeWidth="6" strokeLinejoin="round" />
-              <path d="M30 32 L44 30" stroke="#1e1b4b" strokeWidth="5" strokeLinecap="round" />
-              <path d="M56 30 L70 32" stroke="#1e1b4b" strokeWidth="5" strokeLinecap="round" />
-              <path d="M24 44 C24 44, 46 38, 50 46 C54 38, 76 44, 76 44 L72 58 C72 58, 54 62, 50 56 C46 62, 28 58, 28 58 Z" fill="#111111" stroke="#1e1b4b" strokeWidth="4" strokeLinejoin="round" />
-              <line x1="30" y1="46" x2="42" y2="52" stroke="#ffffff" strokeWidth="3" strokeLinecap="round" />
-              <line x1="56" y1="46" x2="68" y2="52" stroke="#ffffff" strokeWidth="3" strokeLinecap="round" />
+            <svg className="w-full h-full select-none drop-shadow-md" viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg">
+              {/* Ultra-Clean HD 4 Mascot with Sunglasses & Streetwear Sneakers */}
+              <path d="M 38 82 L 28 98 C 24 104, 12 108, 10 114 C 8 120, 20 124, 34 122 C 44 120, 48 110, 44 98 L 48 82 Z" fill="#ffffff" stroke="#111111" strokeWidth="6" strokeLinejoin="round" strokeLinecap="round" />
+              <path d="M 12 114 C 18 108, 30 108, 40 116" stroke="#111111" strokeWidth="4" strokeLinecap="round" />
+              <path d="M 82 82 L 90 98 C 94 104, 106 108, 108 114 C 110 120, 98 124, 84 122 C 74 120, 70 110, 74 98 L 72 82 Z" fill="#ffffff" stroke="#111111" strokeWidth="6" strokeLinejoin="round" strokeLinecap="round" />
+              <path d="M 108 114 C 102 108, 90 108, 80 116" stroke="#111111" strokeWidth="4" strokeLinecap="round" />
+              <path d="M 64 12 L 22 64 L 22 76 L 70 76 L 70 94 L 88 94 L 88 76 L 102 76 L 102 58 L 88 58 L 88 12 Z" fill="#ffffff" stroke="#111111" strokeWidth="8" strokeLinejoin="round" strokeLinecap="round" />
+              <path d="M 70 28 L 70 58 L 46 58 Z" fill="#111111" stroke="#111111" strokeWidth="2" strokeLinejoin="round" />
+              <path d="M 30 36 L 46 33" stroke="#111111" strokeWidth="5" strokeLinecap="round" />
+              <path d="M 66 31 L 82 33" stroke="#111111" strokeWidth="5" strokeLinecap="round" />
+              <path d="M 18 44 C 18 44, 46 38, 52 47 C 58 38, 86 44, 86 44 L 80 60 C 80 60, 58 64, 52 57 C 46 64, 24 60, 24 60 Z" fill="#111111" stroke="#111111" strokeWidth="4" strokeLinejoin="round" />
+              <line x1="28" y1="47" x2="40" y2="53" stroke="#ffffff" strokeWidth="4" strokeLinecap="round" />
+              <line x1="60" y1="47" x2="72" y2="53" stroke="#ffffff" strokeWidth="4" strokeLinecap="round" />
             </svg>
           </div>
           <span className="text-base font-black tracking-tight text-white flex items-center leading-none">
-            <span>Storm</span>
-            <span className="text-[#c2d902]">Go</span>
+            <span>4</span>
+            <span className="text-[#c2d902]">go</span>
           </span>
         </button>
 
@@ -220,11 +226,11 @@ export default function EventDetailOverlay({
               <div className="flex items-center justify-between pb-3 border-b border-white/10">
                 <div className="flex items-center gap-3">
                   <div className="h-10 w-10 rounded-full bg-[#c2d902] text-black font-black flex items-center justify-center text-sm">
-                    SG
+                    4G
                   </div>
                   <div>
                     <h4 className="text-xs font-black uppercase text-white tracking-wider">Mi Cuenta</h4>
-                    <p className="text-[9px] font-bold text-zinc-400">usuario@stormgo.app</p>
+                    <p className="text-[9px] font-bold text-zinc-400">usuario@4go.app</p>
                   </div>
                 </div>
                 <button

@@ -24,6 +24,7 @@ import {
   Share2,
   User,
   PlusCircle,
+  ArrowLeft,
   LayoutDashboard,
   Search,
   Sparkles,
@@ -247,10 +248,11 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
   const [isLoading, setIsLoading] = useState(() => {
     if (typeof window !== "undefined") {
       const isSkipParam = window.location.search.includes("skipLoader");
-      const isSkipStorage = sessionStorage.getItem("skip_stormgo_loader") === "true";
+      const isSkipStorage = sessionStorage.getItem("skip_4go_loader") === "true" || sessionStorage.getItem("skip_stormgo_loader") === "true";
       const isFromOrganizer = document.referrer.includes("/organizer");
       if (isSkipParam || isSkipStorage || isFromOrganizer) {
         try {
+          sessionStorage.removeItem("skip_4go_loader");
           sessionStorage.removeItem("skip_stormgo_loader");
           if (isSkipParam) {
             window.history.replaceState({}, "", "/");
@@ -661,7 +663,7 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
     all:        "rgba(139,92,246,0.55)",
     fiestas:    "rgba(225,0,117,0.55)",
     conciertos: "rgba(194,217,2,0.45)",
-    publish:    "rgba(194,217,2,0.55)",
+    publish:    "rgba(139,92,246,0.65)",
   };
   const TAB_LABEL: Record<string, string> = {
     all:        "Todo",
@@ -710,43 +712,38 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                 }}
                 className="relative w-16 h-16 sm:w-20 sm:h-20 mb-3 drop-shadow-[0_10px_22px_rgba(0,0,0,0.35)]"
               >
-                <svg className="w-full h-full select-none" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M25 68 C15 68, 10 58, 15 48 C10 38, 20 28, 32 30 C38 18, 55 15, 65 24 C75 16, 88 24, 88 36 C95 44, 92 58, 82 68 Z" fill="#ffffff" stroke="#1e1b4b" strokeWidth="5.5" strokeLinejoin="round" />
-                  
-                  {/* Winking Left Eyebrow & Eyebrow motion */}
+                <svg className="w-full h-full select-none" viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  {/* Left Leg & Chunky Sneaker */}
+                  <path d="M 38 82 L 28 98 C 24 104, 12 108, 10 114 C 8 120, 20 124, 34 122 C 44 120, 48 110, 44 98 L 48 82 Z" fill="#ffffff" stroke="#111111" strokeWidth="6" strokeLinejoin="round" strokeLinecap="round" />
+                  <path d="M 12 114 C 18 108, 30 108, 40 116" stroke="#111111" strokeWidth="4" strokeLinecap="round" />
+
+                  {/* Right Leg & Chunky Sneaker */}
+                  <path d="M 82 82 L 90 98 C 94 104, 106 108, 108 114 C 110 120, 98 124, 84 122 C 74 120, 70 110, 74 98 L 72 82 Z" fill="#ffffff" stroke="#111111" strokeWidth="6" strokeLinejoin="round" strokeLinecap="round" />
+                  <path d="M 108 114 C 102 108, 90 108, 80 116" stroke="#111111" strokeWidth="4" strokeLinecap="round" />
+
+                  {/* Main Number 4 Body Contour */}
+                  <path d="M 64 12 L 22 64 L 22 76 L 70 76 L 70 94 L 88 94 L 88 76 L 102 76 L 102 58 L 88 58 L 88 12 Z" fill="#ffffff" stroke="#111111" strokeWidth="8" strokeLinejoin="round" strokeLinecap="round" />
+                  <path d="M 70 28 L 70 58 L 46 58 Z" fill="#111111" stroke="#111111" strokeWidth="2" strokeLinejoin="round" />
+
+                  {/* Winking Eyebrow Motion */}
                   <motion.path
-                    d="M30 30 L44 32"
-                    stroke="#1e1b4b"
+                    d="M 30 36 L 46 33"
+                    stroke="#111111"
                     strokeWidth="5"
                     strokeLinecap="round"
                     animate={{ rotate: [0, -12, 0] }}
                     transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
                   />
-                  <path d="M56 30 L70 32" stroke="#1e1b4b" strokeWidth="5" strokeLinecap="round" />
+                  <path d="M 66 31 L 82 33" stroke="#111111" strokeWidth="5" strokeLinecap="round" />
 
-                  {/* Sunglasses Lens Frame */}
+                  {/* Animated Sunglasses Frame */}
                   <motion.g
                     animate={{ y: [0, 3, 0] }}
                     transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
                   >
-                    <path
-                      d="M24 44 C24 44, 46 38, 50 46 C54 38, 76 44, 76 44 L72 58 C72 58, 54 62, 50 56 C46 62, 28 58, 28 58 Z"
-                      fill="#111111"
-                      stroke="#1e1b4b"
-                      strokeWidth="4"
-                      strokeLinejoin="round"
-                    />
-                    {/* Winking Sparkle Flare behind sunglasses ("echando un ojo") */}
-                    <motion.circle
-                      cx="38"
-                      cy="49"
-                      r="4"
-                      fill="#c2d902"
-                      animate={{ scale: [0, 1.6, 0], opacity: [0, 1, 0] }}
-                      transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut", delay: 0.2 }}
-                    />
-                    <line x1="30" y1="46" x2="42" y2="52" stroke="#ffffff" strokeWidth="3" strokeLinecap="round" />
-                    <line x1="56" y1="46" x2="68" y2="52" stroke="#ffffff" strokeWidth="3" strokeLinecap="round" />
+                    <path d="M 18 44 C 18 44, 46 38, 52 47 C 58 38, 86 44, 86 44 L 80 60 C 80 60, 58 64, 52 57 C 46 64, 24 60, 24 60 Z" fill="#111111" stroke="#111111" strokeWidth="4" strokeLinejoin="round" />
+                    <line x1="28" y1="47" x2="40" y2="53" stroke="#ffffff" strokeWidth="4" strokeLinecap="round" />
+                    <line x1="60" y1="47" x2="72" y2="53" stroke="#ffffff" strokeWidth="4" strokeLinecap="round" />
                   </motion.g>
                 </svg>
               </motion.div>
@@ -768,7 +765,13 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
       <Atmosphere />
 
       {/* Modern, chic top navigation bar */}
-      <header className="fixed inset-x-0 top-0 z-50 border-b border-white/15 bg-[#8b5cf6]/95 backdrop-blur-2xl shadow-lg">
+      <header
+        className={`fixed inset-x-0 top-0 z-50 border-b backdrop-blur-2xl shadow-lg transition-all duration-500 ${
+          activeFilterTab === "publish"
+            ? "bg-black/35 border-[#c2d902]/30 text-white shadow-[0_4px_30px_rgba(0,0,0,0.5)]"
+            : "bg-[#8b5cf6]/95 border-white/15 text-black"
+        }`}
+      >
         <div className="mx-auto flex w-full max-w-[1600px] items-center justify-between gap-3 px-4 py-2.5 sm:px-6 md:px-12 lg:px-16">
           
           {/* Logo + Greeting block */}
@@ -776,25 +779,32 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
             <button
               type="button"
               onClick={() => {
+                setActiveFilterTab("inicio");
                 const el = document.getElementById("show");
                 if (el) el.scrollIntoView({ behavior: "smooth" });
               }}
               className="group flex select-none items-center gap-2 outline-none hover:scale-105 transition-all duration-300 cursor-pointer"
               style={{ WebkitTapHighlightColor: "transparent" }}
-              aria-label="stormgo"
+              aria-label="4go"
             >
               <div className="relative w-8 h-8 sm:w-9 sm:h-9 flex items-center justify-center shrink-0">
-                <svg className="w-full h-full select-none" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M25 68 C15 68, 10 58, 15 48 C10 38, 20 28, 32 30 C38 18, 55 15, 65 24 C75 16, 88 24, 88 36 C95 44, 92 58, 82 68 Z" fill="#ffffff" stroke="#1e1b4b" strokeWidth="6" strokeLinejoin="round" />
-                  <path d="M30 32 L44 30" stroke="#1e1b4b" strokeWidth="5" strokeLinecap="round" />
-                  <path d="M56 30 L70 32" stroke="#1e1b4b" strokeWidth="5" strokeLinecap="round" />
-                  <path d="M24 44 C24 44, 46 38, 50 46 C54 38, 76 44, 76 44 L72 58 C72 58, 54 62, 50 56 C46 62, 28 58, 28 58 Z" fill="#111111" stroke="#1e1b4b" strokeWidth="4" strokeLinejoin="round" />
-                  <line x1="30" y1="46" x2="42" y2="52" stroke="#ffffff" strokeWidth="3" strokeLinecap="round" />
-                  <line x1="56" y1="46" x2="68" y2="52" stroke="#ffffff" strokeWidth="3" strokeLinecap="round" />
+                <svg className="w-full h-full select-none" viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  {/* Ultra-Clean HD 4 Mascot with Sunglasses & Streetwear Sneakers */}
+                  <path d="M 38 82 L 28 98 C 24 104, 12 108, 10 114 C 8 120, 20 124, 34 122 C 44 120, 48 110, 44 98 L 48 82 Z" fill="#ffffff" stroke="#111111" strokeWidth="6" strokeLinejoin="round" strokeLinecap="round" />
+                  <path d="M 12 114 C 18 108, 30 108, 40 116" stroke="#111111" strokeWidth="4" strokeLinecap="round" />
+                  <path d="M 82 82 L 90 98 C 94 104, 106 108, 108 114 C 110 120, 98 124, 84 122 C 74 120, 70 110, 74 98 L 72 82 Z" fill="#ffffff" stroke="#111111" strokeWidth="6" strokeLinejoin="round" strokeLinecap="round" />
+                  <path d="M 108 114 C 102 108, 90 108, 80 116" stroke="#111111" strokeWidth="4" strokeLinecap="round" />
+                  <path d="M 64 12 L 22 64 L 22 76 L 70 76 L 70 94 L 88 94 L 88 76 L 102 76 L 102 58 L 88 58 L 88 12 Z" fill="#ffffff" stroke="#111111" strokeWidth="8" strokeLinejoin="round" strokeLinecap="round" />
+                  <path d="M 70 28 L 70 58 L 46 58 Z" fill="#111111" stroke="#111111" strokeWidth="2" strokeLinejoin="round" />
+                  <path d="M 30 36 L 46 33" stroke="#111111" strokeWidth="5" strokeLinecap="round" />
+                  <path d="M 66 31 L 82 33" stroke="#111111" strokeWidth="5" strokeLinecap="round" />
+                  <path d="M 18 44 C 18 44, 46 38, 52 47 C 58 38, 86 44, 86 44 L 80 60 C 80 60, 58 64, 52 57 C 46 64, 24 60, 24 60 Z" fill="#111111" stroke="#111111" strokeWidth="4" strokeLinejoin="round" />
+                  <line x1="28" y1="47" x2="40" y2="53" stroke="#ffffff" strokeWidth="4" strokeLinecap="round" />
+                  <line x1="60" y1="47" x2="72" y2="53" stroke="#ffffff" strokeWidth="4" strokeLinecap="round" />
                 </svg>
               </div>
-              <span className="logo-text flex items-center text-xs sm:text-sm font-extrabold tracking-tight leading-none select-none text-black">
-                StormGo
+              <span className={`logo-text flex items-center text-xs sm:text-sm font-extrabold tracking-tight leading-none select-none ${activeFilterTab === "publish" ? "text-[#c2d902]" : "text-black"}`}>
+                4go
               </span>
             </button>
 
@@ -820,18 +830,25 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
 
           {/* Right side actions */}
           <div className="flex shrink-0 items-center gap-2 sm:gap-3">
-            <button
-              type="button"
-              onClick={() => setActiveFilterTab("publish")}
-              className={`relative group inline-flex h-8 items-center justify-center gap-1.5 rounded-full px-3.5 text-[9px] font-black uppercase tracking-[0.16em] transition-all duration-300 active:scale-95 cursor-pointer border ${
-                activeFilterTab === "publish"
-                  ? "bg-white text-black border-white shadow-[0_0_20px_rgba(255,255,255,0.4)] scale-105"
-                  : "bg-white/10 text-white/90 border-white/25 hover:bg-white hover:text-black backdrop-blur-md shadow-md"
-              }`}
-            >
-              <PlusCircle className={`w-3.5 h-3.5 ${activeFilterTab === "publish" ? "text-black" : "text-white/80 group-hover:text-black"}`} />
-              <span>SUBE UN EVENTO</span>
-            </button>
+            {activeFilterTab === "publish" ? (
+              <button
+                type="button"
+                onClick={() => setActiveFilterTab("inicio")}
+                className="hidden sm:inline-flex h-8 items-center justify-center gap-1.5 rounded-full px-3.5 text-[9px] font-black uppercase tracking-[0.16em] bg-white/10 text-white/90 border border-white/20 hover:bg-white/20 transition-all active:scale-95 cursor-pointer backdrop-blur-md"
+              >
+                <ArrowLeft className="w-3.5 h-3.5 text-white/80" />
+                <span>VOLVER AL INICIO</span>
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={() => setActiveFilterTab("publish")}
+                className="relative group inline-flex h-8 items-center justify-center gap-1.5 rounded-full px-3.5 text-[9px] font-black uppercase tracking-[0.16em] transition-all duration-300 active:scale-95 cursor-pointer border bg-white/10 text-white/90 border-white/25 hover:bg-white hover:text-black backdrop-blur-md shadow-md"
+              >
+                <PlusCircle className="w-3.5 h-3.5 text-white/80 group-hover:text-black" />
+                <span>SUBE UN EVENTO</span>
+              </button>
+            )}
 
             {/* Notification Bell — only when logged in */}
             {loggedUser && (
@@ -876,40 +893,42 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
 
         </div>
 
-        {/* ── Glassmorphic Segmented Control / Pill Tabs ── */}
-        <div className="border-t border-white/10 bg-[#7c3aed]/60 backdrop-blur-md px-4 py-2 sm:px-6">
-          <div className="mx-auto flex w-full max-w-[1600px] items-center justify-center">
-            {/* Pill container — scrollable on mobile, centered on desktop */}
-            <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-none pb-0.5 lg:overflow-visible lg:flex-wrap lg:justify-center">
-              {FILTER_TABS.map((tab) => {
-                const isActive = activeFilterTab === tab.id;
-                return (
-                  <button
-                    key={tab.id}
-                    type="button"
-                    id={`filter-tab-${tab.id}`}
-                    onClick={() => setActiveFilterTab(tab.id)}
-                    className={`relative flex shrink-0 items-center justify-center rounded-full px-4 py-1.5 text-[10px] font-black uppercase tracking-wider transition-all duration-300 cursor-pointer select-none ${
-                      isActive
-                        ? "bg-white text-black shadow-[0_2px_14px_rgba(255,255,255,0.35)] scale-105"
-                        : "bg-white/10 text-white/80 hover:bg-white/20 hover:text-white border border-white/20 backdrop-blur-sm"
-                    }`}
-                    aria-pressed={isActive}
-                  >
-                    <span>{tab.label}</span>
-                    {isActive && (
-                      <motion.span
-                        layoutId="active-pill-indicator"
-                        className="absolute inset-0 rounded-full bg-white/10 -z-10"
-                        transition={{ type: "spring", stiffness: 380, damping: 30 }}
-                      />
-                    )}
-                  </button>
-                );
-              })}
+        {/* ── Glassmorphic Segmented Control / Pill Tabs (Hidden on Publish mode for 1 clean header) ── */}
+        {activeFilterTab !== "publish" && (
+          <div className="border-t border-white/10 bg-[#7c3aed]/60 backdrop-blur-md px-4 py-2 sm:px-6 transition-all duration-300">
+            <div className="mx-auto flex w-full max-w-[1600px] items-center justify-center">
+              {/* Pill container — scrollable on mobile, centered on desktop */}
+              <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-none pb-0.5 lg:overflow-visible lg:flex-wrap lg:justify-center">
+                {FILTER_TABS.map((tab) => {
+                  const isActive = activeFilterTab === tab.id;
+                  return (
+                    <button
+                      key={tab.id}
+                      type="button"
+                      id={`filter-tab-${tab.id}`}
+                      onClick={() => setActiveFilterTab(tab.id)}
+                      className={`relative flex shrink-0 items-center justify-center rounded-full px-4 py-1.5 text-[10px] font-black uppercase tracking-wider transition-all duration-300 cursor-pointer select-none ${
+                        isActive
+                          ? "bg-white text-black shadow-[0_2px_14px_rgba(255,255,255,0.35)] scale-105"
+                          : "bg-white/10 text-white/80 hover:bg-white/20 hover:text-white border border-white/20 backdrop-blur-sm"
+                      }`}
+                      aria-pressed={isActive}
+                    >
+                      <span>{tab.label}</span>
+                      {isActive && (
+                        <motion.span
+                          layoutId="active-pill-indicator"
+                          className="absolute inset-0 rounded-full bg-white/10 -z-10"
+                          transition={{ type: "spring", stiffness: 380, damping: 30 }}
+                        />
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
             </div>
           </div>
-        </div>
+        )}
       </header>
 
       {/* ══════════════════════════════════════════════════════
@@ -925,7 +944,7 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
             exit={{ opacity: 0, filter: "blur(12px)" }}
             transition={{ duration: 0.38, ease: [0.22, 1, 0.36, 1] }}
             className="fixed inset-0 z-40 flex flex-col bg-[#050507] overflow-hidden"
-            style={{ paddingTop: "96px" }}
+            style={{ paddingTop: activeFilterTab === "publish" ? "52px" : "96px" }}
           >
             {/* Glow burst — animates on tab change, but overlay stays opaque */}
             <AnimatePresence mode="sync">
@@ -951,8 +970,9 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
               }}
             />
 
-            {/* ── Screen Header — title/subtitle animate per tab ── */}
-            <div className="flex-shrink-0 px-4 sm:px-6 pt-4 pb-3 flex items-center justify-between gap-4 border-b border-white/10">
+            {/* ── Screen Header — title/subtitle animate per tab (Hidden on publish mode for clean single header) ── */}
+            {activeFilterTab !== "publish" && (
+              <div className="flex-shrink-0 px-4 sm:px-6 pt-4 pb-3 flex items-center justify-between gap-4 border-b border-white/10 bg-black/40">
               <div className="flex items-center gap-3">
                 {/* Back button */}
                 <button
@@ -982,27 +1002,26 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
               </div>
 
               {/* Right: event count + search (only for show catalog tabs) */}
-              {activeFilterTab !== "publish" && (
-                <div className="flex items-center gap-2">
-                  <span className="hidden sm:inline-flex text-[10px] font-black text-white/60 bg-white/10 border border-white/10 px-3 py-1.5 rounded-full">
-                    {filteredTabEvents.length} {filteredTabEvents.length === 1 ? "evento" : "eventos"}
-                  </span>
-                  <div className="relative flex items-center bg-white/5 border border-white/15 rounded-full px-3 py-2 gap-2 focus-within:border-white/35 transition">
-                    <Search className="w-3.5 h-3.5 text-zinc-400 shrink-0" />
-                    <input
-                      type="text"
-                      placeholder="Buscar..."
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                      className="bg-transparent text-xs font-medium text-white placeholder-zinc-500 focus:outline-none w-28 sm:w-40"
-                    />
-                    {searchQuery && (
-                      <button onClick={() => setSearchQuery("")} className="text-[10px] text-zinc-400 hover:text-white font-bold cursor-pointer">✕</button>
-                    )}
-                  </div>
+              <div className="flex items-center gap-2">
+                <span className="hidden sm:inline-flex text-[10px] font-black text-white/60 bg-white/10 border border-white/10 px-3 py-1.5 rounded-full">
+                  {filteredTabEvents.length} {filteredTabEvents.length === 1 ? "evento" : "eventos"}
+                </span>
+                <div className="relative flex items-center bg-white/5 border border-white/15 rounded-full px-3 py-2 gap-2 focus-within:border-white/35 transition">
+                  <Search className="w-3.5 h-3.5 text-zinc-400 shrink-0" />
+                  <input
+                    type="text"
+                    placeholder="Buscar..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="bg-transparent text-xs font-medium text-white placeholder-zinc-500 focus:outline-none w-28 sm:w-40"
+                  />
+                  {searchQuery && (
+                    <button onClick={() => setSearchQuery("")} className="text-[10px] text-zinc-400 hover:text-white font-bold cursor-pointer">✕</button>
+                  )}
                 </div>
-              )}
+              </div>
             </div>
+            )}
 
             {activeFilterTab === "publish" ? (
               <div className="flex-1 overflow-y-auto no-scrollbar pb-12">
@@ -1097,7 +1116,7 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
 
                           {/* Info */}
                           <div className="p-3 flex flex-col gap-1 border-t border-white/5 bg-[#09090b]">
-                            <p className="text-[8px] font-black uppercase tracking-widest text-[#e10075] truncate">{evt.organizer ?? "StormGo"}</p>
+                            <p className="text-[8px] font-black uppercase tracking-widest text-[#e10075] truncate">{evt.organizer ?? "4go"}</p>
                             <h4 className="text-xs font-black uppercase text-white leading-tight line-clamp-1">{evt.title}</h4>
                             <p className="text-[10px] text-zinc-400 font-medium line-clamp-1">{evt.subtitle}</p>
                             <div className="flex items-center justify-between mt-2 pt-2 border-t border-white/5">
@@ -1157,7 +1176,7 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
               temporada 2026
             </span>
             <span className="px-6 py-2 rounded-2xl bg-black text-white font-black text-sm sm:text-base uppercase tracking-widest shadow-xl border border-white/20">
-              stormgo
+              4go
             </span>
             <span className="px-4 py-1.5 rounded-full border border-white/40 text-[10px] sm:text-xs font-bold uppercase tracking-wider text-white backdrop-blur-md">
               tickets digitales
@@ -1611,20 +1630,26 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
         className="relative z-10 -mx-4 border-t border-black/20 px-4 py-16 sm:-mx-8 sm:px-6 md:-mx-14 md:px-12 lg:-mx-20 lg:px-16 bg-[#8b5cf6] text-black"
       >
         <div className="mx-auto flex w-full max-w-[1600px] flex-col items-center text-center gap-4">
-          {/* Logo brand StormGo */}
+          {/* Logo brand 4go */}
           <div className="flex items-center gap-2 select-none mb-1">
             <div className="w-8 h-8 flex items-center justify-center shrink-0">
-              <svg className="w-full h-full select-none" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M25 68 C15 68, 10 58, 15 48 C10 38, 20 28, 32 30 C38 18, 55 15, 65 24 C75 16, 88 24, 88 36 C95 44, 92 58, 82 68 Z" fill="#ffffff" stroke="#1e1b4b" strokeWidth="6" strokeLinejoin="round" />
-                <path d="M30 32 L44 30" stroke="#1e1b4b" strokeWidth="5" strokeLinecap="round" />
-                <path d="M56 30 L70 32" stroke="#1e1b4b" strokeWidth="5" strokeLinecap="round" />
-                <path d="M24 44 C24 44, 46 38, 50 46 C54 38, 76 44, 76 44 L72 58 C72 58, 54 62, 50 56 C46 62, 28 58, 28 58 Z" fill="#111111" stroke="#1e1b4b" strokeWidth="4" strokeLinejoin="round" />
-                <line x1="30" y1="46" x2="42" y2="52" stroke="#ffffff" strokeWidth="3" strokeLinecap="round" />
-                <line x1="56" y1="46" x2="68" y2="52" stroke="#ffffff" strokeWidth="3" strokeLinecap="round" />
+              <svg className="w-full h-full select-none" viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg">
+                {/* Ultra-Clean HD 4 Mascot with Sunglasses & Streetwear Sneakers */}
+                <path d="M 38 82 L 28 98 C 24 104, 12 108, 10 114 C 8 120, 20 124, 34 122 C 44 120, 48 110, 44 98 L 48 82 Z" fill="#ffffff" stroke="#111111" strokeWidth="6" strokeLinejoin="round" strokeLinecap="round" />
+                <path d="M 12 114 C 18 108, 30 108, 40 116" stroke="#111111" strokeWidth="4" strokeLinecap="round" />
+                <path d="M 82 82 L 90 98 C 94 104, 106 108, 108 114 C 110 120, 98 124, 84 122 C 74 120, 70 110, 74 98 L 72 82 Z" fill="#ffffff" stroke="#111111" strokeWidth="6" strokeLinejoin="round" strokeLinecap="round" />
+                <path d="M 108 114 C 102 108, 90 108, 80 116" stroke="#111111" strokeWidth="4" strokeLinecap="round" />
+                <path d="M 64 12 L 22 64 L 22 76 L 70 76 L 70 94 L 88 94 L 88 76 L 102 76 L 102 58 L 88 58 L 88 12 Z" fill="#ffffff" stroke="#111111" strokeWidth="8" strokeLinejoin="round" strokeLinecap="round" />
+                <path d="M 70 28 L 70 58 L 46 58 Z" fill="#111111" stroke="#111111" strokeWidth="2" strokeLinejoin="round" />
+                <path d="M 30 36 L 46 33" stroke="#111111" strokeWidth="5" strokeLinecap="round" />
+                <path d="M 66 31 L 82 33" stroke="#111111" strokeWidth="5" strokeLinecap="round" />
+                <path d="M 18 44 C 18 44, 46 38, 52 47 C 58 38, 86 44, 86 44 L 80 60 C 80 60, 58 64, 52 57 C 46 64, 24 60, 24 60 Z" fill="#111111" stroke="#111111" strokeWidth="4" strokeLinejoin="round" />
+                <line x1="28" y1="47" x2="40" y2="53" stroke="#ffffff" strokeWidth="4" strokeLinecap="round" />
+                <line x1="60" y1="47" x2="72" y2="53" stroke="#ffffff" strokeWidth="4" strokeLinecap="round" />
               </svg>
             </div>
             <span className="logo-text flex items-center text-sm sm:text-base font-extrabold tracking-tight leading-none select-none text-black">
-              StormGo
+              4go
             </span>
           </div>
 
