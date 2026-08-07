@@ -1,30 +1,64 @@
-<svg width="128" height="128" viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <!-- Cute Green Alien Head Favicon SVG -->
-  <!-- Left Antenna -->
-  <path d="M 38 42 C 34 25, 24 16, 26 10 C 28 4, 38 8, 42 22 C 44 28, 44 36, 42 42 Z" fill="#a3ff12" stroke="#15803d" strokeWidth="3.5" strokeLinejoin="round" />
-  <circle cx="28" cy="8" r="5" fill="#a3ff12" stroke="#15803d" strokeWidth="3" />
-  
-  <!-- Right Antenna -->
-  <path d="M 90 42 C 94 25, 104 16, 102 10 C 100 4, 90 8, 86 22 C 84 28, 84 36, 86 42 Z" fill="#a3ff12" stroke="#15803d" strokeWidth="3.5" strokeLinejoin="round" />
-  <circle cx="100" cy="8" r="5" fill="#a3ff12" stroke="#15803d" strokeWidth="3" />
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Alien Head Contour matching exact artwork -->
+  <path
+    d="M 256 24 C 385 24 472 110 464 245 C 452 375 345 488 256 488 C 167 488 60 375 48 245 C 40 110 127 24 256 24 Z"
+    fill="#6fc825"
+    stroke="#1b7a2d"
+    strokeWidth="22"
+    strokeLinejoin="round"
+  />
 
-  <!-- Alien Main Head -->
-  <path d="M 64 24 C 92 24, 110 46, 108 76 C 106 104, 82 122, 64 122 C 46 122, 22 104, 20 76 C 18 46, 36 24, 64 24 Z" fill="#84cc16" stroke="#15803d" strokeWidth="4" />
+  <!-- Left Glossy Eye -->
+  <ellipse
+    cx="180"
+    cy="238"
+    rx="72"
+    ry="108"
+    transform="rotate(-5 180 238)"
+    fill="#050505"
+  />
+  <!-- Left Eye Highlights -->
+  <ellipse
+    cx="154"
+    cy="184"
+    rx="28"
+    ry="36"
+    transform="rotate(-15 154 184)"
+    fill="#ffffff"
+  />
+  <circle cx="196" cy="248" r="14" fill="#ffffff" />
 
-  <!-- Left Alien Eye -->
-  <ellipse cx="44" cy="70" rx="16" ry="22" transform="rotate(-10 44 70)" fill="#09090b" stroke="#18181b" strokeWidth="2" />
-  <ellipse cx="40" cy="62" rx="6" ry="9" transform="rotate(-10 40 62)" fill="#ffffff" opacity="0.9" />
-  <circle cx="48" cy="76" r="3" fill="#ffffff" opacity="0.6" />
-
-  <!-- Right Alien Eye -->
-  <ellipse cx="84" cy="70" rx="16" ry="22" transform="rotate(10 84 70)" fill="#09090b" stroke="#18181b" strokeWidth="2" />
-  <ellipse cx="80" cy="62" rx="6" ry="9" transform="rotate(10 80 62)" fill="#ffffff" opacity="0.9" />
-  <circle cx="88" cy="76" r="3" fill="#ffffff" opacity="0.6" />
+  <!-- Right Glossy Eye -->
+  <ellipse
+    cx="332"
+    cy="238"
+    rx="72"
+    ry="108"
+    transform="rotate(5 332 238)"
+    fill="#050505"
+  />
+  <!-- Right Eye Highlights -->
+  <ellipse
+    cx="306"
+    cy="184"
+    rx="28"
+    ry="36"
+    transform="rotate(-15 306 184)"
+    fill="#ffffff"
+  />
+  <circle cx="348" cy="248" r="14" fill="#ffffff" />
 
   <!-- Nose Dots -->
-  <circle cx="61" cy="92" r="1.5" fill="#15803d" />
-  <circle cx="67" cy="92" r="1.5" fill="#15803d" />
+  <circle cx="238" cy="354" r="8" fill="#1b7a2d" />
+  <circle cx="274" cy="354" r="8" fill="#1b7a2d" />
 
-  <!-- Cute Mouth :3 -->
-  <path d="M 54 98 C 58 104, 64 104, 64 99 C 64 104, 70 104, 74 98" stroke="#15803d" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" fill="none" />
+  <!-- Mouth :3 -->
+  <path
+    d="M 184 374 C 206 410 248 410 256 378 C 264 410 306 410 328 374"
+    stroke="#1b7a2d"
+    strokeWidth="18"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    fill="none"
+  />
 </svg>

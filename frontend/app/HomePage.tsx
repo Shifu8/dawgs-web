@@ -56,6 +56,7 @@ import BoxOfficeSalesModal from "@/frontend/features/staff/BoxOfficeSalesModal";
 import DrinksSalesModal from "@/frontend/features/staff/DrinksSalesModal";
 import PublishEventModal from "@/frontend/components/PublishEventModal";
 import OrganizerPublishScreen from "@/frontend/features/organizer/OrganizerPublishScreen";
+import VkFest3DCylinderCarousel from "@/frontend/components/VkFest3DCylinderCarousel";
 import EventTicketCarousel, { CAROUSEL_EVENTS } from "@/frontend/components/EventTicketCarousel";
 import EventDetailOverlay from "@/frontend/features/events/EventDetailOverlay";
 import InstallApp from "@/frontend/components/InstallApp";
@@ -64,6 +65,8 @@ import OrganizerProfileOverlay from "@/frontend/features/organizer/OrganizerProf
 import { QuickPreviewModal } from "@/frontend/components/QuickPreviewModal";
 import { gsap, useGSAP } from "@/frontend/animations/gsapSetup";
 import DrinksMenuModal from "@/frontend/components/DrinksMenuModal";
+import StoryLinesHeader, { type StoryScreen } from "@/frontend/components/StoryLinesHeader";
+import AlienIcon from "@/frontend/components/AlienIcon";
 import { events as fallbackEvents } from "@/frontend/services/nenezData";
 import { useHomepageConfig } from "@/frontend/hooks/useHomepageConfig";
 import type { ThemeColors } from "@/lib/homepage-config/themes";
@@ -161,6 +164,114 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
   const [showDrinksModal, setShowDrinksModal] = useState(false);
   const [showRecoveryModal, setShowRecoveryModal] = useState(false);
   const [selectedCarouselEvent, setSelectedCarouselEvent] = useState<Event>(CAROUSEL_EVENTS[0]);
+
+  // 3D Perspective Curved Carousel state for Eventos screen
+  const [featuredCarouselIndex, setFeaturedCarouselIndex] = useState(0);
+
+  // Story-style screen navigation state (Instagram/TikTok lines)
+  const [activeStoryScreen, setActiveStoryScreen] = useState(1);
+
+  // Auto-play 3D Curved Carousel in Eventos screen (moving to the right)
+  useEffect(() => {
+    if (activeStoryScreen !== 2) return;
+    const interval = setInterval(() => {
+      setFeaturedCarouselIndex((prev) => (prev + 1) % Math.max(1, (events || []).length));
+    }, 2800);
+    return () => clearInterval(interval);
+  }, [activeStoryScreen, events]);
+
+  const storyScreens: StoryScreen[] = [
+    { id: "create", label: "Sube tu evento", icon: <PlusCircle className="w-3.5 h-3.5 text-emerald-400" /> },
+    { id: "home", label: "Home", icon: <Sparkles className="w-3.5 h-3.5 text-yellow-400" /> },
+    { id: "eventos", label: "Eventos", icon: <Calendar className="w-3.5 h-3.5 text-purple-400" /> },
+    { id: "fiestas", label: "Fiestas & Clubs", icon: <Compass className="w-3.5 h-3.5 text-pink-400" /> },
+  ];
+
+  const handleScreenDragEnd = (_: any, info: { offset: { x: number }; velocity: { x: number } }) => {
+    const swipeThreshold = 25;
+    if (info.offset.x < -swipeThreshold || info.velocity.x < -100) {
+      setActiveStoryScreen((prev) => Math.min(prev + 1, storyScreens.length - 1));
+    } else if (info.offset.x > swipeThreshold || info.velocity.x > 100) {
+      setActiveStoryScreen((prev) => Math.max(prev - 1, 0));
+    }
+  };
+
+  // Native Touch, Trackpad 2-finger wheel & Keyboard Arrows navigation
+  const touchStartX = useRef<number | null>(null);
+  const touchStartY = useRef<number | null>(null);
+  const lastSwipeTime = useRef(0);
+
+  useEffect(() => {
+    const handleTouchStart = (e: TouchEvent) => {
+      if (e.touches.length > 0) {
+        touchStartX.current = e.touches[0].clientX;
+        touchStartY.current = e.touches[0].clientY;
+      }
+    };
+
+    const handleTouchEnd = (e: TouchEvent) => {
+      if (touchStartX.current === null || touchStartY.current === null) return;
+      if (!e.changedTouches || e.changedTouches.length === 0) return;
+
+      const touchEndX = e.changedTouches[0].clientX;
+      const touchEndY = e.changedTouches[0].clientY;
+
+      const diffX = touchEndX - touchStartX.current;
+      const diffY = touchEndY - touchStartY.current;
+
+      // Ensure horizontal swipe is dominant and above 25px threshold
+      if (Math.abs(diffX) > 25 && Math.abs(diffX) > Math.abs(diffY)) {
+        if (diffX < -25) {
+          setActiveStoryScreen((prev) => Math.min(prev + 1, storyScreens.length - 1));
+        } else if (diffX > 25) {
+          setActiveStoryScreen((prev) => Math.max(prev - 1, 0));
+        }
+      }
+
+      touchStartX.current = null;
+      touchStartY.current = null;
+    };
+
+    const handleWheel = (e: WheelEvent) => {
+      const now = Date.now();
+      if (now - lastSwipeTime.current < 400) return;
+
+      // Trackpad 2-finger horizontal scroll detection (deltaX)
+      if (Math.abs(e.deltaX) > 12 && Math.abs(e.deltaX) > Math.abs(e.deltaY)) {
+        if (e.deltaX > 12) {
+          setActiveStoryScreen((prev) => Math.min(prev + 1, storyScreens.length - 1));
+          lastSwipeTime.current = now;
+        } else if (e.deltaX < -12) {
+          setActiveStoryScreen((prev) => Math.max(prev - 1, 0));
+          lastSwipeTime.current = now;
+        }
+      }
+    };
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      const activeTag = (document.activeElement?.tagName || "").toUpperCase();
+      if (["INPUT", "TEXTAREA"].includes(activeTag)) return;
+      if (showDetailOverlay || isTicketModalOpen || showEventModal || showHiddenMenu || showUserMenu) return;
+
+      if (e.key === "ArrowRight") {
+        setActiveStoryScreen((prev) => Math.min(prev + 1, storyScreens.length - 1));
+      } else if (e.key === "ArrowLeft") {
+        setActiveStoryScreen((prev) => Math.max(prev - 1, 0));
+      }
+    };
+
+    window.addEventListener("touchstart", handleTouchStart, { passive: true });
+    window.addEventListener("touchend", handleTouchEnd, { passive: true });
+    window.addEventListener("wheel", handleWheel, { passive: true });
+    window.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      window.removeEventListener("touchstart", handleTouchStart);
+      window.removeEventListener("touchend", handleTouchEnd);
+      window.removeEventListener("wheel", handleWheel);
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [storyScreens.length, showDetailOverlay, isTicketModalOpen, showEventModal, showHiddenMenu, showUserMenu]);
 
   // Auto-open EventDetailOverlay if initialEventSlug is specified
   useEffect(() => {
@@ -780,287 +891,473 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
 
       <Atmosphere />
 
-      {/* ─── APPLE ARCADE FULL-BLEED TRANSPARENT TOP HEADER ─── */}
-      <header className="absolute inset-x-0 top-0 z-50 bg-gradient-to-b from-black/80 via-black/30 to-transparent px-4 sm:px-8 pt-4 pb-6 transition-all duration-300">
-        <div className="mx-auto flex w-full max-w-[1400px] items-center justify-between gap-4">
-          {/* Left: Bold "Home" Title */}
-          <div className="flex items-center gap-3">
-            <button
-              type="button"
-              onClick={() => {
-                setActiveFilterTab("inicio");
-                window.scrollTo({ top: 0, behavior: "smooth" });
-              }}
-              className="flex items-center gap-2 cursor-pointer"
-            >
-              <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-white font-sans drop-shadow-md">
-                Home
-              </h1>
-            </button>
+      {/* ─── APPLE ARCADE FULL-BLEED TRANSPARENT TOP HEADER WITH STORIES LINES OVERLAY ─── */}
+      <header className="absolute inset-x-0 top-0 z-50 bg-gradient-to-b from-black/90 via-black/30 to-transparent px-4 sm:px-8 pt-3 pb-6 transition-all duration-300 pointer-events-none">
+        <div className="mx-auto flex w-full max-w-[1400px] flex-col gap-3 pointer-events-auto">
+          {/* 1. TOP STORY SEGMENT LINES (Superimposed over top of hero photo) */}
+          <div className="w-full max-w-xl mx-auto">
+            <StoryLinesHeader
+              screens={storyScreens}
+              activeScreen={activeStoryScreen}
+              onSelectScreen={(idx) => setActiveStoryScreen(idx)}
+            />
           </div>
 
-          {/* Right: Avatar Badge */}
-          <div className="flex items-center gap-3">
-            <div className="relative inline-flex items-center gap-2 px-3 py-1 rounded-full bg-black/40 border border-white/20 backdrop-blur-md shadow-lg">
-              <span className="text-[10px] font-extrabold text-purple-300 tracking-wider uppercase">
-                SUBSCRIBER
-              </span>
+          {/* 2. DYNAMIC HEADER TITLE & ACCOUNT BADGE */}
+          <div className="flex items-center justify-between gap-4">
+            {/* Left: Dynamic Screen Title (Sube tu evento | Home | Eventos | Fiestas & Clubs) */}
+            <div className="flex items-center gap-3">
+              <button
+                type="button"
+                onClick={() => {
+                  setActiveStoryScreen(1);
+                  window.scrollTo({ top: 0, behavior: "smooth" });
+                }}
+                className="flex items-center gap-2 cursor-pointer group focus:outline-none"
+              >
+                <AnimatePresence mode="wait">
+                  <motion.h1
+                    key={`header-title-${activeStoryScreen}`}
+                    initial={{ opacity: 0, y: -6 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 6 }}
+                    transition={{ duration: 0.25, ease: "easeOut" }}
+                    className="text-2xl sm:text-4xl font-extrabold tracking-tight text-white font-sans drop-shadow-md group-hover:text-purple-300 transition-colors whitespace-nowrap"
+                  >
+                    {storyScreens[activeStoryScreen]?.label || "Home"}
+                  </motion.h1>
+                </AnimatePresence>
+              </button>
             </div>
-            <button
-              type="button"
-              onClick={() => setShowUserMenu(!showUserMenu)}
-              className="relative w-9 h-9 rounded-full overflow-hidden border-2 border-emerald-400/80 bg-black flex items-center justify-center shadow-lg cursor-pointer"
-            >
-              <User className="w-5 h-5 text-white" />
-            </button>
+
+            {/* Right: Avatar & Account Badge */}
+            <div className="flex items-center gap-3">
+              <div className="relative inline-flex items-center gap-2 px-3 py-1 rounded-full bg-black/40 border border-white/20 backdrop-blur-md shadow-lg">
+                <span className="text-[10px] font-extrabold text-purple-300 tracking-wider uppercase">
+                  SUBSCRIBER
+                </span>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowUserMenu(!showUserMenu)}
+                className="relative w-9 h-9 rounded-full overflow-hidden border-2 border-emerald-400/80 bg-black flex items-center justify-center shadow-lg cursor-pointer hover:scale-105 transition-transform p-1"
+                aria-label="Perfil de usuario"
+              >
+                <AlienIcon className="w-full h-full" />
+              </button>
+            </div>
           </div>
         </div>
       </header>
 
-      {/* ─── MAIN HOME CONTENT (MATCHING REFERENCE IMAGE FULL-BLEED HERO) ─── */}
-      <div className="pb-28 min-h-screen bg-black text-white">
-
-        {/* ─── 1. FULL-BLEED HERO SHOWCASE (4go Alien Chef Intro & Event Slides) ─── */}
-        <section className="relative w-full overflow-hidden">
-          {(() => {
-            const heroSlides = [
-              {
-                id: "4go-chef-intro",
-                poster: "/images/4go-hero-chef-alien.png",
-                title: "4go",
-                tagline: "FOR YOU",
-                line1: "Los mejores shots y la previa... ¿estás listo?",
-                line2: "Explora y vive la fiesta con 4go",
-                event: events[0] || fallbackEvents[0],
-              },
-              ...events.map((e) => ({
-                id: e.id,
-                poster: e.poster || "/images/now4go-hero-presentation-hd-v3.png",
-                title: e.title,
-                tagline: "FOR YOU",
-                line1: e.subtitle || e.venue,
-                line2: e.description || "Entradas oficiales disponibles",
-                event: e,
-              })),
-            ];
-
-            const currentSlide = heroSlides[heroIndex % heroSlides.length];
-
-            return (
-              <div className="relative w-full flex flex-col items-center">
-                {/* Full-Bleed Hero Image Container */}
-                <div
-                  onClick={() => {
-                    const el = document.getElementById("explore");
-                    if (el) el.scrollIntoView({ behavior: "smooth" });
-                  }}
-                  className="relative w-full h-[620px] sm:h-[700px] overflow-hidden bg-[#0a0512] group cursor-pointer"
-                >
-                  {/* Hero Image Background (Extends all the way to top 0 with object-center to show green alien, sushi & friends) */}
-                  <Image
-                    src={currentSlide.poster}
-                    alt={currentSlide.title}
-                    fill
-                    priority
-                    className="object-cover object-center brightness-105 group-hover:scale-105 transition-transform duration-700"
-                  />
-
-                  {/* Vibrant Purple & Magenta Ambient Glow Overlay */}
-                  <div className="absolute inset-0 bg-gradient-to-tr from-[#6b21a8]/35 via-[#c026d3]/25 to-transparent opacity-90" />
-
-                  {/* Bottom Purple/Magenta Soft Gradient & Blur Fade Effect */}
-                  <div className="absolute inset-x-0 bottom-0 h-[60%] bg-gradient-to-b from-transparent via-[#180828]/50 via-black/85 to-black backdrop-blur-[1px]" />
-
-                  {/* Hero Superimposed Content (Matching User's Reference Image Typography) */}
-                  <div className="absolute bottom-6 inset-x-0 p-6 flex flex-col items-center text-center z-10 max-w-xl mx-auto">
-                    
-                    {/* FOR YOU Subtitle */}
-                    <span className="text-xs font-extrabold uppercase tracking-[0.25em] text-[#ff77a8] block mb-1 drop-shadow-md">
-                      {currentSlide.tagline}
-                    </span>
-
-                    {/* Hero Title */}
-                    <h2 className="text-4xl sm:text-6xl font-black text-white tracking-tight uppercase leading-tight drop-shadow-2xl">
-                      {currentSlide.title}
-                    </h2>
-
-                    {/* Description Tagline Lines (Matching image 2 style) */}
-                    <div className="mt-1.5 flex flex-col items-center text-center space-y-0.5">
-                      <p className="text-xs sm:text-sm font-bold text-zinc-100 drop-shadow line-clamp-1">
-                        {currentSlide.line1}
-                      </p>
-                      <p className="text-xs sm:text-sm font-medium text-zinc-300 drop-shadow line-clamp-1">
-                        {currentSlide.line2}
-                      </p>
-                    </div>
-
-                    {/* Glass Pill Button — EMPEZAR */}
-                    <div className="mt-5">
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          const el = document.getElementById("explore");
-                          if (el) el.scrollIntoView({ behavior: "smooth" });
-                        }}
-                        className="px-14 py-3.5 rounded-full bg-white/20 hover:bg-white/35 text-white font-black text-xs uppercase tracking-widest backdrop-blur-xl border border-white/40 shadow-[0_10px_30px_rgba(192,38,211,0.3)] transition-all hover:scale-105 active:scale-95 cursor-pointer"
-                      >
-                        EMPEZAR
-                      </button>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Carousel Pagination Dots directly underneath Hero */}
-                <div className="flex items-center justify-center gap-2 -mt-2 mb-4 select-none relative z-20">
-                  {heroSlides.map((_, idx) => (
-                    <button
-                      key={`hero-dot-${idx}`}
-                      type="button"
-                      onClick={() => setHeroIndex(idx)}
-                      className={`h-2 rounded-full transition-all duration-300 cursor-pointer ${
-                        idx === (heroIndex % heroSlides.length)
-                          ? "w-8 bg-white shadow-[0_0_12px_rgba(255,255,255,0.8)]"
-                          : "w-2 bg-white/30 hover:bg-white/50"
-                      }`}
-                      aria-label={`Go to slide ${idx + 1}`}
-                    />
-                  ))}
-                </div>
-              </div>
-            );
-          })()}
-        </section>
-
-        {/* ─── 2. SECTION: ORGANIZADORES & DISCOTECAS DESTACADAS ─── */}
-        <section className="py-6 px-4 sm:px-8 max-w-[1400px] mx-auto">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-xl sm:text-2xl font-extrabold text-white tracking-tight font-sans">
-              Discotecas &amp; Organizadores
-            </h3>
-          </div>
-
-          {/* Organizer Brand Cards */}
-          <div className="grid grid-cols-3 gap-3">
-            {[
-              { id: "cubic", name: "Cubic Loja", tagline: "Nightclub", color: "from-purple-900/60 to-black", border: "border-purple-500/40" },
-              { id: "lequat", name: "Lequat", tagline: "Eventos & Shows", color: "from-pink-900/60 to-black", border: "border-pink-500/40" },
-              { id: "now", name: "NOW 4GO", tagline: "Originals", color: "from-emerald-900/60 to-black", border: "border-emerald-500/40" },
-            ].map((org) => {
-              const isSelected = selectedOrganizer === org.id;
-
-              return (
-                <button
-                  key={org.id}
-                  type="button"
-                  onClick={() => {
-                    setSelectedOrganizer(isSelected ? "todos" : org.id);
-                    if (org.id === "cubic") {
-                      setSelectedOrganizerSlug("cubic");
-                      setShowOrganizerOverlay(true);
-                    } else {
-                      const el = document.getElementById("explore");
-                      if (el) el.scrollIntoView({ behavior: "smooth" });
-                    }
-                  }}
-                  className={`relative flex flex-col items-center justify-center p-3.5 rounded-2xl border transition-all duration-300 cursor-pointer bg-gradient-to-b ${org.color} ${
-                    isSelected ? "border-white shadow-[0_0_20px_rgba(255,255,255,0.3)] scale-105" : `${org.border} hover:border-white/50`
-                  }`}
-                >
-                  <span className="text-xs font-black uppercase text-white tracking-wider">{org.name}</span>
-                  <span className="text-[9px] text-zinc-400 font-medium mt-0.5">{org.tagline}</span>
-                </button>
-              );
-            })}
-          </div>
-        </section>
-
-        {/* ─── 3. SECTION: EVENTOS DE LA SEMANA (FILTRO POR DÍAS) ─── */}
-        <section id="explore" className="py-8 px-4 sm:px-8 max-w-[1400px] mx-auto">
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-4">
-            <div>
-              <h3 className="text-xl sm:text-2xl font-extrabold text-white tracking-tight font-sans">
-                Cartelera de Eventos
-              </h3>
-              <p className="text-xs text-zinc-400 font-medium">Filtra por día o busca tu fiesta favorita</p>
-            </div>
-
-            {/* Day Filter Chips */}
-            <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-none py-1">
-              {[
-                { id: "todos", label: "Todos" },
-                { id: "viernes", label: "Viernes" },
-                { id: "sabado", label: "Sábado" },
-                { id: "domingo", label: "Domingo" },
-                { id: "lunes", label: "Lunes" },
-              ].map((day) => {
-                const isActive = selectedDay === day.id;
-
-                return (
-                  <button
-                    key={day.id}
-                    type="button"
-                    onClick={() => setSelectedDay(day.id)}
-                    className={`px-3.5 py-1.5 rounded-full text-xs font-black uppercase tracking-wider border transition-all cursor-pointer ${
-                      isActive
-                        ? "bg-white text-black border-white shadow-md scale-105"
-                        : "bg-white/10 text-white/80 border-white/20 hover:bg-white/20 hover:text-white"
-                    }`}
-                  >
-                    {day.label}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* Grid of Rounded Event Thumbnail Cards */}
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-            {filteredCatalogEvents.map((evt) => (
-              <div
-                key={`cat-${evt.id}`}
-                onClick={() => {
-                  setSelectedCarouselEvent(evt);
-                  setShowDetailOverlay(true);
-                }}
-                className="group relative flex flex-col rounded-3xl bg-zinc-950 border border-zinc-800 overflow-hidden cursor-pointer hover:border-purple-500 transition-all duration-300 hover:scale-105 shadow-xl"
+      {/* ─── MAIN HOME CONTENT (FULL BLEED HERO photo STARTING AT TOP:0) ─── */}
+      <div className="pb-28 min-h-screen bg-black text-white pt-0">
+        <motion.div
+          drag="x"
+          dragConstraints={{ left: 0, right: 0 }}
+          dragElastic={0.12}
+          onDragEnd={handleScreenDragEnd}
+          className="w-full cursor-grab active:cursor-grabbing touch-pan-y"
+        >
+          <AnimatePresence mode="wait">
+            {activeStoryScreen === 0 && (
+              <motion.div
+                key="screen-0-create-event"
+                initial={{ opacity: 0, x: -40 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -40 }}
+                transition={{ duration: 0.35, ease: "easeOut" }}
+                className="relative w-full h-[100dvh] min-h-[640px] overflow-hidden bg-[#486f56] flex flex-col justify-end items-center pb-12 select-none"
               >
-                <div className="relative w-full aspect-square bg-zinc-900 overflow-hidden">
-                  <Image
-                    src={evt.poster || "/images/now4go-hero-presentation-hd-v3.png"}
-                    alt={evt.title}
-                    fill
-                    className="object-cover group-hover:scale-110 transition-transform duration-500"
-                    sizes="200px"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-transparent to-transparent" />
-                  <span className="absolute top-2.5 right-2.5 px-2.5 py-1 rounded-full bg-white text-black text-[10px] font-black shadow">
-                    ${evt.price || 10} USD
-                  </span>
+                {/* 1. Full-Bleed Artwork Image Background */}
+                <Image
+                  src="/just_create_4go_hero.png"
+                  alt="Just Create 4GO"
+                  fill
+                  priority
+                  className="object-cover object-center brightness-105"
+                />
+
+                {/* 2. Soft Animated Color Ambient Glow Overlay */}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/30 pointer-events-none" />
+                <motion.div
+                  animate={{
+                    opacity: [0.15, 0.45, 0.15],
+                    scale: [1, 1.05, 1],
+                  }}
+                  transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+                  className="absolute inset-0 bg-gradient-to-tr from-emerald-500/20 via-purple-500/20 to-pink-500/20 pointer-events-none mix-blend-color-dodge"
+                />
+
+                {/* 3. Interactive Get Started Button Superimposed at the Bottom */}
+                <div className="relative z-30 mb-2 px-6 w-full max-w-sm">
+                  <button
+                    type="button"
+                    onClick={() => setShowEventModal(true)}
+                    className="w-full py-4 px-8 rounded-full bg-black text-white hover:bg-zinc-900 font-black text-sm uppercase tracking-widest border border-white/20 shadow-[0_0_30px_rgba(0,0,0,0.8)] transition-all hover:scale-105 active:scale-95 cursor-pointer flex items-center justify-center gap-2 group"
+                  >
+                    <span>Get Started</span>
+                    <span className="text-emerald-400 group-hover:translate-x-1 transition-transform">➔</span>
+                  </button>
+                </div>
+              </motion.div>
+            )}
+
+            {activeStoryScreen === 1 && (
+              <motion.div
+                key="screen-1-home"
+                initial={{ opacity: 0, x: -30 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -30 }}
+                transition={{ duration: 0.3, ease: "easeOut" }}
+                className="space-y-8"
+              >
+                {/* ─── 1. FULL-BLEED HERO SHOWCASE ─── */}
+                <section className="relative w-full overflow-hidden">
+                  {(() => {
+                    const heroSlides = [
+                      {
+                        id: "4go-chef-intro",
+                        poster: "/images/4go-hero-chef-alien.png",
+                        title: "4go",
+                        tagline: "FOR YOU",
+                        line1: "Los mejores shots y la previa... ¿estás listo?",
+                        line2: "Explora y vive la fiesta con 4go",
+                        event: events[0] || fallbackEvents[0],
+                      },
+                      ...events.map((e) => ({
+                        id: e.id,
+                        poster: e.poster || "/images/now4go-hero-presentation-hd-v3.png",
+                        title: e.title,
+                        tagline: "FOR YOU",
+                        line1: e.subtitle || e.venue,
+                        line2: e.description || "Entradas oficiales disponibles",
+                        event: e,
+                      })),
+                    ];
+
+                    const currentSlide = heroSlides[heroIndex % heroSlides.length];
+
+                    return (
+                      <div className="relative w-full flex flex-col items-center">
+                        <div
+                          onClick={() => {
+                            setActiveStoryScreen(2);
+                          }}
+                          className="relative w-full h-[520px] sm:h-[620px] overflow-hidden bg-[#0a0512] group cursor-pointer"
+                        >
+                          <Image
+                            src={currentSlide.poster}
+                            alt={currentSlide.title}
+                            fill
+                            priority
+                            className="object-cover object-center brightness-105 group-hover:scale-105 transition-transform duration-700"
+                          />
+                          <div className="absolute inset-0 bg-gradient-to-tr from-[#6b21a8]/35 via-[#c026d3]/25 to-transparent opacity-90" />
+                          <div className="absolute inset-x-0 bottom-0 h-[60%] bg-gradient-to-b from-transparent via-[#180828]/50 via-black/85 to-black backdrop-blur-[1px]" />
+                          <div className="absolute bottom-6 inset-x-0 p-6 flex flex-col items-center text-center z-10 max-w-xl mx-auto">
+                            <span className="text-xs font-extrabold uppercase tracking-[0.25em] text-[#ff77a8] block mb-1 drop-shadow-md">
+                              {currentSlide.tagline}
+                            </span>
+                            <h2 className="text-4xl sm:text-6xl font-black text-white tracking-tight uppercase leading-tight drop-shadow-2xl">
+                              {currentSlide.title}
+                            </h2>
+                            <div className="mt-1.5 flex flex-col items-center text-center space-y-0.5">
+                              <p className="text-xs sm:text-sm font-bold text-zinc-100 drop-shadow line-clamp-1">
+                                {currentSlide.line1}
+                              </p>
+                              <p className="text-xs sm:text-sm font-medium text-zinc-300 drop-shadow line-clamp-1">
+                                {currentSlide.line2}
+                              </p>
+                            </div>
+                            <div className="mt-5 flex items-center gap-3">
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setShowEventModal(true);
+                                }}
+                                className="px-8 py-3.5 rounded-full bg-purple-600 hover:bg-purple-500 text-white font-black text-xs uppercase tracking-widest backdrop-blur-xl border border-purple-400/40 shadow-[0_10px_30px_rgba(168,85,247,0.4)] transition-all hover:scale-105 active:scale-95 cursor-pointer flex items-center gap-2"
+                              >
+                                <PlusCircle className="w-4 h-4" />
+                                CREAR EVENTO
+                              </button>
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setActiveStoryScreen(2);
+                                }}
+                                className="px-8 py-3.5 rounded-full bg-white/20 hover:bg-white/35 text-white font-black text-xs uppercase tracking-widest backdrop-blur-xl border border-white/40 shadow-lg transition-all hover:scale-105 active:scale-95 cursor-pointer"
+                              >
+                                CARTELERA
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center justify-center gap-2 -mt-2 mb-4 select-none relative z-20">
+                          {heroSlides.map((_, idx) => (
+                            <button
+                              key={`hero-dot-${idx}`}
+                              type="button"
+                              onClick={() => setHeroIndex(idx)}
+                              className={`h-2 rounded-full transition-all duration-300 cursor-pointer ${
+                                idx === (heroIndex % heroSlides.length)
+                                  ? "w-8 bg-white shadow-[0_0_12px_rgba(255,255,255,0.8)]"
+                                  : "w-2 bg-white/30 hover:bg-white/50"
+                              }`}
+                              aria-label={`Go to slide ${idx + 1}`}
+                            />
+                          ))}
+                        </div>
+                      </div>
+                    );
+                  })()}
+                </section>
+
+                {/* ─── GET STARTED / CREAR EVENTO PROMOTIONAL BANNER ─── */}
+                <section className="px-4 sm:px-8 max-w-[1400px] mx-auto">
+                  <div className="relative overflow-hidden rounded-3xl border border-purple-500/30 bg-gradient-to-r from-purple-950/80 via-black to-zinc-950 p-6 sm:p-10 shadow-[0_0_50px_rgba(168,85,247,0.2)] flex flex-col md:flex-row items-center justify-between gap-6">
+                    <div className="space-y-2 text-center md:text-left">
+                      <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-purple-500/20 border border-purple-400/30 text-purple-300 text-xs font-black uppercase tracking-wider">
+                        <Sparkles className="w-3.5 h-3.5" /> Publica Tu Evento Gratis
+                      </div>
+                      <h2 className="text-2xl sm:text-4xl font-black uppercase tracking-tight text-white">
+                        Get Started: Organiza tu fiesta o concierto
+                      </h2>
+                      <p className="text-xs sm:text-sm text-zinc-300 max-w-xl">
+                        Comienza a vender entradas por WhatsApp, código QR, tarjeta o taquilla física en minutos con el respaldo de Now4Go.
+                      </p>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => setShowEventModal(true)}
+                      className="px-8 py-4 rounded-full bg-white text-black hover:bg-purple-300 font-black text-xs uppercase tracking-widest transition-all hover:scale-105 shadow-[0_0_25px_rgba(255,255,255,0.4)] cursor-pointer flex items-center gap-2 shrink-0"
+                    >
+                      <PlusCircle className="w-4 h-4 text-purple-600" />
+                      Empezar / Crear Evento
+                    </button>
+                  </div>
+                </section>
+              </motion.div>
+            )}
+
+            {activeStoryScreen === 2 && (
+              <motion.div
+                key="screen-2-cartelera"
+                initial={{ opacity: 0, x: 30 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: 30 }}
+                transition={{ duration: 0.3, ease: "easeOut" }}
+                className="px-4 sm:px-8 max-w-[1400px] mx-auto pt-24 sm:pt-28 space-y-8"
+              >
+                {/* ─── 1. VK FEST 2025 3D PERSPECTIVE CYLINDER CAROUSEL SHOWCASE ─── */}
+                <VkFest3DCylinderCarousel
+                  events={events}
+                  onSelectEvent={(evt: any) => {
+                    setSelectedCarouselEvent(evt);
+                    setShowDetailOverlay(true);
+                  }}
+                />
+
+                {/* ─── 2. EVENTOS EN GRID DE 2 COLUMNAS ("DEBAJITO EN COLUMNAS DE DOS") ─── */}
+                <div className="space-y-4 pt-2">
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                    <div>
+                      <h3 className="text-xl sm:text-2xl font-black text-white uppercase tracking-tight font-sans">
+                        Cartelera de Eventos
+                      </h3>
+                      <p className="text-xs text-zinc-400 font-medium mt-0.5">
+                        Explora los eventos en 2 columnas
+                      </p>
+                    </div>
+
+                    {/* Day Filter Chips */}
+                    <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-none py-1 max-w-full">
+                      {[
+                        { id: "todos", label: "Todos" },
+                        { id: "viernes", label: "Viernes" },
+                        { id: "sabado", label: "Sábado" },
+                        { id: "domingo", label: "Domingo" },
+                        { id: "lunes", label: "Lunes" },
+                      ].map((day) => {
+                        const isActive = selectedDay === day.id;
+
+                        return (
+                          <button
+                            key={`filter-day-${day.id}`}
+                            type="button"
+                            onClick={() => setSelectedDay(day.id)}
+                            className={`px-3.5 py-1.5 rounded-full text-xs font-black uppercase tracking-wider border transition-all cursor-pointer whitespace-nowrap ${
+                              isActive
+                                ? "bg-white text-black border-white shadow-md scale-105"
+                                : "bg-white/10 text-white/80 border-white/20 hover:bg-white/20 hover:text-white"
+                            }`}
+                          >
+                            {day.label}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  {/* 2-COLUMN GRID (MATCHING SCREENSHOT 1 POPULAR MOVIES LAYOUT) */}
+                  <div className="grid grid-cols-2 gap-3 sm:gap-4">
+                    {filteredCatalogEvents.map((evt) => (
+                      <div
+                        key={`cat-2col-${evt.id}`}
+                        onClick={() => {
+                          setSelectedCarouselEvent(evt);
+                          setShowDetailOverlay(true);
+                        }}
+                        className="group relative flex flex-col rounded-3xl bg-zinc-950 border border-white/10 overflow-hidden cursor-pointer hover:border-blue-500/80 transition-all duration-300 hover:scale-[1.02] shadow-2xl"
+                      >
+                        <div className="relative w-full aspect-[4/3] sm:aspect-[16/10] bg-zinc-900 overflow-hidden">
+                          <Image
+                            src={evt.poster || "/images/now4go-hero-presentation-hd-v3.png"}
+                            alt={evt.title}
+                            fill
+                            className="object-cover group-hover:scale-105 transition-transform duration-500 brightness-105"
+                            sizes="400px"
+                          />
+                          <div className="absolute inset-0 bg-gradient-to-t from-black via-black/30 to-transparent" />
+
+                          {/* Top Left HD Badge (Matching Screenshot 1) */}
+                          <span className="absolute top-2.5 left-2.5 px-2 py-0.5 rounded-lg bg-black/60 backdrop-blur-md border border-white/15 text-white text-[9px] font-black uppercase tracking-wider">
+                            HD
+                          </span>
+
+                          {/* Top Right Price Tag */}
+                          <span className="absolute top-2.5 right-2.5 px-2.5 py-1 rounded-full bg-blue-600/90 text-white text-[10px] font-black shadow-lg backdrop-blur-md">
+                            ${evt.price || 10} USD
+                          </span>
+
+                          {/* Red Circular Play Button Bottom Right (Matching Screenshot 1) */}
+                          <div className="absolute bottom-2.5 right-2.5 w-8 h-8 rounded-full bg-red-600 border border-red-400 text-white flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
+                            <span className="text-xs font-black pl-0.5">▶</span>
+                          </div>
+
+                          {/* Glassmorphic Info Pill Superimposed at Card Bottom (Matching Screenshot 1) */}
+                          <div className="absolute bottom-2 inset-x-2 p-2 rounded-2xl bg-black/75 backdrop-blur-md border border-white/10 flex flex-col">
+                            <h4 className="text-xs font-black text-white uppercase tracking-tight line-clamp-1 group-hover:text-blue-300 transition-colors">
+                              {evt.title}
+                            </h4>
+                            <div className="flex items-center justify-between text-[9px] font-bold text-zinc-300 mt-0.5">
+                              <span className="text-blue-400 font-extrabold">{evt.organizer || "4GO"}</span>
+                              <span className="text-zinc-400">12M Views</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </motion.div>
+            )}
+
+            {activeStoryScreen === 3 && (
+              <motion.div
+                key="screen-3-fiestas"
+                initial={{ opacity: 0, x: 30 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: 30 }}
+                transition={{ duration: 0.3, ease: "easeOut" }}
+                className="px-4 sm:px-8 max-w-[1400px] mx-auto pt-28 sm:pt-32 space-y-8"
+              >
+                {/* ─── DISCOTECAS & ORGANIZADORES ─── */}
+                <div>
+                  <h3 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight font-sans mb-4">
+                    Discotecas &amp; Venues Exclusivos
+                  </h3>
+                  <div className="grid grid-cols-3 gap-3">
+                    {[
+                      { id: "cubic", name: "Cubic Loja", tagline: "Nightclub", color: "from-purple-900/60 to-black", border: "border-purple-500/40" },
+                      { id: "lequat", name: "Lequat", tagline: "Eventos & Shows", color: "from-pink-900/60 to-black", border: "border-pink-500/40" },
+                      { id: "now", name: "NOW 4GO", tagline: "Originals", color: "from-emerald-900/60 to-black", border: "border-emerald-500/40" },
+                    ].map((org) => {
+                      const isSelected = selectedOrganizer === org.id;
+
+                      return (
+                        <button
+                          key={org.id}
+                          type="button"
+                          onClick={() => {
+                            setSelectedOrganizer(isSelected ? "todos" : org.id);
+                            if (org.id === "cubic") {
+                              setSelectedOrganizerSlug("cubic");
+                              setShowOrganizerOverlay(true);
+                            }
+                          }}
+                          className={`relative flex flex-col items-center justify-center p-4 rounded-2xl border transition-all duration-300 cursor-pointer bg-gradient-to-b ${org.color} ${
+                            isSelected ? "border-white shadow-[0_0_20px_rgba(255,255,255,0.3)] scale-105" : `${org.border} hover:border-white/50`
+                          }`}
+                        >
+                          <span className="text-xs sm:text-sm font-black uppercase text-white tracking-wider">{org.name}</span>
+                          <span className="text-[9px] sm:text-xs text-zinc-400 font-medium mt-0.5">{org.tagline}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
                 </div>
 
-                <div className="p-3 flex flex-col justify-between flex-1 bg-[#09090b]">
-                  <div>
-                    <span className="text-[9px] font-black uppercase text-purple-400 tracking-wider block">
-                      {evt.organizer || "4GO"}
-                    </span>
-                    <h4 className="text-xs font-bold text-white uppercase group-hover:text-purple-300 transition-colors line-clamp-1">
-                      {evt.title}
-                    </h4>
-                    <p className="text-[10px] text-zinc-400 font-medium line-clamp-1 mt-0.5">
-                      {evt.subtitle || evt.venue}
-                    </p>
-                  </div>
-                  <div className="mt-3 pt-2 border-t border-zinc-800 flex items-center justify-between text-[9px] font-bold text-zinc-300">
-                    <span>{evt.dateLabel}</span>
-                    <span className="text-purple-300 font-extrabold">Ver &rarr;</span>
+                {/* Nightlife Events Grid */}
+                <div>
+                  <h4 className="text-lg font-bold text-white uppercase tracking-wider mb-4">
+                    Fiestas &amp; Eventos Nocturnos
+                  </h4>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+                    {filteredCatalogEvents
+                      .filter((e) => classifyEventType(e) === "fiesta" || selectedOrganizer !== "todos")
+                      .map((evt) => (
+                        <div
+                          key={`party-${evt.id}`}
+                          onClick={() => {
+                            setSelectedCarouselEvent(evt);
+                            setShowDetailOverlay(true);
+                          }}
+                          className="group relative flex flex-col rounded-3xl bg-zinc-950 border border-zinc-800 overflow-hidden cursor-pointer hover:border-emerald-500 transition-all duration-300 hover:scale-105 shadow-xl"
+                        >
+                          <div className="relative w-full aspect-square bg-zinc-900 overflow-hidden">
+                            <Image
+                              src={evt.poster || "/images/now4go-hero-presentation-hd-v3.png"}
+                              alt={evt.title}
+                              fill
+                              className="object-cover group-hover:scale-110 transition-transform duration-500"
+                              sizes="200px"
+                            />
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-transparent to-transparent" />
+                            <span className="absolute top-2.5 right-2.5 px-2.5 py-1 rounded-full bg-emerald-400 text-black text-[10px] font-black shadow">
+                              ${evt.price || 10} USD
+                            </span>
+                          </div>
+
+                          <div className="p-3 flex flex-col justify-between flex-1 bg-[#09090b]">
+                            <div>
+                              <span className="text-[9px] font-black uppercase text-emerald-400 tracking-wider block">
+                                {evt.organizer || "4GO"}
+                              </span>
+                              <h4 className="text-xs font-bold text-white uppercase group-hover:text-emerald-300 transition-colors line-clamp-1">
+                                {evt.title}
+                              </h4>
+                              <p className="text-[10px] text-zinc-400 font-medium line-clamp-1 mt-0.5">
+                                {evt.subtitle || evt.venue}
+                              </p>
+                            </div>
+                            <div className="mt-3 pt-2 border-t border-zinc-800 flex items-center justify-between text-[9px] font-bold text-zinc-300">
+                              <span>{evt.dateLabel}</span>
+                              <span className="text-emerald-400 font-extrabold">Ver &rarr;</span>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
                   </div>
                 </div>
-              </div>
-            ))}
-          </div>
-        </section>
-
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </motion.div>
       </div>
 
       {/* ─── FLOATING BOTTOM NAVIGATION DOCK ─── */}
@@ -1184,27 +1481,29 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
       />
 
       {/* Premium Cinematic Event Detail Overlay */}
-      {showDetailOverlay && (
-        <EventDetailOverlay
-          event={selectedCarouselEvent}
-          allEvents={events}
-          isOpen={showDetailOverlay}
-          onClose={() => setShowDetailOverlay(false)}
-          onBuy={(event) => {
-            onBuy(event);
-          }}
-          onSelectEvent={(event) => {
-            onSelectRelatedEvent(event);
-            setSelectedCarouselEvent(event);
-          }}
-          onOpenDrinks={() => setShowDrinksModal(true)}
-          onOpenOrganizer={(slug) => {
-            setSelectedOrganizerSlug(slug || "cubic");
-            setShowOrganizerOverlay(true);
-          }}
-          isCheckoutOpen={isTicketModalOpen}
-        />
-      )}
+      <AnimatePresence>
+        {showDetailOverlay && (
+          <EventDetailOverlay
+            event={selectedCarouselEvent}
+            allEvents={events}
+            isOpen={showDetailOverlay}
+            onClose={() => setShowDetailOverlay(false)}
+            onBuy={(event) => {
+              onBuy(event);
+            }}
+            onSelectEvent={(event) => {
+              onSelectRelatedEvent(event);
+              setSelectedCarouselEvent(event);
+            }}
+            onOpenDrinks={() => setShowDrinksModal(true)}
+            onOpenOrganizer={(slug) => {
+              setSelectedOrganizerSlug(slug || "cubic");
+              setShowOrganizerOverlay(true);
+            }}
+            isCheckoutOpen={isTicketModalOpen}
+          />
+        )}
+      </AnimatePresence>
 
       {/* Drinks & Bar Menu Modal */}
       <DrinksMenuModal
@@ -1222,6 +1521,12 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
         eventId={selectedCarouselEvent?.id || activeEvent.id}
         eventName={selectedCarouselEvent?.title || activeEvent.title}
         allEvents={events}
+      />
+
+      {/* Publish Event Creator Modal */}
+      <PublishEventModal
+        isOpen={showEventModal}
+        onClose={() => setShowEventModal(false)}
       />
 
       {/* POS Door Ticket Sales Modal */}
@@ -1349,8 +1654,8 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
               {/* Header with Purple Guest Avatar & Close Button (ONLY MI CUENTA) */}
               <div className="flex items-center justify-between pb-3 border-b border-white/10">
                 <div className="flex items-center gap-3">
-                  <div className="h-10 w-10 rounded-full bg-[#8b5cf6] text-white font-black flex items-center justify-center text-sm shadow-md">
-                    <User className="h-5 w-5" />
+                  <div className="h-10 w-10 rounded-full bg-black border-2 border-emerald-400 text-white font-black flex items-center justify-center p-1 shadow-md">
+                    <AlienIcon className="w-full h-full" />
                   </div>
                   <h4 className="text-sm font-black uppercase text-white tracking-wider leading-none">MI CUENTA</h4>
                 </div>

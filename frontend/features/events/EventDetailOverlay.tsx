@@ -1,47 +1,70 @@
 "use client";
 
-/**
- * EventDetailOverlay — Mobile Photo Detail Inspired Event View.
- * Matches reference screenshot with top control bar (Back Arrow, Favorite Heart, Three Dots options menu),
- * full-bleed poster backdrop, location tag, title, date/time, verified organizer badge, and RESERVAR CTA.
- */
-
 import { useState } from "react";
 import Image from "next/image";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, useMotionValue, useTransform } from "framer-motion";
 import {
   ArrowLeft,
   Heart,
-  MoreVertical,
+  Share2,
   MapPin,
   Calendar,
-  Clock,
   Ticket,
-  CheckCircle2,
-  BadgeCheck,
-  Share2,
-  Bookmark,
   X,
-  ExternalLink,
+  BadgeCheck,
+  ChevronRight,
+  Lock,
+  Sparkles,
 } from "lucide-react";
 import type { Event } from "@/frontend/types/domain";
 
 interface EventDetailOverlayProps {
   event: Event;
-  allEvents: Event[];
+  allEvents?: Event[];
   onClose: () => void;
   onBuy: (event: Event) => void;
-  onSelectEvent: (event: Event) => void;
+  onSelectEvent?: (event: Event) => void;
   onOpenOrganizer?: (slug: string) => void;
   onOpenDrinks?: () => void;
   isOpen?: boolean;
   isCheckoutOpen?: boolean;
 }
 
-const TICKET_TIERS = [
-  { id: "gen", name: "General Pass", price: 10, desc: "Acceso preferencial para la reserva del evento." },
-  { id: "vip", name: "VIP Stage Pass", price: 20, desc: "Frente al escenario con servicio en mesa." },
-  { id: "ultra", name: "Ultra Box + Botella", price: 50, desc: "Mesa reservada + 1 Botella Premium a elección." },
+const TICKET_PHASES = [
+  {
+    id: "prev1",
+    name: "1ra Preventa",
+    price: 5,
+    status: "active",
+    statusLabel: "Habilitado",
+    urgentBadge: "¡Quedan pocos días para reservar a este precio!",
+    desc: "Acceso preferencial garantizado. La tarifa más baja antes del cambio de fase.",
+  },
+  {
+    id: "prev2",
+    name: "2da Preventa",
+    price: 10,
+    status: "locked",
+    statusLabel: "Pronto se habilita",
+    urgentBadge: null,
+    desc: "Se activará automáticamente al agotarse la 1ra Preventa ($5 USD).",
+  },
+  {
+    id: "vip",
+    name: "Pase VIP Stage",
+    price: 20,
+    status: "locked",
+    statusLabel: "Próximamente",
+    urgentBadge: null,
+    desc: "Frente al escenario con mesa exclusiva y atención personalizada.",
+  },
+];
+
+const CAST_MEMBERS = [
+  { id: "c1", name: "Omar Courtz", role: "Headliner", img: "/images/omar_courtz_artist_1779161689015.png" },
+  { id: "c2", name: "Yan Block", role: "Artist", img: "/images/yan_block_artist_1779161408288.png" },
+  { id: "c3", name: "Roa", role: "Artist", img: "/images/roa_artist_1779161704881.png" },
+  { id: "c4", name: "Anuel AA", role: "Special Guest", img: "https://images.unsplash.com/photo-1516280440614-37939bbacd81?auto=format&fit=crop&w=300&q=80" },
 ];
 
 export default function EventDetailOverlay({
@@ -51,218 +74,282 @@ export default function EventDetailOverlay({
   onOpenOrganizer,
 }: EventDetailOverlayProps) {
   const [isFavorite, setIsFavorite] = useState(false);
-  const [isOptionsMenuOpen, setIsOptionsMenuOpen] = useState(false);
+  const [isExpandedDescription, setIsExpandedDescription] = useState(false);
+  const [selectedPhaseId, setSelectedPhaseId] = useState("prev1");
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
-  const [selectedTier, setSelectedTier] = useState("gen");
+  const [isSheetCollapsed, setIsSheetCollapsed] = useState(false);
+
+  // Real-time Motion Values for 1-to-1 Continuous Drag & Parallax Poster Motion
+  const sheetY = useMotionValue(0);
+  const posterScale = useTransform(sheetY, [0, 420], [1.0, 1.12]);
+  const backdropOpacity = useTransform(sheetY, [0, 420], [0.85, 0.25]);
 
   const organizerSlug = (event.organizer || "Cubic").toLowerCase();
 
+  const handleToggleSheet = (e?: React.SyntheticEvent) => {
+    if (e) e.stopPropagation();
+    setIsSheetCollapsed((prev) => !prev);
+  };
+
   return (
-    <div className="fixed inset-0 z-[300] bg-black text-white overflow-y-auto no-scrollbar flex flex-col">
+    <motion.div
+      initial={{ opacity: 0, scale: 0.98 }}
+      animate={{ opacity: 1, scale: 1 }}
+      exit={{ opacity: 0, scale: 0.98 }}
+      transition={{ duration: 0.22, ease: "easeInOut" }}
+      className="fixed inset-0 z-[300] bg-black text-white flex flex-col overflow-hidden select-none"
+    >
       
-      {/* ─── 1. TOP FLOATING NAVIGATION BAR (MATCHING REFERENCE IMAGE) ─── */}
-      <header className="sticky top-0 z-50 flex items-center justify-between px-4 sm:px-8 py-4 bg-gradient-to-b from-black/90 via-black/50 to-transparent backdrop-blur-md">
+      {/* ─── 1. TOP FLOATING NAVIGATION BAR ─── */}
+      <header className="absolute top-0 inset-x-0 z-50 flex items-center justify-between px-4 sm:px-8 py-4 bg-gradient-to-b from-black/90 via-black/40 to-transparent pointer-events-none">
         {/* Left: Back Arrow Button [←] */}
         <button
           type="button"
           onClick={onClose}
-          className="flex items-center justify-center w-11 h-11 rounded-full bg-white/10 border border-white/20 text-white hover:bg-white/25 transition-all cursor-pointer shadow-xl active:scale-95"
+          className="pointer-events-auto flex items-center justify-center w-11 h-11 rounded-full bg-black/60 border border-white/20 text-white hover:bg-white/20 backdrop-blur-md transition-all cursor-pointer shadow-2xl active:scale-95"
           aria-label="Volver"
         >
           <ArrowLeft className="w-5 h-5" />
         </button>
 
-        {/* Right Controls: Favorite Heart [♡] & Three Dots Menu [⋮] */}
-        <div className="flex items-center gap-2">
-          {/* Favorite Heart Button */}
+        {/* Right Controls: Favorite Heart & Share */}
+        <div className="pointer-events-auto flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => {
+              if (navigator.share) {
+                navigator.share({ title: event.title, url: window.location.href });
+              }
+            }}
+            className="flex items-center justify-center w-11 h-11 rounded-full bg-black/60 border border-white/20 text-white hover:bg-white/20 backdrop-blur-md transition-all cursor-pointer shadow-2xl active:scale-95"
+            aria-label="Compartir"
+          >
+            <Share2 className="w-5 h-5" />
+          </button>
+
           <button
             type="button"
             onClick={() => setIsFavorite(!isFavorite)}
-            className={`flex items-center justify-center w-11 h-11 rounded-full border transition-all cursor-pointer shadow-xl active:scale-95 ${
+            className={`flex items-center justify-center w-11 h-11 rounded-full border backdrop-blur-md transition-all cursor-pointer shadow-2xl active:scale-95 ${
               isFavorite
-                ? "bg-red-500/20 border-red-500/40 text-red-400"
-                : "bg-white/10 border-white/20 text-white hover:bg-white/25"
+                ? "bg-red-500/30 border-red-500/50 text-red-400"
+                : "bg-black/60 border-white/20 text-white hover:bg-white/20"
             }`}
             aria-label="Favorito"
           >
             <Heart className={`w-5 h-5 ${isFavorite ? "fill-red-500 text-red-500" : ""}`} />
           </button>
-
-          {/* Three Dots Options Button [⋮] */}
-          <button
-            type="button"
-            onClick={() => setIsOptionsMenuOpen(!isOptionsMenuOpen)}
-            className="flex items-center justify-center w-11 h-11 rounded-full bg-white/10 border border-white/20 text-white hover:bg-white/25 transition-all cursor-pointer shadow-xl active:scale-95"
-            aria-label="Opciones"
-          >
-            <MoreVertical className="w-5 h-5" />
-          </button>
         </div>
       </header>
 
-      {/* ─── THREE DOTS OPTIONS DROPDOWN MENU ─── */}
-      <AnimatePresence>
-        {isOptionsMenuOpen && (
-          <>
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setIsOptionsMenuOpen(false)}
-              className="fixed inset-0 z-[360] bg-black/60 backdrop-blur-sm"
-            />
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9, y: -10 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.9, y: -10 }}
-              className="fixed top-16 right-4 z-[370] w-64 rounded-3xl border border-white/20 bg-zinc-950/95 backdrop-blur-2xl p-4 shadow-2xl space-y-2"
-            >
-              <button
-                type="button"
-                onClick={() => {
-                  setIsOptionsMenuOpen(false);
-                  if (navigator.share) {
-                    navigator.share({ title: event.title, url: window.location.href });
-                  }
-                }}
-                className="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-left text-xs font-bold uppercase text-white hover:bg-white/10 transition cursor-pointer"
-              >
-                <Share2 className="w-4 h-4 text-purple-400" />
-                <span>Compartir Evento</span>
-              </button>
+      {/* ─── 2. HERO POSTER BACKDROP (DYNAMIC PARALLAX LINKED TO DRAG) ─── */}
+      <motion.div
+        onClick={() => {
+          if (isSheetCollapsed) setIsSheetCollapsed(false);
+          else setIsLightboxOpen(true);
+        }}
+        style={{ scale: posterScale }}
+        className="relative w-full flex-1 bg-zinc-950 cursor-pointer overflow-hidden origin-top"
+      >
+        <Image
+          src={event.poster || "/images/now4go-hero-presentation-hd-v3.png"}
+          alt={event.title}
+          fill
+          priority
+          className="object-cover object-center brightness-105 transition-all duration-300"
+        />
+        <motion.div
+          style={{ opacity: backdropOpacity }}
+          className="absolute inset-0 bg-gradient-to-t from-black via-black/30 to-transparent"
+        />
+      </motion.div>
 
-              <button
-                type="button"
-                onClick={() => {
-                  setIsOptionsMenuOpen(false);
-                  onOpenOrganizer?.(organizerSlug);
-                }}
-                className="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-left text-xs font-bold uppercase text-white hover:bg-white/10 transition cursor-pointer"
-              >
-                <ExternalLink className="w-4 h-4 text-emerald-400" />
-                <span>Ver Organizador ({event.organizer || "Cubic"})</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => {
-                  setIsOptionsMenuOpen(false);
-                  setIsFavorite(!isFavorite);
-                }}
-                className="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-left text-xs font-bold uppercase text-white hover:bg-white/10 transition cursor-pointer"
-              >
-                <Bookmark className="w-4 h-4 text-pink-400" />
-                <span>{isFavorite ? "Quitar de Favoritos" : "Guardar en Favoritos"}</span>
-              </button>
-            </motion.div>
-          </>
-        )}
-      </AnimatePresence>
-
-      {/* ─── 2. MAIN SCROLL CONTENT WITH FULL-BLEED POSTER ─── */}
-      <div className="flex-1 pb-32">
-        <div className="max-w-4xl mx-auto px-4 sm:px-8 -mt-16">
-
-          {/* FULL BLEED POSTER BACKDROP CONTAINER */}
+      {/* ─── 3. REAL-TIME 1-TO-1 DRAGGABLE GLASSMORPHIC SHEET ─── */}
+      <motion.div
+        style={{ y: sheetY }}
+        drag="y"
+        dragConstraints={{ top: 0, bottom: 420 }}
+        dragElastic={0.05}
+        onDragEnd={(_, info) => {
+          if (info.offset.y > 80 || info.velocity.y > 120) {
+            setIsSheetCollapsed(true);
+          } else if (info.offset.y < -80 || info.velocity.y < -120) {
+            setIsSheetCollapsed(false);
+          }
+        }}
+        animate={{ y: isSheetCollapsed ? 420 : 0 }}
+        transition={{ type: "spring", stiffness: 350, damping: 32 }}
+        className="absolute inset-x-0 bottom-0 z-20 max-w-4xl mx-auto px-0 sm:px-4 h-[82vh] flex flex-col"
+      >
+        <div className="flex-1 rounded-t-[36px] sm:rounded-t-3xl bg-gradient-to-b from-white/15 via-[#0b0614]/95 to-[#0b0614] border-t border-x border-white/25 backdrop-blur-3xl p-5 sm:p-7 shadow-[0_-25px_60px_rgba(0,0,0,0.95)] overflow-y-auto no-scrollbar space-y-5 pb-16">
+          
+          {/* REAL-TIME TOUCH & MOUSE DRAG HANDLE HEADER */}
           <div
-            onClick={() => setIsLightboxOpen(true)}
-            className="relative w-full h-[520px] sm:h-[620px] rounded-[36px] overflow-hidden border border-white/15 shadow-2xl bg-zinc-950 cursor-pointer group"
+            onClick={handleToggleSheet}
+            className="w-full py-4 -mt-3 flex flex-col items-center justify-center cursor-grab active:cursor-grabbing select-none group touch-none z-30"
           >
-            <Image
-              src={event.poster || "/images/now4go-hero-presentation-hd-v3.png"}
-              alt={event.title}
-              fill
-              priority
-              className="object-cover object-center group-hover:scale-105 transition-transform duration-700 brightness-95"
-            />
+            {/* THINNER SLEEK PILL LINE HANDLE */}
+            <div className="w-14 h-1.5 bg-white/70 group-hover:bg-white active:bg-emerald-400 rounded-full shadow-xl transition-all border border-white/20" />
+          </div>
 
-            {/* Ambient Dark Gradient Fade Overlay */}
-            <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent" />
+          {/* Event Title & Subtitle */}
+          <div className="text-center sm:text-left space-y-1">
+            <h1 className="text-3xl sm:text-5xl font-black uppercase text-white tracking-tight leading-tight">
+              {event.title}
+            </h1>
+            <p className="text-xs sm:text-sm font-bold text-zinc-300 tracking-wide uppercase">
+              {event.subtitle || event.venue || "Cubic Loja"}
+            </p>
+          </div>
 
-            {/* SUPERIMPOSED EVENT INFORMATION (MATCHING REFERENCE IMAGE) */}
-            <div className="absolute bottom-6 inset-x-0 p-6 sm:p-8 flex flex-col items-start z-10 max-w-2xl">
-              
-              {/* Location Tag */}
-              <div className="flex items-center gap-1.5 text-zinc-300 text-xs font-bold uppercase tracking-widest mb-1.5">
-                <MapPin className="w-4 h-4 text-purple-400" />
-                <span>{event.venue || "Cubic Loja"}</span>
-              </div>
+          {/* Badges & Compact Info Pill Row (Fecha, Ubicación, Genre, Age, Organizer) */}
+          <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2 pt-1">
+            <span className="px-3.5 py-1.5 rounded-full bg-white/10 border border-white/15 text-xs font-extrabold text-white">
+              Fiesta / Trap
+            </span>
+            <span className="px-3.5 py-1.5 rounded-full bg-white/10 border border-white/15 text-xs font-extrabold text-white">
+              18+
+            </span>
+            <span className="px-3.5 py-1.5 rounded-full bg-white/10 border border-white/15 text-xs font-extrabold text-white flex items-center gap-1.5">
+              <Calendar className="w-3.5 h-3.5 text-emerald-400" />
+              <span>{event.dateLabel || "25 JUL 2026"}</span>
+            </span>
+            <span className="px-3.5 py-1.5 rounded-full bg-white/10 border border-white/15 text-xs font-extrabold text-white flex items-center gap-1.5">
+              <MapPin className="w-3.5 h-3.5 text-purple-400" />
+              <span>{event.venue || "Cubic Loja"}</span>
+            </span>
+            <button
+              type="button"
+              onClick={() => onOpenOrganizer?.(organizerSlug)}
+              className="px-3.5 py-1.5 rounded-full bg-purple-500/20 border border-purple-400/30 text-purple-300 text-xs font-extrabold flex items-center gap-1.5 hover:bg-purple-500/30 transition cursor-pointer"
+            >
+              <span>{event.organizer || "Cubic"}</span>
+              <BadgeCheck className="w-4 h-4 text-blue-400 fill-blue-500/20 shrink-0" />
+            </button>
+          </div>
 
-              {/* Main Event Title with Organizer Name */}
-              <div className="mb-1">
-                <span className="text-purple-400 font-extrabold uppercase text-xs sm:text-sm tracking-widest block mb-0.5">
-                  {event.organizer || "Cubic"}
-                </span>
-                <h1 className="text-3xl sm:text-5xl font-black uppercase text-white tracking-tight leading-none drop-shadow-2xl">
-                  {event.title}
-                </h1>
-              </div>
+          {/* Story Line / Description Section */}
+          <div className="space-y-1.5 pt-2 border-t border-white/10">
+            <h3 className="text-xs font-extrabold uppercase text-white tracking-wider">
+              STORY LINE
+            </h3>
+            <p className={`text-xs text-zinc-300 leading-relaxed font-medium ${!isExpandedDescription ? "line-clamp-2" : ""}`}>
+              {event.description ||
+                "La escena underground cobra vida con una experiencia audiovisual cinematográfica sin precedentes. Bajo retumbante, luces robóticas y barra libre de shots en un ambiente exclusivo."}
+            </p>
+            <button
+              type="button"
+              onClick={() => setIsExpandedDescription(!isExpandedDescription)}
+              className="text-xs font-bold text-red-500 hover:text-red-400 cursor-pointer"
+            >
+              {isExpandedDescription ? "Ver menos" : "Más"}
+            </button>
+          </div>
 
-              {/* Date & Time */}
-              <div className="flex items-center gap-2 text-zinc-200 text-xs sm:text-sm font-bold mt-2">
-                <Calendar className="w-4 h-4 text-emerald-400" />
-                <span>{event.dateLabel || "25 JUL 2026"} · 21:00 PM</span>
-              </div>
-
-              {/* DYNAMIC ORGANIZER CHECKMARK BADGE */}
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onOpenOrganizer?.(organizerSlug);
-                }}
-                className="mt-4 inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-black/80 border border-white/20 backdrop-blur-md hover:bg-white/20 transition-all cursor-pointer shadow-lg active:scale-95 text-xs font-black uppercase text-white tracking-wider"
-              >
-                <span>{event.organizer || "Cubic"}</span>
-                <BadgeCheck className="w-4 h-4 text-blue-400 fill-blue-500/20 shrink-0" />
-              </button>
+          {/* Star Cast / Artistas Section */}
+          <div className="space-y-2.5 pt-2 border-t border-white/10">
+            <h3 className="text-xs font-extrabold uppercase text-white tracking-wider">
+              Star Cast / Artistas
+            </h3>
+            <div className="flex items-center gap-3 overflow-x-auto scrollbar-none py-1">
+              {CAST_MEMBERS.map((member) => (
+                <div key={member.id} className="flex flex-col items-center shrink-0 w-16 text-center space-y-1">
+                  <div className="relative w-14 h-14 rounded-full overflow-hidden border-2 border-purple-500/50 bg-zinc-900 shadow-md">
+                    <Image
+                      src={member.img}
+                      alt={member.name}
+                      fill
+                      className="object-cover"
+                      sizes="60px"
+                    />
+                  </div>
+                  <span className="text-[10px] font-bold text-white leading-tight line-clamp-1">
+                    {member.name}
+                  </span>
+                  <span className="text-[8px] font-medium text-zinc-400 line-clamp-1">
+                    {member.role}
+                  </span>
+                </div>
+              ))}
             </div>
           </div>
 
-          {/* ─── 3. TICKET RESERVATION OPTIONS ─── */}
-          <div className="mt-8 space-y-6">
-            <h3 className="text-xl font-extrabold text-white tracking-tight">
-              Reservar Entradas &amp; Pases
-            </h3>
+          {/* Ticket Presale Phases (WITH RESERVAR ENTRADAS BUTTON INSIDE THE ACTIVE 1ST PRESALE CARD) */}
+          <div className="space-y-3 pt-2 border-t border-white/10">
+            <div className="flex items-center justify-between">
+              <h3 className="text-xs font-extrabold uppercase text-white tracking-wider">
+                Fases de Reserva &amp; Entradas
+              </h3>
+              <span className="text-[10px] font-black text-emerald-400 uppercase tracking-widest flex items-center gap-1">
+                <Sparkles className="w-3 h-3" />
+                Fase 1 Activa
+              </span>
+            </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-              {TICKET_TIERS.map((tier) => {
-                const isSelected = selectedTier === tier.id;
+            <div className="space-y-2.5">
+              {TICKET_PHASES.map((phase) => {
+                const isActive = phase.status === "active";
+                const isSelected = selectedPhaseId === phase.id;
 
                 return (
                   <div
-                    key={tier.id}
-                    onClick={() => setSelectedTier(tier.id)}
-                    className={`p-4 rounded-3xl border transition-all duration-300 cursor-pointer flex flex-col justify-between ${
-                      isSelected
-                        ? "bg-purple-950/40 border-purple-500 shadow-[0_0_25px_rgba(168,85,247,0.3)] scale-[1.02]"
-                        : "bg-zinc-950 border-zinc-800 hover:border-zinc-600"
+                    key={phase.id}
+                    onClick={() => {
+                      if (isActive) setSelectedPhaseId(phase.id);
+                    }}
+                    className={`p-4 rounded-2xl border transition-all flex flex-col justify-between ${
+                      isActive
+                        ? isSelected
+                          ? "bg-emerald-950/40 border-emerald-500 shadow-[0_0_25px_rgba(16,185,129,0.3)] cursor-pointer"
+                          : "bg-white/5 border-white/20 hover:border-emerald-400 cursor-pointer"
+                        : "bg-white/5 border-white/10 opacity-60 cursor-not-allowed"
                     }`}
                   >
-                    <div>
-                      <div className="flex items-center justify-between mb-1">
-                        <span className="text-xs font-black uppercase text-white tracking-wider">{tier.name}</span>
-                        <span className="text-sm font-black text-purple-400">${tier.price} USD</span>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs font-black uppercase text-white">{phase.name}</span>
+                        {isActive ? (
+                          <span className="px-2 py-0.5 rounded-full bg-emerald-500/20 border border-emerald-400/40 text-emerald-400 text-[9px] font-black uppercase">
+                            Habilitado
+                          </span>
+                        ) : (
+                          <span className="px-2 py-0.5 rounded-full bg-white/10 border border-white/15 text-zinc-400 text-[9px] font-bold uppercase flex items-center gap-1">
+                            <Lock className="w-2.5 h-2.5" />
+                            {phase.statusLabel}
+                          </span>
+                        )}
                       </div>
-                      <p className="text-[10px] text-zinc-400 font-medium leading-relaxed">
-                        {tier.desc}
-                      </p>
+                      <span className={`text-xs font-black ${isActive ? "text-emerald-400" : "text-zinc-500"}`}>
+                        ${phase.price} USD
+                      </span>
                     </div>
 
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onBuy(event);
-                      }}
-                      className={`mt-4 w-full py-2.5 rounded-2xl text-xs font-black uppercase tracking-wider transition-all cursor-pointer active:scale-95 ${
-                        isSelected
-                          ? "bg-white text-black shadow-lg"
-                          : "bg-white/10 text-white hover:bg-white/20"
-                      }`}
-                    >
-                      RESERVAR
-                    </button>
+                    {isActive && phase.urgentBadge && (
+                      <div className="mt-1.5 text-[10px] font-extrabold text-emerald-300 flex items-center gap-1">
+                        <span>🔥</span>
+                        <span>{phase.urgentBadge}</span>
+                      </div>
+                    )}
+
+                    <p className="text-[10px] text-zinc-400 font-medium mt-1 leading-tight">
+                      {phase.desc}
+                    </p>
+
+                    {/* VIVID NEON GREEN RESERVAR BUTTON INSIDE THE 1ST PRESALE CARD */}
+                    {isActive && (
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onBuy(event);
+                        }}
+                        className="mt-3.5 w-full py-3.5 rounded-full bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-black text-xs font-black uppercase tracking-widest transition-all shadow-[0_0_25px_rgba(16,185,129,0.5)] active:scale-95 cursor-pointer flex items-center justify-center gap-2"
+                      >
+                        <Ticket className="w-4 h-4 text-black" />
+                        <span>RESERVAR ENTRADAS · ${phase.price} USD</span>
+                        <ChevronRight className="w-4 h-4 text-black" />
+                      </button>
+                    )}
                   </div>
                 );
               })}
@@ -270,26 +357,9 @@ export default function EventDetailOverlay({
           </div>
 
         </div>
-      </div>
+      </motion.div>
 
-      {/* ─── 4. FLOATING BOTTOM RESERVAR BAR ─── */}
-      <div className="fixed bottom-4 inset-x-4 z-50 max-w-md mx-auto p-3.5 rounded-full bg-zinc-950/90 border border-white/20 backdrop-blur-2xl shadow-[0_15px_35px_rgba(0,0,0,0.9)] flex items-center justify-between gap-3">
-        <div className="pl-3">
-          <span className="text-[9px] font-black uppercase tracking-widest text-zinc-400 block">Reserva tu Pase</span>
-          <span className="text-sm font-black text-white">${event.price || 10} USD</span>
-        </div>
-
-        <button
-          type="button"
-          onClick={() => onBuy(event)}
-          className="px-8 py-3 rounded-full bg-white hover:bg-zinc-200 text-black text-xs font-black uppercase tracking-widest transition-all shadow-xl active:scale-95 cursor-pointer flex items-center gap-2"
-        >
-          <Ticket className="w-4 h-4 text-purple-600" />
-          <span>RESERVAR</span>
-        </button>
-      </div>
-
-      {/* Lightbox Modal */}
+      {/* Full Poster Lightbox */}
       <AnimatePresence>
         {isLightboxOpen && event.poster && (
           <motion.div
@@ -302,7 +372,7 @@ export default function EventDetailOverlay({
             <button
               type="button"
               onClick={() => setIsLightboxOpen(false)}
-              className="absolute top-6 right-6 h-10 w-10 rounded-full bg-white/10 border border-white/20 text-white flex items-center justify-center hover:bg-white hover:text-black transition-all cursor-pointer z-[510]"
+              className="absolute top-6 right-6 h-11 w-11 rounded-full bg-white/10 border border-white/20 text-white flex items-center justify-center hover:bg-white hover:text-black transition-all cursor-pointer z-[510]"
             >
               <X className="h-5 w-5" />
             </button>
@@ -312,7 +382,7 @@ export default function EventDetailOverlay({
                 alt={event.title}
                 width={1000}
                 height={1000}
-                className="max-w-full max-h-[85vh] w-auto h-auto object-contain rounded-2xl shadow-2xl border border-white/15 select-none"
+                className="max-w-full max-h-[85vh] w-auto h-auto object-contain rounded-3xl shadow-2xl border border-white/15 select-none"
                 priority
               />
             </div>
@@ -320,6 +390,6 @@ export default function EventDetailOverlay({
         )}
       </AnimatePresence>
 
-    </div>
+    </motion.div>
   );
 }
