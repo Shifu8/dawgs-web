@@ -30,16 +30,18 @@ const quicksand = Quicksand({
 });
 
 export const metadata: Metadata = {
-  title: "4go",
+  title: "4GO",
   description:
-    "Descubre los mejores eventos, conciertos y experiencias en Ecuador con 4go.",
+    "Descubre los mejores eventos, conciertos y experiencias en Ecuador con 4GO.",
   manifest: "/manifest.json",
   icons: {
     icon: [
       { url: "/favicon.svg", type: "image/svg+xml" },
+      { url: "/icon.png", type: "image/png" },
     ],
+    apple: "/apple-icon.png",
   },
-  appleWebApp: { capable: true, title: "4go", statusBarStyle: "black-translucent" },
+  appleWebApp: { capable: true, title: "4GO", statusBarStyle: "black-translucent" },
   other: {
     "mobile-web-app-capable": "yes",
     "apple-mobile-web-app-capable": "yes",

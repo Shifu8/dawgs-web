@@ -1,7 +1,7 @@
 {
-  "name": "Now4Go",
-  "short_name": "Now4Go",
-  "description": "Eventos underground, entradas y experiencias exclusivas con Now4Go.",
+  "name": "4GO",
+  "short_name": "4GO",
+  "description": "Eventos, entradas y experiencias exclusivas en Ecuador con 4GO.",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#050505",

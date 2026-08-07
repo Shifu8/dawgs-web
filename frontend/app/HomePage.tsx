@@ -40,6 +40,7 @@ import {
   Zap,
   MapPinned,
   Home,
+  Compass,
   ShoppingBag,
   HelpCircle,
 } from "lucide-react";
@@ -58,6 +59,8 @@ import OrganizerPublishScreen from "@/frontend/features/organizer/OrganizerPubli
 import EventTicketCarousel, { CAROUSEL_EVENTS } from "@/frontend/components/EventTicketCarousel";
 import EventDetailOverlay from "@/frontend/features/events/EventDetailOverlay";
 import InstallApp from "@/frontend/components/InstallApp";
+import MobileDock from "@/frontend/components/MobileDock";
+import OrganizerProfileOverlay from "@/frontend/features/organizer/OrganizerProfileOverlay";
 import { QuickPreviewModal } from "@/frontend/components/QuickPreviewModal";
 import { gsap, useGSAP } from "@/frontend/animations/gsapSetup";
 import DrinksMenuModal from "@/frontend/components/DrinksMenuModal";
@@ -176,9 +179,15 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
     }
   }, [initialEventSlug, events]);
 
-  // Search & Catalog Carousel State
+  // Search & Catalog Filter State
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCity, setSelectedCity] = useState("Todas");
+  const [selectedDay, setSelectedDay] = useState("todos");
+  const [selectedOrganizer, setSelectedOrganizer] = useState("todos");
+  const [showOrganizerOverlay, setShowOrganizerOverlay] = useState(false);
+  const [selectedOrganizerSlug, setSelectedOrganizerSlug] = useState("cubic");
+  const [mobileDockTab, setMobileDockTab] = useState("inicio");
+  const [heroIndex, setHeroIndex] = useState(0);
   const homeCarouselRef = useRef<HTMLDivElement>(null);
 
   const scrollHomeCarousel = (direction: "left" | "right") => {
@@ -198,20 +207,25 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
     // Fiestas: trap, urban, rnb, drop, night — underground party vibes
     if (
       combined.includes("trap") ||
-      combined.includes("urban drop") ||
+      combined.includes("urban") ||
       combined.includes("rnb") ||
-      combined.includes("r&b") ||
-      combined.includes("night vision") ||
-      combined.includes("night")
+      combined.includes("night") ||
+      combined.includes("party") ||
+      combined.includes("discoteca") ||
+      combined.includes("fiesta") ||
+      combined.includes("shots") ||
+      combined.includes("cubic")
     ) {
       return "fiesta";
     }
     // Conciertos: latin, live, wave, concert — bigger show formats
     if (
+      combined.includes("live") ||
+      combined.includes("concert") ||
       combined.includes("latin") ||
-      combined.includes("live experience") ||
-      combined.includes("global wave") ||
-      combined.includes("wave")
+      combined.includes("fest") ||
+      combined.includes("tour") ||
+      combined.includes("show")
     ) {
       return "concierto";
     }
@@ -219,13 +233,35 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
   };
 
   const filteredCatalogEvents = events.filter((evt) => {
+    const query = searchQuery.toLowerCase();
     const matchesSearch =
       !searchQuery ||
-      evt.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (evt.subtitle && evt.subtitle.toLowerCase().includes(searchQuery.toLowerCase())) ||
-      (evt.venue && evt.venue.toLowerCase().includes(searchQuery.toLowerCase())) ||
-      evt.city.toLowerCase().includes(searchQuery.toLowerCase());
+      evt.title.toLowerCase().includes(query) ||
+      (evt.subtitle && evt.subtitle.toLowerCase().includes(query)) ||
+      (evt.venue && evt.venue.toLowerCase().includes(query)) ||
+      (evt.organizer && evt.organizer.toLowerCase().includes(query)) ||
+      evt.city.toLowerCase().includes(query);
+
     const matchesCity = selectedCity === "Todas" || evt.city.toLowerCase() === selectedCity.toLowerCase();
+
+    // Day filter
+    let matchesDay = true;
+    if (selectedDay !== "todos") {
+      const dateText = (evt.dateLabel || "" + ((evt as any).date || "")).toLowerCase();
+      if (selectedDay === "viernes") matchesDay = dateText.includes("vie") || dateText.includes("fri") || dateText.includes("15") || dateText.includes("22");
+      else if (selectedDay === "sabado") matchesDay = dateText.includes("sab") || dateText.includes("sáb") || dateText.includes("sat") || dateText.includes("16") || dateText.includes("23");
+      else if (selectedDay === "domingo") matchesDay = dateText.includes("dom") || dateText.includes("sun") || dateText.includes("17");
+      else if (selectedDay === "lunes") matchesDay = dateText.includes("lun") || dateText.includes("mon") || dateText.includes("18");
+    }
+
+    // Organizer filter
+    let matchesOrg = true;
+    if (selectedOrganizer !== "todos") {
+      const orgText = (evt.organizer || "" + evt.title).toLowerCase();
+      if (selectedOrganizer === "cubic") matchesOrg = orgText.includes("cubic");
+      else if (selectedOrganizer === "lequat") matchesOrg = orgText.includes("lequat");
+      else if (selectedOrganizer === "now") matchesOrg = orgText.includes("now") || orgText.includes("4go");
+    }
 
     // Tab-based filtering
     let matchesTab = true;
@@ -233,36 +269,16 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
       matchesTab = classifyEventType(evt) === "fiesta";
     } else if (activeFilterTab === "conciertos") {
       matchesTab = classifyEventType(evt) === "concierto";
-    } else if (activeFilterTab === "ciudad") {
-      // For city tab, city filter applies strictly
-      matchesTab = true;
     }
-    // "inicio" shows featured events (first 4), "all" shows all
-    return matchesSearch && matchesCity && matchesTab;
-  }).slice(0, activeFilterTab === "inicio" ? 4 : undefined);
+
+    return matchesSearch && matchesCity && matchesDay && matchesOrg && matchesTab;
+  });
 
   // Custom states for 3D Carousel & Premium visual effects
   const [activeIndex, setActiveIndex] = useState(0);
   const [trendingIndex, setTrendingIndex] = useState(0);
   const activeEvent = events[activeIndex] || selectedCarouselEvent;
-  const [isLoading, setIsLoading] = useState(() => {
-    if (typeof window !== "undefined") {
-      const isSkipParam = window.location.search.includes("skipLoader");
-      const isSkipStorage = sessionStorage.getItem("skip_4go_loader") === "true" || sessionStorage.getItem("skip_stormgo_loader") === "true";
-      const isFromOrganizer = document.referrer.includes("/organizer");
-      if (isSkipParam || isSkipStorage || isFromOrganizer) {
-        try {
-          sessionStorage.removeItem("skip_4go_loader");
-          sessionStorage.removeItem("skip_stormgo_loader");
-          if (isSkipParam) {
-            window.history.replaceState({}, "", "/");
-          }
-        } catch (e) {}
-        return false;
-      }
-    }
-    return true;
-  });
+  const [isLoading, setIsLoading] = useState(false);
 
   // Clear loader on mount & popstate if needed
   useEffect(() => {
@@ -764,941 +780,316 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
 
       <Atmosphere />
 
-      {/* Modern, chic top navigation bar */}
-      <header
-        className={`fixed inset-x-0 top-0 z-50 border-b backdrop-blur-2xl shadow-lg transition-all duration-500 ${
-          activeFilterTab === "publish"
-            ? "bg-black/35 border-[#c2d902]/30 text-white shadow-[0_4px_30px_rgba(0,0,0,0.5)]"
-            : "bg-[#8b5cf6]/95 border-white/15 text-black"
-        }`}
-      >
-        <div className="mx-auto flex w-full max-w-[1600px] items-center justify-between gap-3 px-4 py-2.5 sm:px-6 md:px-12 lg:px-16">
-          
-          {/* Logo + Greeting block */}
-          <div className="flex min-w-0 items-center gap-3">
+      {/* ─── APPLE ARCADE FULL-BLEED TRANSPARENT TOP HEADER ─── */}
+      <header className="absolute inset-x-0 top-0 z-50 bg-gradient-to-b from-black/80 via-black/30 to-transparent px-4 sm:px-8 pt-4 pb-6 transition-all duration-300">
+        <div className="mx-auto flex w-full max-w-[1400px] items-center justify-between gap-4">
+          {/* Left: Bold "Home" Title */}
+          <div className="flex items-center gap-3">
             <button
               type="button"
               onClick={() => {
                 setActiveFilterTab("inicio");
-                const el = document.getElementById("show");
-                if (el) el.scrollIntoView({ behavior: "smooth" });
+                window.scrollTo({ top: 0, behavior: "smooth" });
               }}
-              className="group flex select-none items-center gap-2 outline-none hover:scale-105 transition-all duration-300 cursor-pointer"
-              style={{ WebkitTapHighlightColor: "transparent" }}
-              aria-label="4go"
+              className="flex items-center gap-2 cursor-pointer"
             >
-              <div className="relative w-8 h-8 sm:w-9 sm:h-9 flex items-center justify-center shrink-0">
-                <svg className="w-full h-full select-none" viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  {/* Ultra-Clean HD 4 Mascot with Sunglasses & Streetwear Sneakers */}
-                  <path d="M 38 82 L 28 98 C 24 104, 12 108, 10 114 C 8 120, 20 124, 34 122 C 44 120, 48 110, 44 98 L 48 82 Z" fill="#ffffff" stroke="#111111" strokeWidth="6" strokeLinejoin="round" strokeLinecap="round" />
-                  <path d="M 12 114 C 18 108, 30 108, 40 116" stroke="#111111" strokeWidth="4" strokeLinecap="round" />
-                  <path d="M 82 82 L 90 98 C 94 104, 106 108, 108 114 C 110 120, 98 124, 84 122 C 74 120, 70 110, 74 98 L 72 82 Z" fill="#ffffff" stroke="#111111" strokeWidth="6" strokeLinejoin="round" strokeLinecap="round" />
-                  <path d="M 108 114 C 102 108, 90 108, 80 116" stroke="#111111" strokeWidth="4" strokeLinecap="round" />
-                  <path d="M 64 12 L 22 64 L 22 76 L 70 76 L 70 94 L 88 94 L 88 76 L 102 76 L 102 58 L 88 58 L 88 12 Z" fill="#ffffff" stroke="#111111" strokeWidth="8" strokeLinejoin="round" strokeLinecap="round" />
-                  <path d="M 70 28 L 70 58 L 46 58 Z" fill="#111111" stroke="#111111" strokeWidth="2" strokeLinejoin="round" />
-                  <path d="M 30 36 L 46 33" stroke="#111111" strokeWidth="5" strokeLinecap="round" />
-                  <path d="M 66 31 L 82 33" stroke="#111111" strokeWidth="5" strokeLinecap="round" />
-                  <path d="M 18 44 C 18 44, 46 38, 52 47 C 58 38, 86 44, 86 44 L 80 60 C 80 60, 58 64, 52 57 C 46 64, 24 60, 24 60 Z" fill="#111111" stroke="#111111" strokeWidth="4" strokeLinejoin="round" />
-                  <line x1="28" y1="47" x2="40" y2="53" stroke="#ffffff" strokeWidth="4" strokeLinecap="round" />
-                  <line x1="60" y1="47" x2="72" y2="53" stroke="#ffffff" strokeWidth="4" strokeLinecap="round" />
-                </svg>
-              </div>
-              <span className={`logo-text flex items-center text-xs sm:text-sm font-extrabold tracking-tight leading-none select-none ${activeFilterTab === "publish" ? "text-[#c2d902]" : "text-black"}`}>
-                4go
-              </span>
+              <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-white font-sans drop-shadow-md">
+                Home
+              </h1>
             </button>
-
-            {/* Greeting — shown only when logged in */}
-            {loggedUser && (
-              <motion.div
-                initial={{ opacity: 0, x: -12 }}
-                animate={{ opacity: 1, x: 0 }}
-                className="hidden sm:flex items-center gap-2.5 ml-1"
-              >
-                <div className="h-8 w-8 rounded-full bg-black/30 border-2 border-white/40 flex items-center justify-center text-xs font-black text-white shadow-lg shrink-0 backdrop-blur-md">
-                  {loggedUser.initials}
-                </div>
-                <div className="flex flex-col leading-none">
-                  <span className="text-[9px] font-bold uppercase tracking-widest text-white/70">¡Hola de nuevo!</span>
-                  <span className="text-xs font-black text-white tracking-tight">{loggedUser.name}</span>
-                </div>
-              </motion.div>
-            )}
           </div>
 
-          {/* Desktop nav REMOVED — functionality merged into pill tabs below */}
-
-          {/* Right side actions */}
-          <div className="flex shrink-0 items-center gap-2 sm:gap-3">
-            {activeFilterTab === "publish" ? (
-              <button
-                type="button"
-                onClick={() => setActiveFilterTab("inicio")}
-                className="hidden sm:inline-flex h-8 items-center justify-center gap-1.5 rounded-full px-3.5 text-[9px] font-black uppercase tracking-[0.16em] bg-white/10 text-white/90 border border-white/20 hover:bg-white/20 transition-all active:scale-95 cursor-pointer backdrop-blur-md"
-              >
-                <ArrowLeft className="w-3.5 h-3.5 text-white/80" />
-                <span>VOLVER AL INICIO</span>
-              </button>
-            ) : (
-              <button
-                type="button"
-                onClick={() => setActiveFilterTab("publish")}
-                className="relative group inline-flex h-8 items-center justify-center gap-1.5 rounded-full px-3.5 text-[9px] font-black uppercase tracking-[0.16em] transition-all duration-300 active:scale-95 cursor-pointer border bg-white/10 text-white/90 border-white/25 hover:bg-white hover:text-black backdrop-blur-md shadow-md"
-              >
-                <PlusCircle className="w-3.5 h-3.5 text-white/80 group-hover:text-black" />
-                <span>SUBE UN EVENTO</span>
-              </button>
-            )}
-
-            {/* Notification Bell — only when logged in */}
-            {loggedUser && (
-              <button
-                type="button"
-                className="relative inline-flex h-8 w-8 items-center justify-center rounded-full border border-white/25 bg-white/10 text-white hover:bg-white/20 hover:scale-105 active:scale-95 transition-all duration-300 shadow-md cursor-pointer"
-                aria-label="Notificaciones"
-                title="Notificaciones"
-              >
-                {loggedUser.notifications > 0 ? (
-                  <BellRing className="w-4 h-4 animate-[wiggle_1s_ease-in-out_infinite]" />
-                ) : (
-                  <Bell className="w-4 h-4" />
-                )}
-                {loggedUser.notifications > 0 && (
-                  <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-[#e10075] text-white text-[8px] font-black flex items-center justify-center shadow-lg border border-[#8b5cf6] animate-pulse">
-                    {loggedUser.notifications > 9 ? "9+" : loggedUser.notifications}
-                  </span>
-                )}
-              </button>
-            )}
-
-            {/* User / Profile button */}
+          {/* Right: Avatar Badge */}
+          <div className="flex items-center gap-3">
+            <div className="relative inline-flex items-center gap-2 px-3 py-1 rounded-full bg-black/40 border border-white/20 backdrop-blur-md shadow-lg">
+              <span className="text-[10px] font-extrabold text-purple-300 tracking-wider uppercase">
+                SUBSCRIBER
+              </span>
+            </div>
             <button
               type="button"
               onClick={() => setShowUserMenu(!showUserMenu)}
-              className={`relative inline-flex h-8 w-8 items-center justify-center rounded-full border transition-all duration-300 shadow-md cursor-pointer overflow-hidden ${
-                showUserMenu
-                  ? "bg-[#8b5cf6] text-white border-[#8b5cf6] scale-105 shadow-[0_0_20px_rgba(139,92,246,0.6)]"
-                  : "border-white/20 bg-white/10 text-white hover:bg-white/20 hover:scale-105 active:scale-95"
-              }`}
-              title="Perfil / Iniciar Sesión / Registrarse"
-              aria-label="Perfil y cuenta de usuario"
+              className="relative w-9 h-9 rounded-full overflow-hidden border-2 border-emerald-400/80 bg-black flex items-center justify-center shadow-lg cursor-pointer"
             >
-              {loggedUser ? (
-                <span className="text-[10px] font-black text-white">{loggedUser.initials}</span>
-              ) : (
-                <User className="w-4 h-4" />
-              )}
+              <User className="w-5 h-5 text-white" />
             </button>
           </div>
-
         </div>
-
-        {/* ── Glassmorphic Segmented Control / Pill Tabs (Hidden on Publish mode for 1 clean header) ── */}
-        {activeFilterTab !== "publish" && (
-          <div className="border-t border-white/10 bg-[#7c3aed]/60 backdrop-blur-md px-4 py-2 sm:px-6 transition-all duration-300">
-            <div className="mx-auto flex w-full max-w-[1600px] items-center justify-center">
-              {/* Pill container — scrollable on mobile, centered on desktop */}
-              <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-none pb-0.5 lg:overflow-visible lg:flex-wrap lg:justify-center">
-                {FILTER_TABS.map((tab) => {
-                  const isActive = activeFilterTab === tab.id;
-                  return (
-                    <button
-                      key={tab.id}
-                      type="button"
-                      id={`filter-tab-${tab.id}`}
-                      onClick={() => setActiveFilterTab(tab.id)}
-                      className={`relative flex shrink-0 items-center justify-center rounded-full px-4 py-1.5 text-[10px] font-black uppercase tracking-wider transition-all duration-300 cursor-pointer select-none ${
-                        isActive
-                          ? "bg-white text-black shadow-[0_2px_14px_rgba(255,255,255,0.35)] scale-105"
-                          : "bg-white/10 text-white/80 hover:bg-white/20 hover:text-white border border-white/20 backdrop-blur-sm"
-                      }`}
-                      aria-pressed={isActive}
-                    >
-                      <span>{tab.label}</span>
-                      {isActive && (
-                        <motion.span
-                          layoutId="active-pill-indicator"
-                          className="absolute inset-0 rounded-full bg-white/10 -z-10"
-                          transition={{ type: "spring", stiffness: 380, damping: 30 }}
-                        />
-                      )}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          </div>
-        )}
       </header>
 
-      {/* ══════════════════════════════════════════════════════
-          EVENTS SCREEN — Fixed overlay, only mounts/unmounts on inicio toggle
-          Key is fixed so switching tabs doesn't cause overlay to flash home
-          ══════════════════════════════════════════════════════ */}
-      <AnimatePresence>
-        {activeFilterTab !== "inicio" && (
-          <motion.div
-            key="events-screen"
-            initial={{ opacity: 0, filter: "blur(16px)" }}
-            animate={{ opacity: 1, filter: "blur(0px)" }}
-            exit={{ opacity: 0, filter: "blur(12px)" }}
-            transition={{ duration: 0.38, ease: [0.22, 1, 0.36, 1] }}
-            className="fixed inset-0 z-40 flex flex-col bg-[#050507] overflow-hidden"
-            style={{ paddingTop: activeFilterTab === "publish" ? "52px" : "96px" }}
-          >
-            {/* Glow burst — animates on tab change, but overlay stays opaque */}
-            <AnimatePresence mode="sync">
-              <motion.div
-                key={`glow-${activeFilterTab}`}
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.35, ease: "easeOut" }}
-                className="pointer-events-none absolute inset-0 -z-10"
-                style={{
-                  background: `radial-gradient(ellipse 70% 45% at 50% 0%, ${TAB_GLOW[activeFilterTab] ?? "rgba(139,92,246,0.5)"} 0%, transparent 70%)`,
-                }}
-              />
-            </AnimatePresence>
+      {/* ─── MAIN HOME CONTENT (MATCHING REFERENCE IMAGE FULL-BLEED HERO) ─── */}
+      <div className="pb-28 min-h-screen bg-black text-white">
 
-            {/* Subtle grid lines — static, no animation needed */}
-            <div
-              className="pointer-events-none absolute inset-0 -z-10 opacity-[0.04]"
-              style={{
-                backgroundImage: "linear-gradient(rgba(255,255,255,.5) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.5) 1px, transparent 1px)",
-                backgroundSize: "40px 40px",
-              }}
-            />
+        {/* ─── 1. FULL-BLEED HERO SHOWCASE (4go Alien Chef Intro & Event Slides) ─── */}
+        <section className="relative w-full overflow-hidden">
+          {(() => {
+            const heroSlides = [
+              {
+                id: "4go-chef-intro",
+                poster: "/images/4go-hero-chef-alien.png",
+                title: "4go",
+                tagline: "FOR YOU",
+                line1: "Los mejores shots y la previa... ¿estás listo?",
+                line2: "Explora y vive la fiesta con 4go",
+                event: events[0] || fallbackEvents[0],
+              },
+              ...events.map((e) => ({
+                id: e.id,
+                poster: e.poster || "/images/now4go-hero-presentation-hd-v3.png",
+                title: e.title,
+                tagline: "FOR YOU",
+                line1: e.subtitle || e.venue,
+                line2: e.description || "Entradas oficiales disponibles",
+                event: e,
+              })),
+            ];
 
-            {/* ── Screen Header — title/subtitle animate per tab (Hidden on publish mode for clean single header) ── */}
-            {activeFilterTab !== "publish" && (
-              <div className="flex-shrink-0 px-4 sm:px-6 pt-4 pb-3 flex items-center justify-between gap-4 border-b border-white/10 bg-black/40">
-              <div className="flex items-center gap-3">
-                {/* Back button */}
-                <button
-                  type="button"
-                  onClick={() => setActiveFilterTab("inicio")}
-                  className="inline-flex items-center justify-center h-9 w-9 rounded-full border border-white/20 bg-white/10 text-white hover:bg-white/20 transition-all active:scale-95 cursor-pointer"
-                  aria-label="Volver al inicio"
+            const currentSlide = heroSlides[heroIndex % heroSlides.length];
+
+            return (
+              <div className="relative w-full flex flex-col items-center">
+                {/* Full-Bleed Hero Image Container */}
+                <div
+                  onClick={() => {
+                    const el = document.getElementById("explore");
+                    if (el) el.scrollIntoView({ behavior: "smooth" });
+                  }}
+                  className="relative w-full h-[620px] sm:h-[700px] overflow-hidden bg-[#0a0512] group cursor-pointer"
                 >
-                  <ChevronLeft className="w-4 h-4" />
-                </button>
-                <AnimatePresence mode="wait">
-                  <motion.div
-                    key={`header-${activeFilterTab}`}
-                    initial={{ opacity: 0, y: 8 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -8 }}
-                    transition={{ duration: 0.2, ease: "easeOut" }}
-                  >
-                    <h2 className="text-xl sm:text-2xl font-black uppercase tracking-tight text-white leading-none">
-                      {TAB_LABEL[activeFilterTab]}
-                    </h2>
-                    <p className="text-[10px] font-bold uppercase tracking-widest text-white/50 mt-0.5">
-                      {TAB_SUB[activeFilterTab]}
-                    </p>
-                  </motion.div>
-                </AnimatePresence>
-              </div>
-
-              {/* Right: event count + search (only for show catalog tabs) */}
-              <div className="flex items-center gap-2">
-                <span className="hidden sm:inline-flex text-[10px] font-black text-white/60 bg-white/10 border border-white/10 px-3 py-1.5 rounded-full">
-                  {filteredTabEvents.length} {filteredTabEvents.length === 1 ? "evento" : "eventos"}
-                </span>
-                <div className="relative flex items-center bg-white/5 border border-white/15 rounded-full px-3 py-2 gap-2 focus-within:border-white/35 transition">
-                  <Search className="w-3.5 h-3.5 text-zinc-400 shrink-0" />
-                  <input
-                    type="text"
-                    placeholder="Buscar..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="bg-transparent text-xs font-medium text-white placeholder-zinc-500 focus:outline-none w-28 sm:w-40"
+                  {/* Hero Image Background (Extends all the way to top 0 with object-center to show green alien, sushi & friends) */}
+                  <Image
+                    src={currentSlide.poster}
+                    alt={currentSlide.title}
+                    fill
+                    priority
+                    className="object-cover object-center brightness-105 group-hover:scale-105 transition-transform duration-700"
                   />
-                  {searchQuery && (
-                    <button onClick={() => setSearchQuery("")} className="text-[10px] text-zinc-400 hover:text-white font-bold cursor-pointer">✕</button>
-                  )}
-                </div>
-              </div>
-            </div>
-            )}
 
-            {activeFilterTab === "publish" ? (
-              <div className="flex-1 overflow-y-auto no-scrollbar pb-12">
-                <OrganizerPublishScreen />
-              </div>
-            ) : (
-              <>
-                {/* City filter chips — shown in ALL SHOWS, FIESTAS, CONCIERTOS overlay screen */}
-                <div className="flex-shrink-0 flex items-center gap-2 overflow-x-auto px-4 sm:px-6 py-2.5 border-b border-white/10 scrollbar-none">
-                  {["Todas", "Loja", "Quito", "Guayaquil", "Cuenca", "Manta"].map((c) => (
+                  {/* Vibrant Purple & Magenta Ambient Glow Overlay */}
+                  <div className="absolute inset-0 bg-gradient-to-tr from-[#6b21a8]/35 via-[#c026d3]/25 to-transparent opacity-90" />
+
+                  {/* Bottom Purple/Magenta Soft Gradient & Blur Fade Effect */}
+                  <div className="absolute inset-x-0 bottom-0 h-[60%] bg-gradient-to-b from-transparent via-[#180828]/50 via-black/85 to-black backdrop-blur-[1px]" />
+
+                  {/* Hero Superimposed Content (Matching User's Reference Image Typography) */}
+                  <div className="absolute bottom-6 inset-x-0 p-6 flex flex-col items-center text-center z-10 max-w-xl mx-auto">
+                    
+                    {/* FOR YOU Subtitle */}
+                    <span className="text-xs font-extrabold uppercase tracking-[0.25em] text-[#ff77a8] block mb-1 drop-shadow-md">
+                      {currentSlide.tagline}
+                    </span>
+
+                    {/* Hero Title */}
+                    <h2 className="text-4xl sm:text-6xl font-black text-white tracking-tight uppercase leading-tight drop-shadow-2xl">
+                      {currentSlide.title}
+                    </h2>
+
+                    {/* Description Tagline Lines (Matching image 2 style) */}
+                    <div className="mt-1.5 flex flex-col items-center text-center space-y-0.5">
+                      <p className="text-xs sm:text-sm font-bold text-zinc-100 drop-shadow line-clamp-1">
+                        {currentSlide.line1}
+                      </p>
+                      <p className="text-xs sm:text-sm font-medium text-zinc-300 drop-shadow line-clamp-1">
+                        {currentSlide.line2}
+                      </p>
+                    </div>
+
+                    {/* Glass Pill Button — EMPEZAR */}
+                    <div className="mt-5">
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          const el = document.getElementById("explore");
+                          if (el) el.scrollIntoView({ behavior: "smooth" });
+                        }}
+                        className="px-14 py-3.5 rounded-full bg-white/20 hover:bg-white/35 text-white font-black text-xs uppercase tracking-widest backdrop-blur-xl border border-white/40 shadow-[0_10px_30px_rgba(192,38,211,0.3)] transition-all hover:scale-105 active:scale-95 cursor-pointer"
+                      >
+                        EMPEZAR
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Carousel Pagination Dots directly underneath Hero */}
+                <div className="flex items-center justify-center gap-2 -mt-2 mb-4 select-none relative z-20">
+                  {heroSlides.map((_, idx) => (
                     <button
-                      key={c}
+                      key={`hero-dot-${idx}`}
                       type="button"
-                      onClick={() => setSelectedCity(c)}
-                      className={`flex-shrink-0 px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-wider border transition-all duration-200 cursor-pointer ${
-                        selectedCity === c
-                          ? "bg-white text-black border-white shadow-[0_0_12px_rgba(255,255,255,0.3)] scale-105"
-                          : "bg-white/8 border-white/20 text-white/80 hover:bg-white/15 hover:text-white"
+                      onClick={() => setHeroIndex(idx)}
+                      className={`h-2 rounded-full transition-all duration-300 cursor-pointer ${
+                        idx === (heroIndex % heroSlides.length)
+                          ? "w-8 bg-white shadow-[0_0_12px_rgba(255,255,255,0.8)]"
+                          : "w-2 bg-white/30 hover:bg-white/50"
                       }`}
-                    >
-                      {c}
-                    </button>
+                      aria-label={`Go to slide ${idx + 1}`}
+                    />
                   ))}
                 </div>
-
-            {/* ── Events Grid — only the cards grid animates on tab change ── */}
-            <div className="flex-1 overflow-y-auto px-4 sm:px-6 pt-5 pb-8 no-scrollbar">
-              <AnimatePresence mode="wait">
-                <motion.div
-                  key={`grid-${activeFilterTab}-${selectedCity}`}
-                  initial={{ opacity: 0, y: 16 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -10 }}
-                  transition={{ duration: 0.25, ease: "easeOut" }}
-                >
-                  {filteredTabEvents.length === 0 ? (
-                    <div className="flex flex-col items-center justify-center h-64 text-center gap-3">
-                      <div className="w-14 h-14 rounded-2xl bg-white/8 border border-white/10 flex items-center justify-center">
-                        <Ticket className="w-7 h-7 text-white/40" />
-                      </div>
-                      <p className="text-sm font-black uppercase tracking-widest text-white/40">Sin eventos disponibles</p>
-                      <p className="text-xs text-white/25 font-medium">Prueba otra categoría o ciudad</p>
-                    </div>
-                  ) : (
-                    <div className="grid grid-cols-2 gap-3 sm:gap-4 max-w-2xl mx-auto">
-                      {filteredTabEvents.map((evt, idx) => (
-                        <motion.div
-                          key={evt.id}
-                          initial={{ opacity: 0, y: 24, scale: 0.96 }}
-                          animate={{ opacity: 1, y: 0, scale: 1 }}
-                          transition={{
-                            duration: 0.35,
-                            delay: idx * 0.055,
-                            ease: [0.22, 1, 0.36, 1],
-                          }}
-                          onClick={() => {
-                            setSelectedCarouselEvent(evt);
-                            setShowDetailOverlay(true);
-                          }}
-                          className="group relative flex flex-col rounded-2xl bg-zinc-950 border border-white/10 overflow-hidden cursor-pointer hover:border-white/30 transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_16px_40px_rgba(0,0,0,0.7)]"
-                        >
-                          {/* Poster */}
-                          <div className="relative w-full aspect-square overflow-hidden bg-zinc-900">
-                            {evt.poster ? (
-                              <Image
-                                src={evt.poster}
-                                alt={evt.title}
-                                fill
-                                className="object-cover group-hover:scale-105 transition-transform duration-500"
-                                sizes="(max-width: 640px) 50vw, 300px"
-                              />
-                            ) : (
-                              <div className="w-full h-full flex items-center justify-center bg-zinc-900">
-                                <span className="text-2xl font-black text-zinc-700">{evt.title.slice(0, 2).toUpperCase()}</span>
-                              </div>
-                            )}
-                            <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent" />
-                            {/* Price badge */}
-                            <span className="absolute top-2.5 right-2.5 px-2 py-0.5 rounded-full bg-white text-black text-[9px] font-black shadow">
-                              ${evt.price ?? "—"} USD
-                            </span>
-                            {/* City badge */}
-                            <span className="absolute top-2.5 left-2.5 px-2 py-0.5 rounded-full bg-black/70 border border-white/20 text-[8px] font-bold uppercase text-white/90 backdrop-blur-sm">
-                              {evt.city}
-                            </span>
-                            {/* Glow on hover */}
-                            <div
-                              className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-                              style={{ background: `radial-gradient(ellipse 60% 50% at 50% 100%, ${TAB_GLOW[activeFilterTab] ?? "rgba(139,92,246,0.3)"} 0%, transparent 70%)` }}
-                            />
-                          </div>
-
-                          {/* Info */}
-                          <div className="p-3 flex flex-col gap-1 border-t border-white/5 bg-[#09090b]">
-                            <p className="text-[8px] font-black uppercase tracking-widest text-[#e10075] truncate">{evt.organizer ?? "4go"}</p>
-                            <h4 className="text-xs font-black uppercase text-white leading-tight line-clamp-1">{evt.title}</h4>
-                            <p className="text-[10px] text-zinc-400 font-medium line-clamp-1">{evt.subtitle}</p>
-                            <div className="flex items-center justify-between mt-2 pt-2 border-t border-white/5">
-                              <span className="text-[9px] font-bold text-zinc-400 flex items-center gap-1">
-                                <Calendar className="w-3 h-3 text-zinc-500" />
-                                {evt.dateLabel}
-                              </span>
-                              <span className="text-[9px] font-black text-white/80 group-hover:text-white flex items-center gap-0.5 transition-colors">
-                                Ver <ChevronRight className="w-3 h-3" />
-                              </span>
-                            </div>
-                          </div>
-                        </motion.div>
-                      ))}
-                    </div>
-                  )}
-                </motion.div>
-              </AnimatePresence>
-            </div>
-          </>
-        )}
-      </motion.div>
-    )}
-  </AnimatePresence>
-
-      {/* Monochromatic 3D Concrete Room backdrop */}
-      <section
-        id="show"
-        className="relative z-10 flex w-full flex-col overflow-hidden px-4 pb-12 pt-24 sm:px-8 md:px-14 lg:px-20 justify-start"
-      >
-        {/* Electric Purple Ambient Backdrop (#8b5cf6) */}
-        <div aria-hidden className="absolute inset-0 -z-20 overflow-hidden bg-[#8b5cf6] select-none pointer-events-none">
-          <div className="absolute inset-0 bg-[#8b5cf6]" />
-          {/* Ambient Swirl Wave Vector Lines (extended down across entire section & bottom) */}
-          <svg className="absolute inset-0 w-full h-full opacity-35 pointer-events-none" viewBox="0 0 1440 1200" preserveAspectRatio="none" fill="none">
-            {/* Top Wave Lines */}
-            <path d="M-100 150 C 300 20, 700 350, 1540 80" stroke="white" strokeWidth="70" strokeLinecap="round" opacity="0.15" />
-            <path d="M-50 320 C 400 80, 900 480, 1500 220" stroke="#c2d902" strokeWidth="45" strokeLinecap="round" opacity="0.22" />
-
-            {/* Middle Wave Lines */}
-            <path d="M-80 620 C 350 420, 950 780, 1520 540" stroke="white" strokeWidth="65" strokeLinecap="round" opacity="0.18" />
-            <path d="M-150 750 C 300 580, 850 920, 1580 680" stroke="#c2d902" strokeWidth="40" strokeLinecap="round" opacity="0.25" />
-
-            {/* Bottom Wave Lines (parte de abajo) */}
-            <path d="M-100 900 C 400 700, 1000 1080, 1540 840" stroke="white" strokeWidth="75" strokeLinecap="round" opacity="0.15" />
-            <path d="M-60 1050 C 320 880, 880 1180, 1500 960" stroke="#c2d902" strokeWidth="50" strokeLinecap="round" opacity="0.2" />
-            <path d="M-140 1180 C 280 1020, 920 1280, 1560 1100" stroke="white" strokeWidth="60" strokeLinecap="round" opacity="0.14" />
-          </svg>
-        </div>
-
-        {/* Hero Main Showcase: Chic Modern Pop-Art Hero Stage (Matching User Reference Image) */}
-        <div className="relative z-10 w-full max-w-[1300px] mx-auto flex flex-col items-center justify-center text-center py-6 sm:py-10">
-
-          {/* Top Pill Badges */}
-          <div className="flex items-center justify-center gap-3 sm:gap-4 mb-3 select-none">
-            <span className="px-4 py-1.5 rounded-full border border-white/40 text-[10px] sm:text-xs font-bold uppercase tracking-wider text-white backdrop-blur-md">
-              temporada 2026
-            </span>
-            <span className="px-6 py-2 rounded-2xl bg-black text-white font-black text-sm sm:text-base uppercase tracking-widest shadow-xl border border-white/20">
-              4go
-            </span>
-            <span className="px-4 py-1.5 rounded-full border border-white/40 text-[10px] sm:text-xs font-bold uppercase tracking-wider text-white backdrop-blur-md">
-              tickets digitales
-            </span>
-          </div>
-
-          {/* Home Sub-Pill Shortcuts to Merch & Soporte */}
-          <div className="flex items-center justify-center gap-2 mb-6 select-none">
-            <button
-              type="button"
-              onClick={() => {
-                const el = document.getElementById("wear");
-                if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
-              }}
-              className="flex items-center gap-1.5 px-4 py-1.5 rounded-full border border-white/20 bg-white/10 hover:bg-white hover:text-black text-[10px] sm:text-xs font-black uppercase tracking-wider text-white transition-all duration-200 active:scale-95 cursor-pointer shadow-sm"
-            >
-              <ShoppingBag className="w-3.5 h-3.5" />
-              <span>MERCH</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                window.dispatchEvent(new CustomEvent("open-ai-chatbot"));
-                const el = document.getElementById("support");
-                if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
-              }}
-              className="flex items-center gap-1.5 px-4 py-1.5 rounded-full border border-white/20 bg-white/10 hover:bg-white hover:text-black text-[10px] sm:text-xs font-black uppercase tracking-wider text-white transition-all duration-200 active:scale-95 cursor-pointer shadow-sm"
-            >
-              <HelpCircle className="w-3.5 h-3.5" />
-              <span>SOPORTE</span>
-            </button>
-          </div>
-
-          {/* Headline */}
-          <div className="space-y-1 sm:space-y-2 max-w-4xl mx-auto select-none">
-            <h1 className="text-4xl sm:text-6xl lg:text-7xl font-black uppercase text-black tracking-tighter leading-none">
-              TUS EVENTOS
-            </h1>
-            <h1 className="text-4xl sm:text-6xl lg:text-7xl font-black uppercase text-white tracking-tighter leading-none">
-              MERECEN UNA
-            </h1>
-            <div className="flex items-center justify-center gap-2 sm:gap-4">
-              <span className="text-[#c2d902] text-3xl sm:text-5xl font-black animate-pulse">✳</span>
-              <h1 className="text-4xl sm:text-6xl lg:text-7xl font-black uppercase text-white tracking-tighter leading-none">
-                EXPERIENCIA!
-              </h1>
-              <span className="text-[#c2d902] text-3xl sm:text-5xl font-black animate-pulse">✳</span>
-            </div>
-          </div>
-
-          {/* Centerpiece: 2 Angled 3D Smartphones (Matching Reference Image Center Stage) */}
-          <div className="relative w-full max-w-[580px] h-[340px] sm:h-[440px] my-6 sm:my-8 flex items-center justify-center select-none">
-            {/* Left Phone (Lime Green Frame, angled -10deg) */}
-            <motion.div
-              initial={{ y: 0, rotate: -10 }}
-              animate={{ y: [0, -12, 0], rotate: [-10, -7, -10] }}
-              transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
-              className="absolute left-[8%] sm:left-[12%] w-[200px] sm:w-[260px] aspect-[9/18.5] rounded-[38px] bg-[#c2d902] border-[4px] border-black p-2 shadow-[0_25px_60px_rgba(0,0,0,0.5)] z-20 overflow-hidden cursor-pointer"
-              onClick={() => {
-                const el = document.getElementById("explore");
-                if (el) el.scrollIntoView({ behavior: "smooth" });
-              }}
-            >
-              <div className="relative w-full h-full rounded-[30px] overflow-hidden bg-black flex flex-col justify-between p-3 text-white">
-                <div className="text-left pt-2">
-                  <span className="text-[8px] font-black uppercase text-[#ff77a8] tracking-widest block">Trending Show</span>
-                  <h4 className="text-xs font-black uppercase text-white tracking-tight mt-0.5">BLOCK X OUSI</h4>
-                  <p className="text-[9px] font-medium text-zinc-400">Omar Courtz Experience</p>
-                </div>
-                <div className="relative w-full h-[65%] rounded-xl overflow-hidden bg-zinc-900 my-1">
-                  <img src="/images/now4go-hero-presentation-hd-v3.png" alt="App Preview" className="w-full h-full object-cover" />
-                </div>
-                <div className="py-1.5 px-3 rounded-full bg-[#c2d902] text-black font-black text-[9px] uppercase tracking-wider text-center">
-                  Entradas $10 USD
-                </div>
               </div>
-            </motion.div>
+            );
+          })()}
+        </section>
 
-            {/* Right Phone (Dark Violet Frame, angled 8deg) */}
-            <motion.div
-              initial={{ y: 0, rotate: 7 }}
-              animate={{ y: [0, -15, 0], rotate: [7, 10, 7] }}
-              transition={{ duration: 5.5, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}
-              className="absolute right-[8%] sm:right-[12%] w-[200px] sm:w-[260px] aspect-[9/18.5] rounded-[38px] bg-[#1e1b4b] border-[4px] border-black p-2 shadow-[0_25px_60px_rgba(0,0,0,0.5)] z-10 overflow-hidden cursor-pointer"
-              onClick={() => {
-                const el = document.getElementById("explore");
-                if (el) el.scrollIntoView({ behavior: "smooth" });
-              }}
-            >
-              <div className="relative w-full h-full rounded-[30px] overflow-hidden bg-black flex flex-col justify-between p-3 text-white">
-                <div className="text-left pt-2">
-                  <span className="text-[8px] font-black uppercase text-[#84cc16] tracking-widest block">Exclusivo Ecuador</span>
-                  <h4 className="text-xs font-black uppercase text-white tracking-tight mt-0.5">LATIN LOUD 2026</h4>
-                  <p className="text-[9px] font-medium text-zinc-400">Bad Bunny &amp; Rauw</p>
-                </div>
-                <div className="relative w-full h-[65%] rounded-xl overflow-hidden bg-zinc-900 my-1">
-                  <img src="/images/hero-element-ticket_latin.png" alt="Ticket Preview" className="w-full h-full object-cover" />
-                </div>
-                <div className="py-1.5 px-3 rounded-full bg-[#e10075] text-white font-black text-[9px] uppercase tracking-wider text-center">
-                  Ver Evento &rarr;
-                </div>
-              </div>
-            </motion.div>
+        {/* ─── 2. SECTION: ORGANIZADORES & DISCOTECAS DESTACADAS ─── */}
+        <section className="py-6 px-4 sm:px-8 max-w-[1400px] mx-auto">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-xl sm:text-2xl font-extrabold text-white tracking-tight font-sans">
+              Discotecas &amp; Organizadores
+            </h3>
           </div>
 
-          <p className="text-xs sm:text-sm font-black uppercase tracking-wider text-white max-w-xl mx-auto leading-relaxed drop-shadow-md">
-            Explora la cartelera exclusiva de conciertos, festivales y fiestas en Ecuador. Tickets digitales oficiales con verificación instantánea.
-          </p>
-        </div>
+          {/* Organizer Brand Cards */}
+          <div className="grid grid-cols-3 gap-3">
+            {[
+              { id: "cubic", name: "Cubic Loja", tagline: "Nightclub", color: "from-purple-900/60 to-black", border: "border-purple-500/40" },
+              { id: "lequat", name: "Lequat", tagline: "Eventos & Shows", color: "from-pink-900/60 to-black", border: "border-pink-500/40" },
+              { id: "now", name: "NOW 4GO", tagline: "Originals", color: "from-emerald-900/60 to-black", border: "border-emerald-500/40" },
+            ].map((org) => {
+              const isSelected = selectedOrganizer === org.id;
 
-        {/* Clean Spaced Catalog Section Below Presentation */}
-        <div id="explore" className="relative z-20 w-full max-w-[1600px] mx-auto mt-6 sm:mt-10 pt-6 space-y-8">
-          
-          {/* Section Header with current tab label + search bar */}
-          <div className="relative flex flex-col md:flex-row items-start md:items-center justify-between gap-6 pb-4">
-            <div>
-              <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black uppercase tracking-tight text-white drop-shadow-md">
-                {activeFilterTab === "inicio" && "Destacados"}
-                {activeFilterTab === "all" && "Todo"}
-                {activeFilterTab === "fiestas" && "Fiestas"}
-                {activeFilterTab === "conciertos" && "Conciertos"}
-                {activeFilterTab === "ciudad" && "Por Ciudad"}
-              </h2>
-              <p className="text-xs font-bold text-white/60 mt-1 uppercase tracking-widest">
-                {activeFilterTab === "inicio" && "Los eventos más populares"}
-                {activeFilterTab === "all" && "Toda la cartelera disponible"}
-                {activeFilterTab === "fiestas" && "Trap · Urban · Nocturno"}
-                {activeFilterTab === "conciertos" && "Latin · Live · Conciertos"}
-                {activeFilterTab === "ciudad" && "Filtra por tu ciudad"}
-              </p>
-            </div>
-
-            {/* Search Bar */}
-            <div className="w-full md:w-auto flex-1 max-w-md">
-              <div className="relative flex items-center bg-black/60 rounded-full border border-white/15 px-4 py-2.5 shadow-inner focus-within:border-white/40 transition">
-                <Search className="w-4 h-4 text-zinc-400 shrink-0" />
-                <input
-                  type="text"
-                  placeholder="Buscar eventos, artistas o ciudad..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full bg-transparent pl-3 pr-2 text-xs font-medium text-white placeholder-zinc-500 focus:outline-none"
-                />
-                {searchQuery && (
-                  <button onClick={() => setSearchQuery("")} className="text-[10px] text-zinc-400 hover:text-white font-bold">
-                    Limpiar
-                  </button>
-                )}
-              </div>
-            </div>
-          </div>
-
-          {/* City filter chips — shown only when "Por Ciudad" tab is active */}
-          {activeFilterTab === "ciudad" && (
-            <motion.div
-              initial={{ opacity: 0, y: -8 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -8 }}
-              className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none my-2"
-            >
-              <span className="text-xs sm:text-sm font-black uppercase tracking-widest text-white shrink-0 mr-2 drop-shadow-sm">Ciudad:</span>
-              {["Todas", "Loja", "Quito", "Guayaquil", "Cuenca", "Manta"].map((c) => (
+              return (
                 <button
-                  key={c}
+                  key={org.id}
                   type="button"
-                  onClick={() => setSelectedCity(c)}
-                  className={`px-5 py-2 rounded-full text-xs font-black uppercase tracking-wider border transition shrink-0 cursor-pointer ${
-                    selectedCity === c
-                      ? "border-white bg-white text-black font-black shadow-xl scale-105"
-                      : "border-white/40 bg-black/30 text-white font-extrabold hover:bg-white hover:text-black backdrop-blur-md shadow-sm"
-                  }`}
-                >
-                  {c}
-                </button>
-              ))}
-            </motion.div>
-          )}
-
-          {/* Featured Trending Presale Banner Card Showcase (Auto-rotates every 5 seconds) */}
-          <div className="relative w-full max-w-[540px] mx-auto my-8 select-none px-2">
-            <div 
-              onClick={() => {
-                setQuickPreviewEvent(events[trendingIndex]);
-                setShowQuickPreview(true);
-              }}
-              className="group relative w-full rounded-[28px] bg-[#0c0c0e] border border-white/15 overflow-hidden shadow-[0_25px_60px_rgba(0,0,0,0.7)] cursor-pointer hover:border-[#e10075]/60 transition-all duration-300"
-            >
-              {/* Card Top Poster Banner */}
-              <div className="relative w-full aspect-[2/1] bg-zinc-950 overflow-hidden">
-                <AnimatePresence mode="wait">
-                  <motion.div
-                    key={events[trendingIndex].id}
-                    initial={{ opacity: 0, x: 30 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: -30 }}
-                    transition={{ duration: 0.4, ease: "easeInOut" }}
-                    className="relative w-full h-full"
-                  >
-                    {events[trendingIndex].poster ? (
-                      <Image
-                        src={events[trendingIndex].poster}
-                        alt={events[trendingIndex].title}
-                        fill
-                        className="object-cover group-hover:scale-105 transition-transform duration-700"
-                        priority
-                      />
-                    ) : (
-                      <div className="w-full h-full bg-zinc-900 flex items-center justify-center">
-                        <span className="text-3xl font-black text-white">{events[trendingIndex].title}</span>
-                      </div>
-                    )}
-                    <div className="absolute inset-0 bg-gradient-to-t from-[#0c0c0e] via-transparent to-transparent opacity-80" />
-                    
-                    <span className="absolute top-3 left-3 px-3 py-1 rounded-full bg-black/80 text-[9px] font-black uppercase text-white border border-white/20 backdrop-blur-md">
-                      {events[trendingIndex].city}
-                    </span>
-                    <span className="absolute top-3 right-3 px-3 py-1 rounded-full bg-white text-black text-[10px] font-black shadow-md">
-                      ${events[trendingIndex].price} USD
-                    </span>
-                  </motion.div>
-                </AnimatePresence>
-              </div>
-
-              {/* Card Bottom Details (Matching User Reference Image 2) */}
-              <div className="p-4 sm:p-5 text-left border-t border-white/10 bg-[#0c0c0e]">
-                <AnimatePresence mode="wait">
-                  <motion.div
-                    key={`text-${events[trendingIndex].id}`}
-                    initial={{ opacity: 0, y: 8 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -8 }}
-                    transition={{ duration: 0.3 }}
-                  >
-                    <span className="text-[10px] font-black uppercase tracking-widest text-[#ff77a8] block">
-                      Trending Presale:
-                    </span>
-                    <h3 className="text-xl sm:text-2xl font-black uppercase text-white tracking-tight mt-0.5 group-hover:text-[#ff77a8] transition-colors">
-                      {events[trendingIndex].title}
-                    </h3>
-                    <p className="text-xs font-medium text-zinc-400 mt-0.5">
-                      {events[trendingIndex].subtitle || events[trendingIndex].organizer || "Omar Courtz Experience"}
-                    </p>
-
-                    <div className="mt-4 pt-3 border-t border-white/10 flex items-center justify-between text-xs font-black uppercase text-white">
-                      <div className="flex items-center gap-3">
-                        <span className="text-[#84cc16]">${events[trendingIndex].price} USD</span>
-                        <span className="text-zinc-400 font-medium">{events[trendingIndex].dateLabel}</span>
-                        <span className="text-zinc-500 font-medium">{events[trendingIndex].city}</span>
-                      </div>
-
-                      <span className="text-[10px] px-3 py-1 rounded-full bg-white/10 group-hover:bg-[#e10075] transition-colors">
-                        Ver &rarr;
-                      </span>
-                    </div>
-                  </motion.div>
-                </AnimatePresence>
-              </div>
-            </div>
-
-            {/* Pagination Dots (Clickable to change trending event) */}
-            <div className="flex items-center justify-center gap-2 mt-3 select-none">
-              {events.map((evt, idx) => (
-                <button
-                  key={`dot-${evt.id}`}
-                  type="button"
-                  onClick={() => setTrendingIndex(idx)}
-                  className={`h-2 rounded-full transition-all duration-300 ${
-                    idx === trendingIndex
-                      ? "w-6 bg-white shadow-[0_0_10px_rgba(255,255,255,0.8)]"
-                      : "w-2 bg-white/20 hover:bg-white/50"
-                  }`}
-                  aria-label={`Ir a evento ${idx + 1}`}
-                />
-              ))}
-            </div>
-          </div>
-
-          {/* Centered Cards Catalog Grid (Strictly 2 per row on Mobile, 4 per row on Desktop) */}
-          <div className="mt-10 pt-6 border-t border-white/15">
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 mb-8 max-w-[1400px] mx-auto px-2">
-              <h3 className="text-2xl sm:text-3xl lg:text-4xl font-black uppercase tracking-tight text-white flex items-center gap-3 drop-shadow-md">
-                <span className="inline-block w-2.5 h-6 bg-[#c2d902] rounded-full shadow-md" />
-                Cartelera Completa &amp; Shows
-              </h3>
-              <span className="text-xs font-black uppercase tracking-widest text-white/90 bg-black/25 border border-white/20 px-3.5 py-1.5 rounded-full backdrop-blur-md">
-                {filteredCatalogEvents.length} Eventos Disponibles
-              </span>
-            </div>
-
-            {/* Square Cards Grid (Strictly 2 per row on mobile: grid-cols-2) */}
-            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-6 max-w-[1240px] mx-auto justify-items-center pb-6">
-              {filteredCatalogEvents.map((evt) => (
-                <div
-                  key={evt.id}
                   onClick={() => {
-                    setExpandedCardId(expandedCardId === evt.id ? null : evt.id);
+                    setSelectedOrganizer(isSelected ? "todos" : org.id);
+                    if (org.id === "cubic") {
+                      setSelectedOrganizerSlug("cubic");
+                      setShowOrganizerOverlay(true);
+                    } else {
+                      const el = document.getElementById("explore");
+                      if (el) el.scrollIntoView({ behavior: "smooth" });
+                    }
                   }}
-                  className="group relative w-full rounded-2xl sm:rounded-3xl bg-zinc-950 border border-white/10 overflow-hidden cursor-pointer hover:border-[#e10075]/50 transition-all duration-300 hover:-translate-y-1.5 hover:shadow-[0_20px_50px_rgba(225,0,117,0.15)] flex flex-col min-h-[320px]"
+                  className={`relative flex flex-col items-center justify-center p-3.5 rounded-2xl border transition-all duration-300 cursor-pointer bg-gradient-to-b ${org.color} ${
+                    isSelected ? "border-white shadow-[0_0_20px_rgba(255,255,255,0.3)] scale-105" : `${org.border} hover:border-white/50`
+                  }`}
                 >
-                  {/* Square Poster Image */}
-                  <div className="relative aspect-square w-full bg-zinc-900 overflow-hidden">
-                    {evt.poster ? (
-                      <Image
-                        src={evt.poster}
-                        alt={evt.title}
-                        fill
-                        className="object-cover group-hover:scale-105 transition-transform duration-500"
-                      />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center bg-zinc-900">
-                        <span className="text-3xl font-black text-zinc-700">{evt.title.slice(0, 2).toUpperCase()}</span>
-                      </div>
-                    )}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent" />
-                    <span className="absolute top-3 left-3 px-2.5 py-1 rounded-full bg-black/70 border border-white/20 text-[9px] font-black uppercase tracking-wider text-white backdrop-blur-md">
-                      {evt.city}
-                    </span>
-                    <span className="absolute top-3 right-3 px-2.5 py-1 rounded-full bg-white text-black text-[10px] font-black">
-                      ${evt.price} USD
-                    </span>
-                  </div>
+                  <span className="text-xs font-black uppercase text-white tracking-wider">{org.name}</span>
+                  <span className="text-[9px] text-zinc-400 font-medium mt-0.5">{org.tagline}</span>
+                </button>
+              );
+            })}
+          </div>
+        </section>
 
-                  {/* Event Info */}
-                  <div className="p-4 flex-1 flex flex-col justify-between border-t border-white/5 bg-[#09090b]">
-                    <div>
-                      <p className="text-[9px] font-black uppercase tracking-widest text-[#e10075] mb-1">{evt.organizer || "Now4Go"}</p>
-                      <h4 className="font-black text-base uppercase text-white leading-tight line-clamp-1 group-hover:text-[#e10075] transition-colors">{evt.title}</h4>
-                      <p className="text-zinc-400 text-xs mt-0.5 line-clamp-1 font-medium">{evt.subtitle}</p>
-                    </div>
+        {/* ─── 3. SECTION: EVENTOS DE LA SEMANA (FILTRO POR DÍAS) ─── */}
+        <section id="explore" className="py-8 px-4 sm:px-8 max-w-[1400px] mx-auto">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-4">
+            <div>
+              <h3 className="text-xl sm:text-2xl font-extrabold text-white tracking-tight font-sans">
+                Cartelera de Eventos
+              </h3>
+              <p className="text-xs text-zinc-400 font-medium">Filtra por día o busca tu fiesta favorita</p>
+            </div>
 
-                    <div className="flex items-center justify-between mt-4 pt-3 border-t border-white/10 text-[11px] text-zinc-400">
-                      <span className="font-bold text-white flex items-center gap-1.5">
-                        <Calendar className="w-3.5 h-3.5 text-zinc-400" />
-                        {evt.dateLabel}
-                      </span>
-                      <span className="font-black text-white group-hover:text-[#e10075] flex items-center gap-1 transition-colors">
-                        Ver <Ticket className="w-3 h-3" />
-                      </span>
-                    </div>
-                  </div>
+            {/* Day Filter Chips */}
+            <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-none py-1">
+              {[
+                { id: "todos", label: "Todos" },
+                { id: "viernes", label: "Viernes" },
+                { id: "sabado", label: "Sábado" },
+                { id: "domingo", label: "Domingo" },
+                { id: "lunes", label: "Lunes" },
+              ].map((day) => {
+                const isActive = selectedDay === day.id;
 
-                  {/* Glassmorphic Folder Sheet Overlay (Slides UP from bottom of the Card) */}
-                  <AnimatePresence>
-                    {expandedCardId === evt.id && (
-                      <motion.div
-                        initial={{ y: "100%", opacity: 0 }}
-                        animate={{ y: 0, opacity: 1 }}
-                        exit={{ y: "100%", opacity: 0 }}
-                        transition={{ type: "spring", damping: 25, stiffness: 280 }}
-                        className="absolute inset-x-0 bottom-0 top-8 z-30 bg-black/90 backdrop-blur-2xl border-t border-white/20 rounded-t-[24px] p-3.5 sm:p-4 flex flex-col justify-between text-left shadow-[0_-15px_40px_rgba(0,0,0,0.85)]"
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        <div>
-                          {/* Top Folder Handle Line — */}
-                          <div className="w-10 h-1 rounded-full bg-white/40 mx-auto mb-2.5" />
+                return (
+                  <button
+                    key={day.id}
+                    type="button"
+                    onClick={() => setSelectedDay(day.id)}
+                    className={`px-3.5 py-1.5 rounded-full text-xs font-black uppercase tracking-wider border transition-all cursor-pointer ${
+                      isActive
+                        ? "bg-white text-black border-white shadow-md scale-105"
+                        : "bg-white/10 text-white/80 border-white/20 hover:bg-white/20 hover:text-white"
+                    }`}
+                  >
+                    {day.label}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
 
-                          <div className="flex items-center justify-between mb-1">
-                            <span className="text-[9px] font-bold text-[#ff77a8] truncate">
-                              @{((evt as any).organizer || "now4go").toLowerCase().replace(/\s+/g, "_")}
-                            </span>
-                            <button
-                              type="button"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setExpandedCardId(null);
-                              }}
-                              className="text-[9px] font-bold text-zinc-400 hover:text-white px-2 py-0.5 rounded-full bg-white/10"
-                            >
-                              ✕
-                            </button>
-                          </div>
-
-                          <h4 className="text-xs sm:text-sm font-black uppercase text-white tracking-tight line-clamp-1">
-                            {evt.title}
-                          </h4>
-
-                          <p className="text-[9px] font-normal text-zinc-300 mt-1 line-clamp-2 leading-relaxed">
-                            {evt.subtitle || "Experiencia inmersiva con lo mejor del Reggaeton, Trap Latino y Urban Music en vivo."}
-                          </p>
-
-                          {/* Genre Tags */}
-                          <div className="flex flex-wrap gap-1 mt-2">
-                            {["@reggaeton", "@trap", "@urban"].map((tag) => (
-                              <span key={tag} className="px-2 py-0.5 rounded-full bg-white/10 border border-white/15 text-[8px] font-bold text-zinc-200">
-                                {tag}
-                              </span>
-                            ))}
-                          </div>
-                        </div>
-
-                        {/* Direct URL Button to Event Page */}
-                        <button
-                          type="button"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            const slug = (evt as any).slug || evt.id;
-                            window.location.href = `/storm/${slug}`;
-                          }}
-                          className="w-full py-2.5 px-3 rounded-xl bg-white text-black font-black uppercase text-[9px] sm:text-[10px] tracking-wider hover:bg-[#e10075] hover:text-white transition-all duration-300 shadow-md flex items-center justify-center gap-1.5 mt-2 group cursor-pointer"
-                        >
-                          <span>Ir al Evento</span>
-                          <span className="group-hover:translate-x-1 transition-transform">&rarr;</span>
-                        </button>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
+          {/* Grid of Rounded Event Thumbnail Cards */}
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+            {filteredCatalogEvents.map((evt) => (
+              <div
+                key={`cat-${evt.id}`}
+                onClick={() => {
+                  setSelectedCarouselEvent(evt);
+                  setShowDetailOverlay(true);
+                }}
+                className="group relative flex flex-col rounded-3xl bg-zinc-950 border border-zinc-800 overflow-hidden cursor-pointer hover:border-purple-500 transition-all duration-300 hover:scale-105 shadow-xl"
+              >
+                <div className="relative w-full aspect-square bg-zinc-900 overflow-hidden">
+                  <Image
+                    src={evt.poster || "/images/now4go-hero-presentation-hd-v3.png"}
+                    alt={evt.title}
+                    fill
+                    className="object-cover group-hover:scale-110 transition-transform duration-500"
+                    sizes="200px"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-transparent to-transparent" />
+                  <span className="absolute top-2.5 right-2.5 px-2.5 py-1 rounded-full bg-white text-black text-[10px] font-black shadow">
+                    ${evt.price || 10} USD
+                  </span>
                 </div>
-              ))}
-            </div>
+
+                <div className="p-3 flex flex-col justify-between flex-1 bg-[#09090b]">
+                  <div>
+                    <span className="text-[9px] font-black uppercase text-purple-400 tracking-wider block">
+                      {evt.organizer || "4GO"}
+                    </span>
+                    <h4 className="text-xs font-bold text-white uppercase group-hover:text-purple-300 transition-colors line-clamp-1">
+                      {evt.title}
+                    </h4>
+                    <p className="text-[10px] text-zinc-400 font-medium line-clamp-1 mt-0.5">
+                      {evt.subtitle || evt.venue}
+                    </p>
+                  </div>
+                  <div className="mt-3 pt-2 border-t border-zinc-800 flex items-center justify-between text-[9px] font-bold text-zinc-300">
+                    <span>{evt.dateLabel}</span>
+                    <span className="text-purple-300 font-extrabold">Ver &rarr;</span>
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
+        </section>
 
-          {/* MERCH OFICIAL SECTION - Seamless continuation */}
-          <OutfitBuilderSection />
-        </div>
-      </section>
+      </div>
 
-      {showFarewell && (
-        <PurchaseFarewell name={farewellName} onComplete={() => { setShowFarewell(false); setFarewellName(""); }} />
-      )}
+      {/* ─── FLOATING BOTTOM NAVIGATION DOCK ─── */}
+      <MobileDock
+        activeTab={mobileDockTab}
+        onTabChange={(t) => {
+          setMobileDockTab(t);
+          if (t === "explorar") {
+            const el = document.getElementById("explore");
+            if (el) el.scrollIntoView({ behavior: "smooth" });
+          }
+        }}
+      />
 
-      <AIChatbot />
-      <StaffModal isOpen={isStaffModalOpen} onClose={() => setIsStaffModalOpen(false)} />
-
-      {/* Premium Toast/Alert for Inactive/Upcoming Events */}
-      <AnimatePresence>
-        {toast && (
-          <motion.div
-            key={toast.id}
-            initial={{ opacity: 0, y: 50, scale: 0.95, x: "-50%" }}
-            animate={{ opacity: 1, y: 0, scale: 1, x: "-50%" }}
-            exit={{ opacity: 0, y: 20, scale: 0.95, x: "-50%" }}
-            transition={{ type: "spring", stiffness: 350, damping: 25 }}
-            className="fixed bottom-24 left-1/2 z-[9999] flex items-center gap-3 px-5 py-3 rounded-full bg-zinc-950/90 border border-white/10 backdrop-blur-md max-w-md w-[calc(100%-2rem)] sm:w-auto"
-            style={{
-              boxShadow: "0 20px 50px rgba(0,0,0,0.9), 0 0 20px rgba(255,255,255,0.02)",
-            }}
-          >
-            <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-white/10 text-white border border-white/15">
-              <LockKeyhole className="h-2.5 w-2.5" />
-            </div>
-            <span className="text-[10px] font-bold tracking-wide text-zinc-200 text-left leading-tight">
-              {toast.message}
-            </span>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* Electric Purple High Contrast Footer */}
-      <footer
-        id="support"
-        className="relative z-10 -mx-4 border-t border-black/20 px-4 py-16 sm:-mx-8 sm:px-6 md:-mx-14 md:px-12 lg:-mx-20 lg:px-16 bg-[#8b5cf6] text-black"
-      >
-        <div className="mx-auto flex w-full max-w-[1600px] flex-col items-center text-center gap-4">
-          {/* Logo brand 4go */}
-          <div className="flex items-center gap-2 select-none mb-1">
-            <div className="w-8 h-8 flex items-center justify-center shrink-0">
-              <svg className="w-full h-full select-none" viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg">
-                {/* Ultra-Clean HD 4 Mascot with Sunglasses & Streetwear Sneakers */}
-                <path d="M 38 82 L 28 98 C 24 104, 12 108, 10 114 C 8 120, 20 124, 34 122 C 44 120, 48 110, 44 98 L 48 82 Z" fill="#ffffff" stroke="#111111" strokeWidth="6" strokeLinejoin="round" strokeLinecap="round" />
-                <path d="M 12 114 C 18 108, 30 108, 40 116" stroke="#111111" strokeWidth="4" strokeLinecap="round" />
-                <path d="M 82 82 L 90 98 C 94 104, 106 108, 108 114 C 110 120, 98 124, 84 122 C 74 120, 70 110, 74 98 L 72 82 Z" fill="#ffffff" stroke="#111111" strokeWidth="6" strokeLinejoin="round" strokeLinecap="round" />
-                <path d="M 108 114 C 102 108, 90 108, 80 116" stroke="#111111" strokeWidth="4" strokeLinecap="round" />
-                <path d="M 64 12 L 22 64 L 22 76 L 70 76 L 70 94 L 88 94 L 88 76 L 102 76 L 102 58 L 88 58 L 88 12 Z" fill="#ffffff" stroke="#111111" strokeWidth="8" strokeLinejoin="round" strokeLinecap="round" />
-                <path d="M 70 28 L 70 58 L 46 58 Z" fill="#111111" stroke="#111111" strokeWidth="2" strokeLinejoin="round" />
-                <path d="M 30 36 L 46 33" stroke="#111111" strokeWidth="5" strokeLinecap="round" />
-                <path d="M 66 31 L 82 33" stroke="#111111" strokeWidth="5" strokeLinecap="round" />
-                <path d="M 18 44 C 18 44, 46 38, 52 47 C 58 38, 86 44, 86 44 L 80 60 C 80 60, 58 64, 52 57 C 46 64, 24 60, 24 60 Z" fill="#111111" stroke="#111111" strokeWidth="4" strokeLinejoin="round" />
-                <line x1="28" y1="47" x2="40" y2="53" stroke="#ffffff" strokeWidth="4" strokeLinecap="round" />
-                <line x1="60" y1="47" x2="72" y2="53" stroke="#ffffff" strokeWidth="4" strokeLinecap="round" />
-              </svg>
-            </div>
-            <span className="logo-text flex items-center text-sm sm:text-base font-extrabold tracking-tight leading-none select-none text-black">
-              4go
-            </span>
-          </div>
-
-          <p className="text-lg sm:text-xl font-black uppercase tracking-[0.35em] text-black">
-            {config.footer.brand}
-          </p>
-
-          <a
-            href={`https://mail.google.com/mail/?view=cm&fs=1&to=${config.footer.email}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="group mt-1 inline-flex items-center gap-2 rounded-full border border-black/25 bg-black/10 px-6 py-2.5 text-xs font-black uppercase tracking-[0.18em] text-black backdrop-blur-md transition hover:bg-black hover:text-white shadow-sm"
-          >
-            {config.footer.email}
-          </a>
-
-          <button
-            type="button"
-            onClick={() => window.dispatchEvent(new CustomEvent("open-ai-chatbot"))}
-            className="mt-1 inline-flex items-center gap-2 rounded-full bg-white px-5 py-2.5 text-xs font-black uppercase tracking-wider text-black shadow-lg hover:bg-zinc-100 active:scale-95 transition cursor-pointer"
-          >
-            <MessageCircle className="w-4 h-4 text-[#8b5cf6]" />
-            <span>Soporte IA & Preguntas</span>
-          </button>
-
-          <p className="mt-2 text-xs font-black tracking-wider text-black/90">
-            {config.footer.copyright}
-          </p>
-
-          {/* DevEc Signature - Crystal Clear High Contrast */}
-          <div className="mt-6 flex flex-col items-center gap-1 opacity-95 hover:opacity-100 transition-opacity duration-300 select-none">
-            <span className="text-[9px] font-black tracking-[0.25em] text-black uppercase">Desarrollado por</span>
-            <div className="flex flex-col items-center">
-              <svg className="h-[20px] w-auto" viewBox="0 0 110 35" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <text x="0" y="25" fill="#000000" fontSize="22" fontWeight="900" fontFamily="system-ui, -apple-system, sans-serif" letterSpacing="-0.02em">Dev</text>
-                <text x="41" y="25" fill="#000000" fontSize="22" fontWeight="900" fontFamily="system-ui, -apple-system, sans-serif" letterSpacing="-0.02em">E</text>
-                <text x="56" y="25" fill="#000000" fontSize="22" fontWeight="900" fontFamily="system-ui, -apple-system, sans-serif" letterSpacing="-0.02em">c</text>
-                {/* Waving flag tail */}
-                <path d="M70 20 C78 20, 80 10, 92 10 C96 10, 98 14, 102 12" stroke="#FFDD00" strokeWidth="2.5" strokeLinecap="round" />
-                <path d="M70 23 C78 23, 80 13, 92 13 C96 13, 98 17, 102 15" stroke="#0033A0" strokeWidth="2.5" strokeLinecap="round" />
-                <path d="M70 26 C78 26, 80 16, 92 16 C96 16, 98 20, 102 18" stroke="#D52B1E" strokeWidth="2.5" strokeLinecap="round" />
-              </svg>
-              <span className="text-[7px] font-black tracking-[0.3em] text-black/90 uppercase mt-0.5">
-                SOFTWARE DEVELOPMENT
-              </span>
-            </div>
-          </div>
-        </div>
-      </footer>
+      {/* Apple Music Style Verified Organizer Profile Overlay */}
+      <OrganizerProfileOverlay
+        isOpen={showOrganizerOverlay}
+        onClose={() => setShowOrganizerOverlay(false)}
+        organizerName={selectedOrganizerSlug}
+        allEvents={events}
+        onSelectEvent={(evt) => {
+          setSelectedCarouselEvent(evt);
+          setShowDetailOverlay(true);
+        }}
+        onBuyEvent={(evt) => {
+          setSelectedCarouselEvent(evt);
+          onBuy(evt);
+        }}
+      />
 
       {/* Purchasing Access Modal Dialog */}
       <div
@@ -1807,6 +1198,10 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
             setSelectedCarouselEvent(event);
           }}
           onOpenDrinks={() => setShowDrinksModal(true)}
+          onOpenOrganizer={(slug) => {
+            setSelectedOrganizerSlug(slug || "cubic");
+            setShowOrganizerOverlay(true);
+          }}
           isCheckoutOpen={isTicketModalOpen}
         />
       )}

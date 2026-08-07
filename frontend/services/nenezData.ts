@@ -59,6 +59,34 @@ export const artists: Artist[] = [
 
 export const events: Event[] = [
   {
+    id: "dawg-night",
+    title: "DAWG NIGHT",
+    subtitle: "OMAR COURTZ EXPERIENCE",
+    city: "Loja",
+    dateLabel: "25 JUL 2026",
+    startsAt: "2026-07-25T21:00:00-05:00",
+    poster: "/images/omar_courtz_card_bg.jpg",
+    lineup: ["OMAR COURTZ"],
+    organizer: "Cubic",
+    venue: "Cubic Loja",
+    description:
+      "Voz única y flows de la calle. Autenticidad reggaetonera en Cubic Loja con producción de nivel mundial.",
+  },
+  {
+    id: "nocturne-loud",
+    title: "NOCTURNE LOUD",
+    subtitle: "CUBIC SPECIAL NIGHT",
+    city: "Loja",
+    dateLabel: "26 JUL 2026",
+    startsAt: "2026-07-26T21:00:00-05:00",
+    poster: "/images/now4go-hero-presentation-hd-v3.png",
+    lineup: ["DJ OFICIAL CUBIC"],
+    organizer: "Cubic",
+    venue: "Cubic Loja",
+    description:
+      "La fiesta exclusiva del fin de semana en Cubic Loja. Sonido e iluminación de alta fidelidad.",
+  },
+  {
     id: "trap-loud",
     title: "TRAP LOUD",
     subtitle: "YAN BLOCK EXPERIENCE",
@@ -67,6 +95,8 @@ export const events: Event[] = [
     startsAt: "2026-06-18T21:00:00-05:00",
     poster: "/images/trap_loud_trio_artists.png",
     lineup: ["DJ OFICIAL NENEZ"],
+    organizer: "Cubic",
+    venue: "Cubic Loja",
     description:
       "La escena subterranea cobra vida. Trap latino oscuro, bajo retumbante y energia inagotable. Luces rojas, beats pesados y acceso estricto.",
   },
