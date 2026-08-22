@@ -20,10 +20,12 @@ import {
   Megaphone,
   ShieldCheck,
   Tag,
-  ChevronUp,
-  ChevronDown,
   ArrowUp,
   ArrowDown,
+  Copy,
+  Check,
+  ExternalLink,
+  DoorOpen,
 } from "lucide-react";
 import type { Event } from "@/frontend/types/domain";
 import { DEFAULT_HD_EVENT_POSTER, getHdImageSrc } from "@/frontend/utils/hdImages";
@@ -40,11 +42,19 @@ interface EventDetailOverlayProps {
   isCheckoutOpen?: boolean;
 }
 
-const CAST_MEMBERS = [
-  { id: "c1", name: "Omar Courtz", role: "Headliner", img: "/images/omar_courtz_artist_1779161689015.png" },
-  { id: "c2", name: "Yan Block", role: "Artist", img: "/images/yan_block_artist_1779161408288.png" },
-  { id: "c3", name: "Roa", role: "Artist", img: "/images/roa_artist_1779161704881.png" },
-  { id: "c4", name: "Anuel AA", role: "Special Guest", img: "https://images.unsplash.com/photo-1516280440614-37939bbacd81?auto=format&fit=crop&w=300&q=80" },
+const DEFAULT_ORGANIZERS = [
+  {
+    id: "cubic",
+    name: "CUBIC",
+    type: "Discoteca",
+    img: "/favicon_circular.png",
+  },
+  {
+    id: "sata",
+    name: "SATA",
+    type: "Organizador de eventos",
+    img: "/alien_avatar.png",
+  },
 ];
 
 export default function EventDetailOverlay({
@@ -60,6 +70,8 @@ export default function EventDetailOverlay({
   const [showPromoCodeInput, setShowPromoCodeInput] = useState(false);
   const [promoCodeText, setPromoCodeText] = useState("");
   const [isScrolledDown, setIsScrolledDown] = useState(false);
+  const [followedIds, setFollowedIds] = useState<Record<string, boolean>>({});
+  const [isAddressCopied, setIsAddressCopied] = useState(false);
 
   const mainContainerRef = useRef<HTMLDivElement>(null);
   const infoSectionRef = useRef<HTMLDivElement>(null);
@@ -93,6 +105,22 @@ export default function EventDetailOverlay({
     }
   };
 
+  const toggleFollow = (id: string) => {
+    setFollowedIds((prev) => ({ ...prev, [id]: !prev[id] }));
+  };
+
+  const venueName = event.venue || "CUBIC";
+  const venueAddress = (event as any).address || "Av. Salvador Bustamante Celi y Guayaquil, Loja, Ecuador";
+  const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${venueName} ${venueAddress}`)}`;
+
+  const copyAddressToClipboard = () => {
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(venueAddress);
+      setIsAddressCopied(true);
+      setTimeout(() => setIsAddressCopied(false), 2000);
+    }
+  };
+
   const displayPrice = event.price === 0 ? "Gratis" : `${event.price || "79,99"} $`;
 
   return (
@@ -103,7 +131,7 @@ export default function EventDetailOverlay({
       transition={{ duration: 0.2 }}
       className="fixed inset-0 z-[300] bg-[#0c0714] text-white flex flex-col select-none overflow-hidden"
     >
-      {/* ─── ULTRA-VIVID AMBIENT POSTER COLOR BLUR BACKDROP (EXACT MATCHING SCREENSHOT) ─── */}
+      {/* ─── ULTRA-VIVID AMBIENT POSTER COLOR BLUR BACKDROP ─── */}
       <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden bg-[#0c0714]">
         <Image
           src={getHdImageSrc(event.poster || DEFAULT_HD_EVENT_POSTER)}
@@ -114,7 +142,7 @@ export default function EventDetailOverlay({
           sizes="100vw"
           className="object-cover object-center scale-150 blur-[110px] saturate-200 brightness-110 opacity-75"
         />
-        {/* Subtle Dark Gradient Overlay for perfect content readability */}
+        {/* Subtle Dark Gradient Overlay */}
         <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-black/40 to-[#0c0714]/95" />
       </div>
 
@@ -305,7 +333,7 @@ export default function EventDetailOverlay({
             </div>
           </div>
 
-          {/* ─── RIGHT COLUMN (EVENT INFO + YELLOW COMPRAR TICKET BOX) ─── */}
+          {/* ─── RIGHT COLUMN (EVENT INFO + YELLOW COMPRAR TICKET BOX + CARTEL + SALA) ─── */}
           <div className="lg:col-span-7 flex flex-col space-y-6">
             
             {/* Title & Subtitle */}
@@ -314,28 +342,28 @@ export default function EventDetailOverlay({
                 {event.title}
               </h1>
               <p className="text-xl sm:text-2xl font-bold text-zinc-200 tracking-tight">
-                {event.subtitle || event.venue || "Factory Town"}
+                {event.subtitle || event.venue || "CUBIC LOJA"}
               </p>
             </div>
 
             {/* Date & Time Highlight (Yellow bold text exact match to screenshot) */}
             <div className="space-y-1">
               <p className="text-lg sm:text-xl font-bold text-yellow-400 tracking-tight">
-                {event.dateLabel || "sáb, 19 sept, 22:00 GMT-4"}
+                {event.dateLabel || "sáb, 19 sept, 22:00 GMT-5"}
               </p>
               <div className="flex items-center gap-4 text-xs font-bold text-zinc-300 pt-1">
                 <span className="flex items-center gap-1.5">
                   <Tag className="w-3.5 h-3.5 text-zinc-400" />
-                  <span>DJ</span>
+                  <span>Fiesta / DJ</span>
                 </span>
                 <span className="flex items-center gap-1.5">
                   <MapPin className="w-3.5 h-3.5 text-zinc-400" />
-                  <span>{event.city || "Miami"}</span>
+                  <span>{event.city || "Loja"}</span>
                 </span>
               </div>
             </div>
 
-            {/* ─── DARK TICKET PRICE BOX WITH YELLOW COMPRAR BUTTON (EXACT MATCH TO SCREENSHOT) ─── */}
+            {/* ─── DARK TICKET PRICE BOX WITH YELLOW COMPRAR BUTTON ─── */}
             <div className="bg-zinc-900/90 border border-zinc-800 rounded-3xl p-6 sm:p-7 flex flex-col sm:flex-row sm:items-center justify-between gap-5 shadow-2xl backdrop-blur-2xl">
               <div className="space-y-1">
                 <div className="text-2xl sm:text-3xl font-black text-white tracking-tight">
@@ -362,7 +390,7 @@ export default function EventDetailOverlay({
               </h2>
               <p className={`text-sm text-zinc-300 leading-relaxed font-medium ${!isExpandedDescription ? "line-clamp-4" : ""}`}>
                 {event.description ||
-                  `${event.title} returns for a headline debut on Saturday with special guests, plus Close Friends Only. Limited VIP tables are available, contact our team to book.`}
+                  `Llega la fiesta más esperada a CUBIC Loja. Presentado por SATA con barra libre, show audiovisual cinematográfico y la mejor música en vivo.`}
               </p>
               <button
                 type="button"
@@ -381,7 +409,7 @@ export default function EventDetailOverlay({
               </div>
               <div className="flex items-center gap-3 text-xs text-zinc-300 font-medium">
                 <Megaphone className="w-4 h-4 text-zinc-400 shrink-0" />
-                <span>Presented by {event.organizer || "Factory Town"}</span>
+                <span>Presented by {event.organizer || "CUBIC & SATA"}</span>
               </div>
               <div className="flex flex-col space-y-1 text-xs text-zinc-300 font-medium">
                 <div className="flex items-center gap-3">
@@ -397,31 +425,116 @@ export default function EventDetailOverlay({
               </div>
             </div>
 
-            {/* ─── "Cartel" / Lineup Section (Exact Match to Screenshot) ─── */}
+            {/* ─── "Cartel" / Organizers & Artists List (EXACT MATCHING USER SCREENSHOT) ─── */}
             <div className="space-y-4 pt-6 border-t border-white/10">
               <h2 className="text-2xl font-black text-white tracking-tight">
                 Cartel
               </h2>
-              <div className="flex items-center gap-4 overflow-x-auto scrollbar-none py-1">
-                {CAST_MEMBERS.map((member) => (
-                  <div key={member.id} className="flex flex-col items-center shrink-0 w-20 text-center space-y-1.5 group cursor-pointer">
-                    <div className="relative w-16 h-16 rounded-full overflow-hidden border-2 border-white/20 group-hover:border-yellow-400 bg-zinc-900 shadow-md transition-colors">
-                      <Image
-                        src={member.img}
-                        alt={member.name}
-                        fill
-                        className="object-cover"
-                        sizes="80px"
-                      />
+
+              <div className="space-y-3">
+                {DEFAULT_ORGANIZERS.map((org) => {
+                  const isFollowing = !!followedIds[org.id];
+                  return (
+                    <div
+                      key={org.id}
+                      className="flex items-center justify-between py-2 border-b border-white/5 last:border-0"
+                    >
+                      <div className="flex items-center gap-3.5">
+                        <div className="relative w-12 h-12 rounded-full overflow-hidden border border-white/20 bg-zinc-900 shrink-0">
+                          <Image
+                            src={org.img}
+                            alt={org.name}
+                            fill
+                            className="object-cover"
+                            sizes="48px"
+                          />
+                        </div>
+                        <div className="flex flex-col">
+                          <span className="text-base font-extrabold text-white leading-tight">
+                            {org.name}
+                          </span>
+                          <span className="text-xs text-zinc-400 font-medium">
+                            {org.type}
+                          </span>
+                        </div>
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={() => toggleFollow(org.id)}
+                        className={`px-6 py-2 rounded-full font-black text-xs uppercase tracking-wider transition-all cursor-pointer shadow-md active:scale-95 ${
+                          isFollowing
+                            ? "bg-zinc-800 text-zinc-300 border border-white/20"
+                            : "bg-white hover:bg-zinc-200 text-black"
+                        }`}
+                      >
+                        {isFollowing ? "SIGUIENDO" : "SEGUIR"}
+                      </button>
                     </div>
-                    <span className="text-xs font-extrabold text-white leading-tight line-clamp-1 group-hover:text-yellow-400 transition-colors">
-                      {member.name}
-                    </span>
-                    <span className="text-[10px] font-medium text-zinc-400 line-clamp-1">
-                      {member.role}
-                    </span>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* ─── "Sala" / Venue & Map Section (EXACT MATCHING USER SCREENSHOT) ─── */}
+            <div className="space-y-3 pt-6 border-t border-white/10">
+              <span className="text-xs text-zinc-400 font-bold uppercase tracking-wider block">
+                Sala
+              </span>
+              
+              <div className="flex items-start justify-between gap-4">
+                <div className="space-y-1">
+                  <h3 className="text-3xl font-black text-white tracking-tight">
+                    {venueName}
+                  </h3>
+                  <div className="flex items-center gap-2 text-xs text-zinc-300 font-medium">
+                    <span>{venueAddress}</span>
+                    <button
+                      type="button"
+                      onClick={copyAddressToClipboard}
+                      className="p-1 text-zinc-400 hover:text-white transition cursor-pointer"
+                      title="Copiar dirección"
+                    >
+                      {isAddressCopied ? <Check className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4" />}
+                    </button>
                   </div>
-                ))}
+                </div>
+
+                {/* Venue Badge Graphic */}
+                <div className="px-4 py-2 rounded-xl bg-white/10 border border-white/15 text-white font-black text-sm tracking-widest uppercase">
+                  CUBIC
+                </div>
+              </div>
+
+              {/* Action Buttons: ABRIR EN EL MAPA + SEGUIR */}
+              <div className="flex items-center gap-3 pt-2">
+                <a
+                  href={mapsUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="px-5 py-2.5 rounded-full bg-zinc-800 hover:bg-zinc-700 text-white font-bold text-xs uppercase tracking-wider border border-white/20 backdrop-blur-md transition cursor-pointer flex items-center gap-2 shadow-md active:scale-95"
+                >
+                  <MapPin className="w-3.5 h-3.5 text-yellow-400" />
+                  <span>ABRIR EN EL MAPA</span>
+                </a>
+
+                <button
+                  type="button"
+                  onClick={() => toggleFollow("cubic-venue")}
+                  className={`px-6 py-2.5 rounded-full font-black text-xs uppercase tracking-wider transition-all cursor-pointer shadow-md active:scale-95 ${
+                    followedIds["cubic-venue"]
+                      ? "bg-zinc-800 text-zinc-300 border border-white/20"
+                      : "bg-white hover:bg-zinc-200 text-black"
+                  }`}
+                >
+                  {followedIds["cubic-venue"] ? "SIGUIENDO" : "SEGUIR"}
+                </button>
+              </div>
+
+              {/* Opening Doors Text */}
+              <div className="flex items-center gap-2 text-xs text-zinc-400 font-medium pt-2">
+                <DoorOpen className="w-4 h-4 text-zinc-400" />
+                <span>Apertura de puertas <strong>22:00 GMT-5</strong></span>
               </div>
             </div>
 
