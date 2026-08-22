@@ -1048,14 +1048,14 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                 </button>
               </div>
 
-              {/* ─── LIVE AUTO-SUGGESTIONS DROPDOWN ALIGNED RIGHT UNDER INPUT ─── */}
+              {/* ─── LIVE AUTO-SUGGESTIONS DROPDOWN ALIGNED RIGHT UNDER INPUT (PURE GLASSMORPHISM) ─── */}
               <AnimatePresence>
                 {isHeaderSearchOpen && headerSearchQuery.trim().length > 0 && (
                   <motion.div
                     initial={{ opacity: 0, y: 8, scale: 0.98 }}
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     exit={{ opacity: 0, y: 8, scale: 0.98 }}
-                    className="absolute top-12 right-12 w-80 rounded-2xl bg-[#09040e]/95 border border-white/20 backdrop-blur-3xl p-3 shadow-[0_25px_60px_rgba(0,0,0,0.95)] z-[310] space-y-2 max-h-[60vh] overflow-y-auto no-scrollbar"
+                    className="absolute top-12 right-12 w-80 sm:w-96 rounded-3xl bg-white/10 border border-white/25 backdrop-blur-3xl p-3.5 shadow-[0_30px_70px_rgba(0,0,0,0.95)] z-[310] space-y-2 max-h-[60vh] overflow-y-auto no-scrollbar"
                   >
                     {(() => {
                       const query = headerSearchQuery.toLowerCase().trim();
@@ -1069,17 +1069,17 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
 
                       if (matchingEvents.length === 0) {
                         return (
-                          <div className="p-4 text-center text-xs font-semibold text-zinc-400">
+                          <div className="p-4 text-center text-xs font-semibold text-zinc-300">
                             No se encontraron resultados para "<span className="text-white font-bold">{headerSearchQuery}</span>"
                           </div>
                         );
                       }
 
                       return (
-                        <div className="space-y-1">
-                          <div className="px-2 py-1 text-[10px] font-black uppercase tracking-widest text-zinc-400 border-b border-white/10 mb-1 flex items-center justify-between">
+                        <div className="space-y-1.5">
+                          <div className="px-2 py-1 text-[10px] font-black uppercase tracking-widest text-zinc-300 border-b border-white/15 mb-1.5 flex items-center justify-between">
                             <span>Sugerencias directas</span>
-                            <span className="text-purple-400 font-bold">{matchingEvents.length} resultados</span>
+                            <span className="text-purple-300 font-bold">{matchingEvents.length} resultados</span>
                           </div>
                           {matchingEvents.map((evt) => (
                             <div
@@ -1090,9 +1090,9 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                                 setIsHeaderSearchOpen(false);
                                 setHeaderSearchQuery("");
                               }}
-                              className="flex items-center gap-3 p-2 rounded-xl hover:bg-white/12 transition-colors cursor-pointer group"
+                              className="flex items-center gap-3 p-2.5 rounded-2xl bg-white/10 hover:bg-white/20 border border-white/15 backdrop-blur-xl transition-all cursor-pointer group shadow-lg"
                             >
-                              <div className="relative w-11 h-11 rounded-xl overflow-hidden bg-zinc-900 shrink-0 border border-white/15">
+                              <div className="relative w-12 h-12 rounded-xl overflow-hidden bg-black/40 shrink-0 border border-white/20">
                                 <Image
                                   src={evt.poster || "/images/now4go-hero-presentation-hd-v3.png"}
                                   alt={evt.title}
@@ -1101,11 +1101,11 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                                 />
                               </div>
                               <div className="flex-1 text-left min-w-0">
-                                <h4 className="text-xs font-extrabold text-white truncate group-hover:text-purple-300 transition-colors">
+                                <h4 className="text-xs sm:text-sm font-extrabold text-white truncate group-hover:text-purple-300 transition-colors">
                                   {evt.title}
                                 </h4>
-                                <p className="text-[10px] font-medium text-zinc-400 truncate mt-0.5">
-                                  {evt.organizer || "Cubic"} · {evt.venue || "Factory Town"} · {evt.dateLabel}
+                                <p className="text-[10px] sm:text-xs font-medium text-zinc-300 truncate mt-0.5">
+                                  {evt.organizer || "Cubic"} · {evt.venue || "Factory Town"}
                                 </p>
                               </div>
                               <span className="text-xs font-black text-emerald-400 shrink-0">
@@ -1124,7 +1124,7 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
         </div>
       </header>
 
-      {/* ─── TARGETED HERO IMAGE BLUR ONLY WHEN SEARCH IS OPEN ─── */}
+      {/* ─── CONTINUOUS GLASS BACKDROP BLUR WHEN SEARCH IS OPEN (NO HARD CUT LINES) ─── */}
       <AnimatePresence>
         {isHeaderSearchOpen && (
           <motion.div
@@ -1135,7 +1135,7 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
               setIsHeaderSearchOpen(false);
               setHeaderSearchQuery("");
             }}
-            className="fixed top-0 inset-x-0 h-[55vh] sm:h-[60vh] z-[250] bg-black/45 backdrop-blur-md transition-all cursor-pointer pointer-events-auto"
+            className="fixed inset-0 z-[250] bg-black/50 backdrop-blur-md transition-all cursor-pointer pointer-events-auto"
           />
         )}
       </AnimatePresence>
