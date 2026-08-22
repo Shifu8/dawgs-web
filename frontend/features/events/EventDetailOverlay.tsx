@@ -85,12 +85,18 @@ export default function EventDetailOverlay({
   const isSheetCollapsedRef = useRef(isSheetCollapsed);
   const lastCollapseTimeRef = useRef(0);
   const userGestureLockRef = useRef(0);
+  const hasInteractedRef = useRef(false);
+  const autoExpandTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     isSheetCollapsedRef.current = isSheetCollapsed;
   }, [isSheetCollapsed]);
 
   const collapseSheet = () => {
+    hasInteractedRef.current = true;
+    if (autoExpandTimerRef.current) {
+      clearTimeout(autoExpandTimerRef.current);
+    }
     setIsSheetCollapsed(true);
     lastCollapseTimeRef.current = Date.now();
     userGestureLockRef.current = Date.now() + 550;
@@ -106,9 +112,11 @@ export default function EventDetailOverlay({
       setCollapseY(Math.round(window.innerHeight * 0.75));
       document.body.style.overflow = "hidden";
 
-      // Auto-expand sheet modal after half a second (500ms)
-      const autoExpandTimer = setTimeout(() => {
-        expandSheet();
+      // Auto-expand sheet modal after 500ms ONLY IF user hasn't collapsed manually
+      autoExpandTimerRef.current = setTimeout(() => {
+        if (!hasInteractedRef.current) {
+          expandSheet();
+        }
       }, 500);
 
       let touchStartY = 0;
@@ -163,7 +171,9 @@ export default function EventDetailOverlay({
       window.addEventListener("touchmove", handleTouchMove, { passive: true });
 
       return () => {
-        clearTimeout(autoExpandTimer);
+        if (autoExpandTimerRef.current) {
+          clearTimeout(autoExpandTimerRef.current);
+        }
         document.body.style.overflow = "";
         window.removeEventListener("wheel", handleWheel);
         window.removeEventListener("touchstart", handleTouchStart);
