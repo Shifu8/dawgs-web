@@ -83,9 +83,20 @@ export default function EventDetailOverlay({
   const dragControls = useDragControls();
 
   const isSheetCollapsedRef = useRef(isSheetCollapsed);
+  const lastCollapseTimeRef = useRef(0);
+
   useEffect(() => {
     isSheetCollapsedRef.current = isSheetCollapsed;
   }, [isSheetCollapsed]);
+
+  const collapseSheet = () => {
+    setIsSheetCollapsed(true);
+    lastCollapseTimeRef.current = Date.now();
+  };
+
+  const expandSheet = () => {
+    setIsSheetCollapsed(false);
+  };
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -94,19 +105,22 @@ export default function EventDetailOverlay({
 
       // Auto-expand sheet modal after half a second (500ms)
       const autoExpandTimer = setTimeout(() => {
-        setIsSheetCollapsed(false);
+        expandSheet();
       }, 500);
 
       let touchStartY = 0;
 
       const handleWheel = (e: WheelEvent) => {
         if (e.deltaY > 8) {
-          setIsSheetCollapsed(false);
+          expandSheet();
         } else if (e.deltaY < -8) {
           if (isSheetCollapsedRef.current) {
-            onClose();
+            // Only exit if sheet has been collapsed for more than 450ms
+            if (Date.now() - lastCollapseTimeRef.current > 450) {
+              onClose();
+            }
           } else {
-            setIsSheetCollapsed(true);
+            collapseSheet();
           }
         }
       };
@@ -122,12 +136,14 @@ export default function EventDetailOverlay({
           const currentY = e.touches[0].clientY;
           const diffY = touchStartY - currentY; // positive = swiping up, negative = swiping down
           if (diffY > 25) {
-            setIsSheetCollapsed(false);
+            expandSheet();
           } else if (diffY < -25) {
             if (isSheetCollapsedRef.current) {
-              onClose();
+              if (Date.now() - lastCollapseTimeRef.current > 450) {
+                onClose();
+              }
             } else {
-              setIsSheetCollapsed(true);
+              collapseSheet();
             }
           }
         }
@@ -264,12 +280,14 @@ export default function EventDetailOverlay({
         onDragEnd={(_, info) => {
           if (info.offset.y > 60 || info.velocity.y > 100) {
             if (isSheetCollapsedRef.current) {
-              onClose();
+              if (Date.now() - lastCollapseTimeRef.current > 450) {
+                onClose();
+              }
             } else {
-              setIsSheetCollapsed(true);
+              collapseSheet();
             }
           } else if (info.offset.y < -60 || info.velocity.y < -100) {
-            setIsSheetCollapsed(false);
+            expandSheet();
           }
         }}
         animate={{ y: isSheetCollapsed ? collapseY : 0 }}
