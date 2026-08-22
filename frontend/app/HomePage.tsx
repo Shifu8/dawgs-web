@@ -601,6 +601,21 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
       .catch(() => { });
   }, []);
 
+  // Slow continuous auto-scroll to the right for "Trending on 4GO" carousel
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (homeCarouselRef.current) {
+        const { scrollLeft, scrollWidth, clientWidth } = homeCarouselRef.current;
+        if (scrollLeft + clientWidth >= scrollWidth - 10) {
+          homeCarouselRef.current.scrollTo({ left: 0, behavior: "smooth" });
+        } else {
+          homeCarouselRef.current.scrollBy({ left: 260, behavior: "smooth" });
+        }
+      }
+    }, 3000);
+    return () => clearInterval(interval);
+  }, []);
+
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     if (params.get("menu") === "access") {
@@ -1160,36 +1175,45 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                   })()}
                 </section>
 
-                {/* ─── HORIZONTAL EVENT CAROUSEL (FACTORY TOWN / DICE STYLE EXACT DESIGN FROM USER SCREENSHOT) ─── */}
+                {/* ─── HORIZONTAL EVENT CAROUSEL ("Trending on 4GO" EXACT MATCHING SCREENSHOT) ─── */}
                 <section className="px-4 sm:px-8 max-w-[1400px] mx-auto space-y-4 pt-6 pb-2">
-                  <div className="flex items-center justify-between border-b border-white/10 pb-3">
-                    <div>
-                      <h2 className="text-2xl sm:text-3xl font-black text-white uppercase tracking-tight font-sans drop-shadow-md">
-                        Eventos Destacados
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-white/10 pb-4">
+                    <div className="max-w-2xl">
+                      <h2 className="text-2xl sm:text-3xl font-black text-white tracking-tight font-sans drop-shadow-md">
+                        Trending on 4GO
                       </h2>
-                      <p className="text-xs sm:text-sm text-zinc-300 font-medium mt-1">
-                        Próximas fechas y conciertos principales
+                      <p className="text-xs sm:text-sm text-zinc-300 font-medium mt-1 leading-relaxed">
+                        Check out some of the most popular events coming up in your city, from club nights and gigs to artist signings and comedy shows.
                       </p>
                     </div>
                     
-                    {/* Horizontal Scroll Navigation Controls */}
-                    <div className="flex items-center gap-2">
+                    {/* BROWSE EVENTS Pill Button & Controls */}
+                    <div className="flex items-center gap-3 shrink-0">
                       <button
                         type="button"
-                        onClick={() => scrollHomeCarousel("left")}
-                        className="w-8 h-8 rounded-full bg-white/10 border border-white/15 flex items-center justify-center text-white hover:bg-white/20 transition cursor-pointer"
-                        aria-label="Anterior"
+                        onClick={() => setActiveStoryScreen(2)}
+                        className="px-5 py-2.5 rounded-full bg-white text-black font-black text-xs uppercase tracking-wider hover:bg-zinc-200 transition-all hover:scale-105 active:scale-95 cursor-pointer shadow-md"
                       >
-                        ‹
+                        BROWSE EVENTS
                       </button>
-                      <button
-                        type="button"
-                        onClick={() => scrollHomeCarousel("right")}
-                        className="w-8 h-8 rounded-full bg-white/10 border border-white/15 flex items-center justify-center text-white hover:bg-white/20 transition cursor-pointer"
-                        aria-label="Siguiente"
-                      >
-                        ›
-                      </button>
+                      <div className="flex items-center gap-1.5">
+                        <button
+                          type="button"
+                          onClick={() => scrollHomeCarousel("left")}
+                          className="w-8 h-8 rounded-full bg-white/10 border border-white/15 flex items-center justify-center text-white hover:bg-white/20 transition cursor-pointer"
+                          aria-label="Anterior"
+                        >
+                          ‹
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => scrollHomeCarousel("right")}
+                          className="w-8 h-8 rounded-full bg-white/10 border border-white/15 flex items-center justify-center text-white hover:bg-white/20 transition cursor-pointer"
+                          aria-label="Siguiente"
+                        >
+                          ›
+                        </button>
+                      </div>
                     </div>
                   </div>
 
