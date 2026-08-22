@@ -601,20 +601,30 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
       .catch(() => { });
   }, []);
 
-  // Slow continuous auto-scroll to the right for "Trending on 4GO" carousel
+  const [isCarouselHovered, setIsCarouselHovered] = useState(false);
+
+  // Continuous 60fps butter-smooth linear marquee drift to the right
   useEffect(() => {
-    const interval = setInterval(() => {
-      if (homeCarouselRef.current) {
-        const { scrollLeft, scrollWidth, clientWidth } = homeCarouselRef.current;
-        if (scrollLeft + clientWidth >= scrollWidth - 10) {
-          homeCarouselRef.current.scrollTo({ left: 0, behavior: "smooth" });
-        } else {
-          homeCarouselRef.current.scrollBy({ left: 260, behavior: "smooth" });
+    let animId: number;
+    const el = homeCarouselRef.current;
+    if (!el || events.length === 0) return;
+
+    const speed = 0.6; // Ultra-smooth continuous drift speed
+
+    const step = () => {
+      if (el && !isCarouselHovered) {
+        el.scrollLeft += speed;
+        const halfWidth = el.scrollWidth / 2;
+        if (el.scrollLeft >= halfWidth) {
+          el.scrollLeft -= halfWidth;
         }
       }
-    }, 3000);
-    return () => clearInterval(interval);
-  }, []);
+      animId = requestAnimationFrame(step);
+    };
+
+    animId = requestAnimationFrame(step);
+    return () => cancelAnimationFrame(animId);
+  }, [isCarouselHovered, events]);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -1217,14 +1227,16 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                     </div>
                   </div>
 
-                  {/* Horizontal Scroll Row */}
+                  {/* Horizontal Scroll Row (Butter-smooth continuous 60fps linear marquee drift) */}
                   <div
                     ref={homeCarouselRef}
-                    className="flex items-center gap-4 overflow-x-auto no-scrollbar scroll-smooth py-2 -mx-4 px-4 sm:mx-0 sm:px-0 select-none"
+                    onMouseEnter={() => setIsCarouselHovered(true)}
+                    onMouseLeave={() => setIsCarouselHovered(false)}
+                    className="flex items-center gap-4 overflow-x-auto no-scrollbar py-2 -mx-4 px-4 sm:mx-0 sm:px-0 select-none"
                   >
-                    {events.map((evt) => (
+                    {[...events, ...events].map((evt, idx) => (
                       <div
-                        key={`carousel-card-${evt.id}`}
+                        key={`carousel-card-${evt.id}-${idx}`}
                         onClick={() => {
                           setSelectedCarouselEvent(evt);
                           setShowDetailOverlay(true);
