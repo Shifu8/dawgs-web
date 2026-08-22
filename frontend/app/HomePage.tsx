@@ -609,7 +609,7 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
     const el = homeCarouselRef.current;
     if (!el || events.length === 0) return;
 
-    const speed = 0.6; // Ultra-smooth continuous drift speed
+    const speed = 0.2; // Super slow, elegant continuous drift speed
 
     const step = () => {
       if (el && !isCarouselHovered) {
