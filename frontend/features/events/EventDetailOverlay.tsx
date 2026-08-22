@@ -147,22 +147,25 @@ export default function EventDetailOverlay({
     <motion.div
       initial={{
         opacity: 0,
-        scale: 0.93,
-        y: 40,
+        y: 60,
+        scale: 0.88,
+        clipPath: "inset(25% 15% 25% 15% round 36px)",
       }}
       animate={{
         opacity: 1,
-        scale: 1,
         y: 0,
+        scale: 1,
+        clipPath: "inset(0% 0% 0% 0% round 0px)",
       }}
       exit={{
         opacity: 0,
-        scale: 0.95,
-        y: 30,
+        y: 40,
+        scale: 0.90,
+        clipPath: "inset(25% 15% 25% 15% round 36px)",
       }}
       transition={{
-        duration: 0.42,
-        ease: [0.16, 1, 0.3, 1],
+        duration: 0.52,
+        ease: [0.32, 0.72, 0, 1],
       }}
       className="fixed inset-0 z-[300] bg-black text-white flex flex-col overflow-hidden select-none shadow-2xl"
     >
