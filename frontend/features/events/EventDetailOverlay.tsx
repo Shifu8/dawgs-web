@@ -92,10 +92,10 @@ export default function EventDetailOverlay({
       setCollapseY(Math.round(window.innerHeight * 0.75));
       document.body.style.overflow = "hidden";
 
-      // Auto-expand sheet modal after 1 second (1000ms)
+      // Auto-expand sheet modal after half a second (500ms)
       const autoExpandTimer = setTimeout(() => {
         setIsSheetCollapsed(false);
-      }, 1000);
+      }, 500);
 
       let touchStartY = 0;
 
@@ -263,7 +263,11 @@ export default function EventDetailOverlay({
         dragElastic={0.05}
         onDragEnd={(_, info) => {
           if (info.offset.y > 60 || info.velocity.y > 100) {
-            setIsSheetCollapsed(true);
+            if (isSheetCollapsedRef.current) {
+              onClose();
+            } else {
+              setIsSheetCollapsed(true);
+            }
           } else if (info.offset.y < -60 || info.velocity.y < -100) {
             setIsSheetCollapsed(false);
           }
