@@ -37,19 +37,15 @@ export default function StoryLinesHeader({
               className="flex-1 py-1.5 group cursor-pointer focus:outline-none"
             >
               {/* Line Bar Container with Drop Shadow */}
-              <div className="relative h-1.5 w-full rounded-full bg-white/25 backdrop-blur-md overflow-hidden transition-all duration-300 group-hover:bg-white/40 shadow-[0_2px_8px_rgba(0,0,0,0.5)]">
+              <div className="relative h-1.5 w-full rounded-full bg-white/20 backdrop-blur-md overflow-hidden transition-all duration-300 group-hover:bg-white/35 shadow-[0_2px_8px_rgba(0,0,0,0.5)]">
                 <motion.div
                   initial={false}
                   animate={{
-                    width: isActive ? "100%" : isPassed ? "100%" : "0%",
-                    opacity: isActive ? 1 : isPassed ? 0.7 : 0,
+                    width: isActive ? "100%" : "0%",
+                    opacity: isActive ? 1 : 0,
                   }}
                   transition={{ duration: 0.35, ease: "easeOut" }}
-                  className={`h-full rounded-full ${
-                    isActive
-                      ? "bg-white shadow-[0_0_12px_rgba(255,255,255,1)]"
-                      : "bg-white/80"
-                  }`}
+                  className="h-full rounded-full bg-white shadow-[0_0_12px_rgba(255,255,255,1)]"
                 />
               </div>
             </button>

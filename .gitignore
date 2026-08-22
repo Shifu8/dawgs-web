@@ -40,6 +40,8 @@ auth_info*/
 get-gmail-token.mjs
 data/gmail-usage.json
 data/ticket-recovery.json
+check_browser.mjs
+debug_browser.cjs
 
 # ─── OCR Trained Data (heavy binary files - load from S3 or volume in production) ───
 # These are 5MB+ binary files that should not be in Git

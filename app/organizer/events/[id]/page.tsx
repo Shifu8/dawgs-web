@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useRouter, useParams } from "next/navigation";
+import CoOrganizerModal from "@/frontend/components/CoOrganizerModal";
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || "";
 
@@ -61,9 +62,10 @@ interface OrgEvent {
   city: string;
   base_price: number;
   capacity: number | null;
+  organizers?: string[];
 }
 
-type Tab = "overview" | "receipts" | "types" | "staff";
+type Tab = "overview" | "receipts" | "types" | "staff" | "coorganizers";
 
 export default function EventDetailPage() {
   const router = useRouter();
@@ -85,6 +87,9 @@ export default function EventDetailPage() {
   const [ttLoading, setTtLoading] = useState(false);
   const [staffLoading, setStaffLoading] = useState(false);
   const [formError, setFormError] = useState("");
+
+  const [organizers, setOrganizers] = useState<string[]>(["Cubic", "4Go"]);
+  const [isCoOrgModalOpen, setIsCoOrgModalOpen] = useState(false);
 
   const fetchAll = useCallback(async () => {
     const token = localStorage.getItem("organizer_token");
@@ -249,17 +254,18 @@ export default function EventDetailPage() {
 
       <div className="max-w-5xl mx-auto px-6 py-8">
         {/* Tabs */}
-        <div className="flex gap-1 bg-white/3 rounded-full p-1 border border-white/5 w-fit mb-8">
+        <div className="flex gap-1 bg-white/3 rounded-full p-1 border border-white/5 w-fit mb-8 overflow-x-auto no-scrollbar">
           {([
             { key: "overview", label: "Resumen" },
             { key: "types", label: "Tipos de Entrada" },
             { key: "receipts", label: `Comprobantes (${receipts.filter(r => r.status === "pendiente").length})` },
             { key: "staff", label: "Staff" },
+            { key: "coorganizers", label: `Co-Organizadores (${organizers.length})` },
           ] as { key: Tab; label: string }[]).map(t => (
             <button
               key={t.key}
               onClick={() => setTab(t.key)}
-              className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-wider transition ${
+              className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-wider transition shrink-0 ${
                 tab === t.key ? "bg-white text-black" : "text-zinc-500 hover:text-white"
               }`}
             >
@@ -532,7 +538,64 @@ export default function EventDetailPage() {
             </div>
           </div>
         )}
+
+        {/* Co-Organizadores */}
+        {tab === "coorganizers" && (
+          <div className="space-y-6">
+            <div className="p-6 rounded-2xl bg-white/2 border border-white/5 space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-sm font-black uppercase text-white tracking-wider">
+                    Organizadores & Co-Hosts Vinculados
+                  </h3>
+                  <p className="text-xs text-zinc-500 font-medium mt-0.5">
+                    Discotecas, colectivos y productoras asociadas en este evento.
+                  </p>
+                </div>
+                <button
+                  onClick={() => setIsCoOrgModalOpen(true)}
+                  className="px-4 py-2 rounded-full bg-emerald-500 hover:bg-emerald-400 text-black text-[10px] font-black uppercase tracking-wider transition cursor-pointer"
+                >
+                  + Vincular / Generar QR
+                </button>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
+                {organizers.map((org, index) => (
+                  <div
+                    key={index}
+                    className="p-4 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-between"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="w-9 h-9 rounded-full bg-emerald-500/20 text-emerald-400 text-xs font-black flex items-center justify-center border border-emerald-400/30 uppercase">
+                        {org.slice(0, 2)}
+                      </div>
+                      <div>
+                        <div className="text-xs font-black uppercase text-white">{org}</div>
+                        <div className="text-[10px] text-zinc-500">
+                          {index === 0 ? "Organizador Principal" : "Co-Host Asociado"}
+                        </div>
+                      </div>
+                    </div>
+                    <span className="px-2.5 py-1 rounded-full bg-white/10 text-[9px] font-black uppercase text-zinc-300">
+                      Verificado
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
       </div>
+
+      {/* Co-Organizer Invitation & QR Modal */}
+      <CoOrganizerModal
+        isOpen={isCoOrgModalOpen}
+        onClose={() => setIsCoOrgModalOpen(false)}
+        eventTitle={event?.title || "Evento NENEZ"}
+        currentOrganizers={organizers}
+        onUpdateOrganizers={(updated) => setOrganizers(updated)}
+      />
     </div>
   );
 }

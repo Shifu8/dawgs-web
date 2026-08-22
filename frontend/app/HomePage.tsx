@@ -43,6 +43,8 @@ import {
   Compass,
   ShoppingBag,
   HelpCircle,
+  Play,
+  Heart,
 } from "lucide-react";
 import { AnimatePresence, motion, useDragControls } from "framer-motion";
 import Atmosphere from "@/frontend/components/Atmosphere";
@@ -183,8 +185,7 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
   const storyScreens: StoryScreen[] = [
     { id: "create", label: "Sube tu evento", icon: <PlusCircle className="w-3.5 h-3.5 text-emerald-400" /> },
     { id: "home", label: "Home", icon: <Sparkles className="w-3.5 h-3.5 text-yellow-400" /> },
-    { id: "eventos", label: "Eventos", icon: <Calendar className="w-3.5 h-3.5 text-purple-400" /> },
-    { id: "fiestas", label: "Fiestas & Clubs", icon: <Compass className="w-3.5 h-3.5 text-pink-400" /> },
+    { id: "eventos", label: "Cartelera", icon: <Calendar className="w-3.5 h-3.5 text-purple-400" /> },
   ];
 
   const handleScreenDragEnd = (_: any, info: { offset: { x: number }; velocity: { x: number } }) => {
@@ -374,15 +375,7 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
       else if (selectedOrganizer === "now") matchesOrg = orgText.includes("now") || orgText.includes("4go");
     }
 
-    // Tab-based filtering
-    let matchesTab = true;
-    if (activeFilterTab === "fiestas") {
-      matchesTab = classifyEventType(evt) === "fiesta";
-    } else if (activeFilterTab === "conciertos") {
-      matchesTab = classifyEventType(evt) === "concierto";
-    }
-
-    return matchesSearch && matchesCity && matchesDay && matchesOrg && matchesTab;
+    return matchesSearch && matchesCity && matchesDay && matchesOrg;
   });
 
   // Custom states for 3D Carousel & Premium visual effects
@@ -582,22 +575,27 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
       .then((response) => response.json())
       .then((data) => {
         if (data.success && Array.isArray(data.events) && data.events.length > 0) {
-          setEvents(data.events);
-          
+          // Merge API events with fallbackEvents so all 14+ events are always present
+          const mergedMap = new Map();
+          fallbackEvents.forEach((e) => mergedMap.set(e.id, e));
+          data.events.forEach((e: any) => mergedMap.set(e.id, { ...mergedMap.get(e.id), ...e }));
+          const allEvts = Array.from(mergedMap.values()) as Event[];
+          setEvents(allEvts);
+
           const params = new URLSearchParams(window.location.search);
           const eventParam = params.get("event");
           if (eventParam) {
-            const foundIdx = data.events.findIndex(
+            const foundIdx = allEvts.findIndex(
               (e: any) => e.id === eventParam || e.slug === eventParam
             );
             if (foundIdx !== -1) {
-              setSelectedCarouselEvent(data.events[foundIdx]);
+              setSelectedCarouselEvent(allEvts[foundIdx]);
               setActiveIndex(foundIdx);
               return;
             }
           }
-          
-          setSelectedCarouselEvent(data.events[0]);
+
+          setSelectedCarouselEvent(allEvts[0]);
         }
       })
       .catch(() => { });
@@ -694,7 +692,6 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
           // Animación adicional del hero (solo en desktop)
           if (isDesktop) {
             tl.from(".hero-reveal", {
-              autoAlpha: 0,
               y: 28,
               stagger: 0.08,
               duration: 0.85,
@@ -808,7 +805,7 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
   return (
     <main
       ref={scope}
-      className="relative min-h-screen overflow-x-hidden bg-black text-white"
+      className="relative min-h-screen overflow-x-clip bg-black text-white"
       style={themeStyle}
     >
       {/* StormGo Animated Intro Loader Splash Overlay */}
@@ -918,7 +915,7 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                 <AnimatePresence mode="wait">
                   <motion.h1
                     key={`header-title-${activeStoryScreen}`}
-                    initial={{ opacity: 0, y: -6 }}
+                    initial={false}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: 6 }}
                     transition={{ duration: 0.25, ease: "easeOut" }}
@@ -930,20 +927,15 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
               </button>
             </div>
 
-            {/* Right: Avatar & Account Badge */}
+            {/* Right: Avatar Button */}
             <div className="flex items-center gap-3">
-              <div className="relative inline-flex items-center gap-2 px-3 py-1 rounded-full bg-black/40 border border-white/20 backdrop-blur-md shadow-lg">
-                <span className="text-[10px] font-extrabold text-purple-300 tracking-wider uppercase">
-                  SUBSCRIBER
-                </span>
-              </div>
               <button
                 type="button"
                 onClick={() => setShowUserMenu(!showUserMenu)}
-                className="relative w-9 h-9 rounded-full overflow-hidden border-2 border-emerald-400/80 bg-black flex items-center justify-center shadow-lg cursor-pointer hover:scale-105 transition-transform p-1"
+                className="w-10 h-10 rounded-full bg-white/10 border border-white/20 backdrop-blur-xl flex items-center justify-center text-white hover:bg-white/20 shadow-lg cursor-pointer transition-all active:scale-95"
                 aria-label="Perfil de usuario"
               >
-                <AlienIcon className="w-full h-full" />
+                <User className="w-5 h-5 text-white" />
               </button>
             </div>
           </div>
@@ -952,53 +944,103 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
 
       {/* ─── MAIN HOME CONTENT (FULL BLEED HERO photo STARTING AT TOP:0) ─── */}
       <div className="pb-28 min-h-screen bg-black text-white pt-0">
-        <motion.div
-          drag="x"
-          dragConstraints={{ left: 0, right: 0 }}
-          dragElastic={0.12}
-          onDragEnd={handleScreenDragEnd}
-          className="w-full cursor-grab active:cursor-grabbing touch-pan-y"
-        >
+        <div className="w-full">
           <AnimatePresence mode="wait">
             {activeStoryScreen === 0 && (
               <motion.div
                 key="screen-0-create-event"
-                initial={{ opacity: 0, x: -40 }}
+                initial={{ opacity: 0, x: -30 }}
                 animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -40 }}
+                exit={{ opacity: 0, x: -30 }}
                 transition={{ duration: 0.35, ease: "easeOut" }}
-                className="relative w-full h-[100dvh] min-h-[640px] overflow-hidden bg-[#486f56] flex flex-col justify-end items-center pb-12 select-none"
+                className="relative w-full min-h-[100dvh] pt-32 sm:pt-36 pb-16 px-4 sm:px-8 max-w-[1400px] mx-auto flex flex-col md:flex-row items-center justify-between gap-10 select-none"
               >
-                {/* 1. Full-Bleed Artwork Image Background */}
-                <Image
-                  src="/just_create_4go_hero.png"
-                  alt="Just Create 4GO"
-                  fill
-                  priority
-                  className="object-cover object-center brightness-105"
-                />
+                {/* ─── LEFT COLUMN: TYPOGRAPHY & SUBIR EVENTO BUTTON (DICE STYLE) ─── */}
+                <div className="w-full md:w-1/2 flex flex-col items-start space-y-6 z-20">
+                  <span className="px-3.5 py-1 rounded-full bg-white/10 border border-white/20 text-xs font-black uppercase tracking-widest text-emerald-400 backdrop-blur-md shadow-md">
+                    NOW 4GO PLATFORM
+                  </span>
+                  
+                  <h1 className="text-4xl sm:text-6xl lg:text-7xl font-black uppercase tracking-tight text-white font-sans leading-[0.95] drop-shadow-2xl">
+                    WELCOME<br />
+                    TO THE<br />
+                    ALTERNATIVE
+                  </h1>
 
-                {/* 2. Soft Animated Color Ambient Glow Overlay */}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/30 pointer-events-none" />
-                <motion.div
-                  animate={{
-                    opacity: [0.15, 0.45, 0.15],
-                    scale: [1, 1.05, 1],
-                  }}
-                  transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-                  className="absolute inset-0 bg-gradient-to-tr from-emerald-500/20 via-purple-500/20 to-pink-500/20 pointer-events-none mix-blend-color-dodge"
-                />
+                  <p className="text-sm sm:text-base text-zinc-300 font-medium max-w-md leading-relaxed">
+                    Incredible live shows. Upfront pricing. Relevant recommendations. 4GO makes going out easy.
+                  </p>
 
-                {/* 3. Interactive Get Started Button Superimposed at the Bottom */}
-                <div className="relative z-30 mb-2 px-6 w-full max-w-sm">
-                  <button
-                    type="button"
-                    onClick={() => setShowEventModal(true)}
-                    className="w-full py-4 px-8 rounded-full bg-black text-white hover:bg-zinc-900 font-black text-sm uppercase tracking-widest border border-white/20 shadow-[0_0_30px_rgba(0,0,0,0.8)] transition-all hover:scale-105 active:scale-95 cursor-pointer flex items-center justify-center gap-2 group"
-                  >
-                    <span>Get Started</span>
-                    <span className="text-emerald-400 group-hover:translate-x-1 transition-transform">➔</span>
-                  </button>
+                  <div className="pt-2">
+                    <button
+                      type="button"
+                      onClick={() => setShowEventModal(true)}
+                      className="px-8 py-4 rounded-full bg-white text-black font-black text-xs uppercase tracking-widest hover:bg-emerald-400 hover:scale-105 active:scale-95 transition-all duration-300 cursor-pointer shadow-[0_0_30px_rgba(255,255,255,0.3)] flex items-center gap-3"
+                    >
+                      <PlusCircle className="w-4 h-4 text-purple-600" />
+                      <span>SUBIR EVENTO</span>
+                    </button>
+                  </div>
+                </div>
+
+                {/* ─── RIGHT COLUMN: IPHONE 15 MOCKUP WITH EVENT PREVIEW ─── */}
+                <div className="w-full md:w-1/2 flex items-center justify-center z-20">
+                  <div className="relative w-full max-w-[400px] aspect-[9/16] bg-[#121212] rounded-[44px] p-4 border border-white/15 shadow-[0_20px_80px_rgba(0,0,0,0.9)] flex items-center justify-center overflow-hidden">
+                    {/* iPhone Outer Frame Border */}
+                    <div className="relative w-full h-full rounded-[36px] bg-black border-[4px] border-zinc-800 overflow-hidden shadow-inner flex flex-col justify-between p-3">
+                      {/* Dynamic Island Notch */}
+                      <div className="absolute top-4 left-1/2 -translate-x-1/2 w-28 h-6 rounded-full bg-black border border-zinc-800 z-40 flex items-center justify-end px-3">
+                        <div className="w-2.5 h-2.5 rounded-full bg-blue-900/60 border border-blue-500/40" />
+                      </div>
+
+                      {/* Screen Content */}
+                      <div className="relative w-full h-full rounded-[28px] overflow-hidden bg-zinc-950 flex flex-col justify-between pt-10 pb-4 px-3">
+                        <Image
+                          src="/images/event_kaskade.png"
+                          alt="Boiler Room / Event Preview"
+                          fill
+                          className="object-cover brightness-105"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent" />
+
+                        {/* Top Event Info */}
+                        <div className="relative z-10 space-y-1">
+                          <span className="text-[10px] font-black uppercase tracking-widest text-emerald-400">
+                            Sat 21st Sept / 4pm-12am
+                          </span>
+                          <h3 className="text-xl font-extrabold text-white tracking-tight leading-tight">
+                            Boiler Room: LA | Saturday
+                          </h3>
+                          <p className="text-[10px] font-medium text-zinc-300">
+                            El Pueblo De Los Angeles Historical Monument
+                          </p>
+                        </div>
+
+                        {/* Ticket Modal inside Phone Screen */}
+                        <div className="relative z-10 p-4 rounded-2xl bg-white text-black shadow-2xl space-y-3">
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <div className="text-xs font-black uppercase tracking-tight text-zinc-900">
+                                General Admission
+                              </div>
+                              <div className="text-[10px] font-medium text-zinc-500">
+                                1 ticket
+                              </div>
+                            </div>
+                            <span className="text-xs font-black text-purple-600">$79.99</span>
+                          </div>
+
+                          <button
+                            type="button"
+                            onClick={() => setShowEventModal(true)}
+                            className="w-full py-2.5 rounded-xl bg-yellow-400 hover:bg-yellow-300 text-black font-black text-xs uppercase tracking-wider transition shadow-md cursor-pointer text-center"
+                          >
+                            PURCHASE TICKETS
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </motion.div>
             )}
@@ -1018,7 +1060,7 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                     const heroSlides = [
                       {
                         id: "4go-chef-intro",
-                        poster: "/images/4go-hero-chef-alien.png",
+                        poster: "/images/4go_dj_green_alien_hero.png",
                         title: "4go",
                         tagline: "FOR YOU",
                         line1: "Los mejores shots y la previa... ¿estás listo?",
@@ -1041,20 +1083,43 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                     return (
                       <div className="relative w-full flex flex-col items-center">
                         <div
-                          onClick={() => {
-                            setActiveStoryScreen(2);
-                          }}
-                          className="relative w-full h-[520px] sm:h-[620px] overflow-hidden bg-[#0a0512] group cursor-pointer"
+                          className="relative w-screen left-1/2 -translate-x-1/2 h-[420px] sm:h-auto sm:aspect-[2.4/1] overflow-hidden bg-black"
                         >
+                          {/* Blurred backdrop for desktop side fill */}
                           <Image
                             src={currentSlide.poster}
-                            alt={currentSlide.title}
+                            alt=""
                             fill
                             priority
-                            className="object-cover object-center brightness-105 group-hover:scale-105 transition-transform duration-700"
+                            quality={100}
+                            sizes="100vw"
+                            aria-hidden="true"
+                            className="hidden sm:block object-cover object-center scale-110 blur-2xl brightness-[0.4] saturate-150"
                           />
-                          <div className="absolute inset-0 bg-gradient-to-tr from-[#6b21a8]/35 via-[#c026d3]/25 to-transparent opacity-90" />
-                          <div className="absolute inset-x-0 bottom-0 h-[60%] bg-gradient-to-b from-transparent via-[#180828]/50 via-black/85 to-black backdrop-blur-[1px]" />
+                          
+                          {/* ─── HD ULTRA-CRISP RESPONSIVE PICTURE ELEMENT ─── */}
+                          <picture className="absolute inset-0 z-10 flex items-center justify-center w-full h-full">
+                            {/* 1. Prioritize Modern WebP format with 1x & 2x Retina resolution density */}
+                            <source
+                              type="image/webp"
+                              srcSet="/images/4go_dj_green_alien_hero_1x.webp 1x, /images/4go_dj_green_alien_hero_2k.webp 2x"
+                            />
+                            {/* 2. Fallback PNG 2K high-res asset */}
+                            <img
+                              src="/images/4go_dj_green_alien_hero_2k.png"
+                              alt={currentSlide.title}
+                              loading="eager"
+                              decoding="async"
+                              className="w-full h-full object-cover object-center sm:object-contain brightness-105"
+                              style={{
+                                maxWidth: "100%",
+                                height: "100%",
+                                imageRendering: "-webkit-optimize-contrast",
+                              }}
+                            />
+                          </picture>
+                          {/* Seamless gradient overlay fading smoothly down into solid pure black */}
+                          <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-b from-transparent via-black/80 to-black z-10 pointer-events-none" />
                           <div className="absolute bottom-6 inset-x-0 p-6 flex flex-col items-center text-center z-10 max-w-xl mx-auto">
                             <span className="text-xs font-extrabold uppercase tracking-[0.25em] text-[#ff77a8] block mb-1 drop-shadow-md">
                               {currentSlide.tagline}
@@ -1116,29 +1181,119 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                   })()}
                 </section>
 
-                {/* ─── GET STARTED / CREAR EVENTO PROMOTIONAL BANNER ─── */}
-                <section className="px-4 sm:px-8 max-w-[1400px] mx-auto">
-                  <div className="relative overflow-hidden rounded-3xl border border-purple-500/30 bg-gradient-to-r from-purple-950/80 via-black to-zinc-950 p-6 sm:p-10 shadow-[0_0_50px_rgba(168,85,247,0.2)] flex flex-col md:flex-row items-center justify-between gap-6">
-                    <div className="space-y-2 text-center md:text-left">
-                      <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-purple-500/20 border border-purple-400/30 text-purple-300 text-xs font-black uppercase tracking-wider">
-                        <Sparkles className="w-3.5 h-3.5" /> Publica Tu Evento Gratis
-                      </div>
-                      <h2 className="text-2xl sm:text-4xl font-black uppercase tracking-tight text-white">
-                        Get Started: Organiza tu fiesta o concierto
+                {/* ─── HORIZONTAL EVENT CAROUSEL (FACTORY TOWN / DICE STYLE EXACT DESIGN FROM USER SCREENSHOT) ─── */}
+                <section className="px-4 sm:px-8 max-w-[1400px] mx-auto space-y-4 pt-6 pb-2">
+                  <div className="flex items-center justify-between border-b border-white/10 pb-3">
+                    <div>
+                      <h2 className="text-2xl sm:text-3xl font-black text-white uppercase tracking-tight font-sans drop-shadow-md">
+                        Eventos Destacados
                       </h2>
-                      <p className="text-xs sm:text-sm text-zinc-300 max-w-xl">
-                        Comienza a vender entradas por WhatsApp, código QR, tarjeta o taquilla física en minutos con el respaldo de Now4Go.
+                      <p className="text-xs sm:text-sm text-zinc-300 font-medium mt-1">
+                        Próximas fechas y conciertos principales
                       </p>
                     </div>
+                    
+                    {/* Horizontal Scroll Navigation Controls */}
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => scrollHomeCarousel("left")}
+                        className="w-8 h-8 rounded-full bg-white/10 border border-white/15 flex items-center justify-center text-white hover:bg-white/20 transition cursor-pointer"
+                        aria-label="Anterior"
+                      >
+                        ‹
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => scrollHomeCarousel("right")}
+                        className="w-8 h-8 rounded-full bg-white/10 border border-white/15 flex items-center justify-center text-white hover:bg-white/20 transition cursor-pointer"
+                        aria-label="Siguiente"
+                      >
+                        ›
+                      </button>
+                    </div>
+                  </div>
 
-                    <button
-                      type="button"
-                      onClick={() => setShowEventModal(true)}
-                      className="px-8 py-4 rounded-full bg-white text-black hover:bg-purple-300 font-black text-xs uppercase tracking-widest transition-all hover:scale-105 shadow-[0_0_25px_rgba(255,255,255,0.4)] cursor-pointer flex items-center gap-2 shrink-0"
-                    >
-                      <PlusCircle className="w-4 h-4 text-purple-600" />
-                      Empezar / Crear Evento
-                    </button>
+                  {/* Horizontal Scroll Row */}
+                  <div
+                    ref={homeCarouselRef}
+                    className="flex items-center gap-4 overflow-x-auto no-scrollbar scroll-smooth py-2 -mx-4 px-4 sm:mx-0 sm:px-0 select-none"
+                  >
+                    {events.map((evt) => (
+                      <div
+                        key={`carousel-card-${evt.id}`}
+                        onClick={() => {
+                          setSelectedCarouselEvent(evt);
+                          setShowDetailOverlay(true);
+                        }}
+                        className="w-44 sm:w-52 shrink-0 flex flex-col space-y-2 cursor-pointer group"
+                      >
+                        {/* Square Artwork Container with Rounded Corners */}
+                        <div className="relative w-full aspect-square rounded-2xl overflow-hidden bg-zinc-900 shadow-xl border border-white/10 group-hover:border-purple-500/60 transition-all duration-300">
+                          <Image
+                            src={evt.poster || "/images/now4go-hero-presentation-hd-v3.png"}
+                            alt={evt.title}
+                            fill
+                            className="object-cover group-hover:scale-105 transition-transform duration-500 brightness-105"
+                            sizes="220px"
+                          />
+                          {/* Gradient Overlay for text contrast */}
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent" />
+
+                          {/* Text Superimposed at Card Bottom Left (Matching Screenshot 1) */}
+                          <div className="absolute bottom-2.5 left-2.5 right-16 z-10 flex flex-col justify-end">
+                            <h4 className="text-xs sm:text-sm font-black uppercase text-white tracking-tight leading-tight line-clamp-1 drop-shadow-md">
+                              {evt.title}
+                            </h4>
+                            <span className="text-[10px] font-bold text-zinc-300 drop-shadow line-clamp-1">
+                              {evt.subtitle || evt.dateLabel}
+                            </span>
+                          </div>
+
+                          {/* Action Overlay Buttons (Play & Heart) in Bottom Right */}
+                          <div className="absolute bottom-2.5 right-2.5 flex items-center gap-1.5 z-10">
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setSelectedCarouselEvent(evt);
+                                setShowDetailOverlay(true);
+                              }}
+                              className="w-7 h-7 rounded-full bg-black/75 backdrop-blur-md border border-white/20 flex items-center justify-center text-white hover:scale-110 active:scale-95 transition-transform shadow-lg cursor-pointer"
+                              aria-label="Ver preview"
+                            >
+                              <Play className="w-3 h-3 text-white fill-white ml-0.5" />
+                            </button>
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                              }}
+                              className="w-7 h-7 rounded-full bg-black/75 backdrop-blur-md border border-white/20 flex items-center justify-center text-white hover:scale-110 active:scale-95 transition-transform shadow-lg cursor-pointer"
+                              aria-label="Guardar favorito"
+                            >
+                              <Heart className="w-3 h-3 text-white hover:text-red-400 transition-colors" />
+                            </button>
+                          </div>
+                        </div>
+
+                        {/* Event Details Text Below Artwork (Matching DICE style layout) */}
+                        <div className="flex flex-col space-y-0.5 px-0.5 pt-1">
+                          <h4 className="text-sm font-extrabold text-white tracking-tight leading-tight line-clamp-1 group-hover:text-purple-300 transition-colors">
+                            {evt.title}
+                          </h4>
+                          <span className="text-xs font-bold text-zinc-100">
+                            {evt.dateLabel || "sáb, 26 sept"}
+                          </span>
+                          <span className="text-xs font-semibold text-zinc-300 truncate">
+                            {evt.venue || "Factory Town"}
+                          </span>
+                          <span className="text-xs font-black text-white pt-0.5">
+                            {evt.price === 0 ? "Desde Gratis" : `Desde ${evt.price || "52,74"} $`}
+                          </span>
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 </section>
               </motion.div>
@@ -1151,31 +1306,22 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: 30 }}
                 transition={{ duration: 0.3, ease: "easeOut" }}
-                className="px-4 sm:px-8 max-w-[1400px] mx-auto pt-24 sm:pt-28 space-y-8"
+                className="px-4 sm:px-8 max-w-[1400px] mx-auto pt-32 sm:pt-36 space-y-8"
               >
-                {/* ─── 1. VK FEST 2025 3D PERSPECTIVE CYLINDER CAROUSEL SHOWCASE ─── */}
-                <VkFest3DCylinderCarousel
-                  events={events}
-                  onSelectEvent={(evt: any) => {
-                    setSelectedCarouselEvent(evt);
-                    setShowDetailOverlay(true);
-                  }}
-                />
-
-                {/* ─── 2. EVENTOS EN GRID DE 2 COLUMNAS ("DEBAJITO EN COLUMNAS DE DOS") ─── */}
-                <div className="space-y-4 pt-2">
-                  <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                {/* ─── 2. EVENTOS EN GRID DE 2 COLUMNAS EN PC Y 1 COLUMNA EN MÓVIL ─── */}
+                <div className="space-y-6 pt-2">
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-white/10 pb-4">
                     <div>
-                      <h3 className="text-xl sm:text-2xl font-black text-white uppercase tracking-tight font-sans">
+                      <h2 className="text-3xl sm:text-4xl font-black text-white uppercase tracking-tight font-sans drop-shadow-md">
                         Cartelera de Eventos
-                      </h3>
-                      <p className="text-xs text-zinc-400 font-medium mt-0.5">
-                        Explora los eventos en 2 columnas
+                      </h2>
+                      <p className="text-xs sm:text-sm text-zinc-300 font-medium mt-1">
+                        Próximas fechas y conciertos en vivo
                       </p>
                     </div>
 
                     {/* Day Filter Chips */}
-                    <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-none py-1 max-w-full">
+                    <div className="flex items-center gap-2 overflow-x-auto scrollbar-none py-1 max-w-full">
                       {[
                         { id: "todos", label: "Todos" },
                         { id: "viernes", label: "Viernes" },
@@ -1190,7 +1336,7 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                             key={`filter-day-${day.id}`}
                             type="button"
                             onClick={() => setSelectedDay(day.id)}
-                            className={`px-3.5 py-1.5 rounded-full text-xs font-black uppercase tracking-wider border transition-all cursor-pointer whitespace-nowrap ${
+                            className={`px-4 py-2 rounded-full text-xs font-black uppercase tracking-wider border transition-all cursor-pointer whitespace-nowrap ${
                               isActive
                                 ? "bg-white text-black border-white shadow-md scale-105"
                                 : "bg-white/10 text-white/80 border-white/20 hover:bg-white/20 hover:text-white"
@@ -1203,8 +1349,8 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                     </div>
                   </div>
 
-                  {/* 2-COLUMN GRID (MATCHING SCREENSHOT 1 POPULAR MOVIES LAYOUT) */}
-                  <div className="grid grid-cols-2 gap-3 sm:gap-4">
+                  {/* GRID OF 1 COLUMN ON MOBILE & 2 COLUMNS ON PC (EXACT USER DIRECTIVE) */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                     {filteredCatalogEvents.map((evt) => (
                       <div
                         key={`cat-2col-${evt.id}`}
@@ -1212,9 +1358,10 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                           setSelectedCarouselEvent(evt);
                           setShowDetailOverlay(true);
                         }}
-                        className="group relative flex flex-col rounded-3xl bg-zinc-950 border border-white/10 overflow-hidden cursor-pointer hover:border-blue-500/80 transition-all duration-300 hover:scale-[1.02] shadow-2xl"
+                        className="group relative flex flex-col space-y-2 cursor-pointer"
                       >
-                        <div className="relative w-full aspect-[4/3] sm:aspect-[16/10] bg-zinc-900 overflow-hidden">
+                        {/* Artwork Box */}
+                        <div className="relative w-full aspect-square rounded-2xl overflow-hidden bg-zinc-900 shadow-2xl border border-white/10 group-hover:border-purple-500/60 transition-all duration-300">
                           <Image
                             src={evt.poster || "/images/now4go-hero-presentation-hd-v3.png"}
                             alt={evt.title}
@@ -1222,33 +1369,40 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                             className="object-cover group-hover:scale-105 transition-transform duration-500 brightness-105"
                             sizes="400px"
                           />
-                          <div className="absolute inset-0 bg-gradient-to-t from-black via-black/30 to-transparent" />
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-80" />
 
-                          {/* Top Left HD Badge (Matching Screenshot 1) */}
+                          {/* Top Left HD Badge */}
                           <span className="absolute top-2.5 left-2.5 px-2 py-0.5 rounded-lg bg-black/60 backdrop-blur-md border border-white/15 text-white text-[9px] font-black uppercase tracking-wider">
                             HD
                           </span>
 
                           {/* Top Right Price Tag */}
-                          <span className="absolute top-2.5 right-2.5 px-2.5 py-1 rounded-full bg-blue-600/90 text-white text-[10px] font-black shadow-lg backdrop-blur-md">
-                            ${evt.price || 10} USD
+                          <span className="absolute top-2.5 right-2.5 px-2.5 py-1 rounded-full bg-purple-600/90 text-white text-[10px] font-black shadow-lg backdrop-blur-md">
+                            {evt.price === 0 ? "Gratis" : `$${evt.price} USD`}
                           </span>
 
-                          {/* Red Circular Play Button Bottom Right (Matching Screenshot 1) */}
-                          <div className="absolute bottom-2.5 right-2.5 w-8 h-8 rounded-full bg-red-600 border border-red-400 text-white flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
-                            <span className="text-xs font-black pl-0.5">▶</span>
-                          </div>
-
-                          {/* Glassmorphic Info Pill Superimposed at Card Bottom (Matching Screenshot 1) */}
-                          <div className="absolute bottom-2 inset-x-2 p-2 rounded-2xl bg-black/75 backdrop-blur-md border border-white/10 flex flex-col">
-                            <h4 className="text-xs font-black text-white uppercase tracking-tight line-clamp-1 group-hover:text-blue-300 transition-colors">
-                              {evt.title}
-                            </h4>
-                            <div className="flex items-center justify-between text-[9px] font-bold text-zinc-300 mt-0.5">
-                              <span className="text-blue-400 font-extrabold">{evt.organizer || "4GO"}</span>
-                              <span className="text-zinc-400">12M Views</span>
+                          {/* Action Overlay Button (Play) */}
+                          <div className="absolute bottom-2.5 right-2.5 flex items-center gap-1.5 z-10">
+                            <div className="w-8 h-8 rounded-full bg-black/75 backdrop-blur-md border border-white/20 flex items-center justify-center text-white group-hover:scale-110 transition-transform shadow-lg">
+                              <Play className="w-3.5 h-3.5 text-white fill-white ml-0.5" />
                             </div>
                           </div>
+                        </div>
+
+                        {/* Event Details Text Below Artwork (Clean & Fully Visible) */}
+                        <div className="flex flex-col space-y-0.5 px-0.5">
+                          <h4 className="text-sm sm:text-base font-extrabold text-white tracking-tight leading-tight line-clamp-1 group-hover:text-purple-300 transition-colors">
+                            {evt.title}
+                          </h4>
+                          <span className="text-xs font-bold text-zinc-200">
+                            {evt.dateLabel || "sáb, 26 sept"}
+                          </span>
+                          <span className="text-xs font-medium text-zinc-400 truncate">
+                            {evt.venue || "Factory Town"}
+                          </span>
+                          <span className="text-xs font-black text-white pt-0.5">
+                            {evt.price === 0 ? "Desde Gratis" : `Desde ${evt.price || "52,74"} $`}
+                          </span>
                         </div>
                       </div>
                     ))}
@@ -1256,108 +1410,8 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                 </div>
               </motion.div>
             )}
-
-            {activeStoryScreen === 3 && (
-              <motion.div
-                key="screen-3-fiestas"
-                initial={{ opacity: 0, x: 30 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: 30 }}
-                transition={{ duration: 0.3, ease: "easeOut" }}
-                className="px-4 sm:px-8 max-w-[1400px] mx-auto pt-28 sm:pt-32 space-y-8"
-              >
-                {/* ─── DISCOTECAS & ORGANIZADORES ─── */}
-                <div>
-                  <h3 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight font-sans mb-4">
-                    Discotecas &amp; Venues Exclusivos
-                  </h3>
-                  <div className="grid grid-cols-3 gap-3">
-                    {[
-                      { id: "cubic", name: "Cubic Loja", tagline: "Nightclub", color: "from-purple-900/60 to-black", border: "border-purple-500/40" },
-                      { id: "lequat", name: "Lequat", tagline: "Eventos & Shows", color: "from-pink-900/60 to-black", border: "border-pink-500/40" },
-                      { id: "now", name: "NOW 4GO", tagline: "Originals", color: "from-emerald-900/60 to-black", border: "border-emerald-500/40" },
-                    ].map((org) => {
-                      const isSelected = selectedOrganizer === org.id;
-
-                      return (
-                        <button
-                          key={org.id}
-                          type="button"
-                          onClick={() => {
-                            setSelectedOrganizer(isSelected ? "todos" : org.id);
-                            if (org.id === "cubic") {
-                              setSelectedOrganizerSlug("cubic");
-                              setShowOrganizerOverlay(true);
-                            }
-                          }}
-                          className={`relative flex flex-col items-center justify-center p-4 rounded-2xl border transition-all duration-300 cursor-pointer bg-gradient-to-b ${org.color} ${
-                            isSelected ? "border-white shadow-[0_0_20px_rgba(255,255,255,0.3)] scale-105" : `${org.border} hover:border-white/50`
-                          }`}
-                        >
-                          <span className="text-xs sm:text-sm font-black uppercase text-white tracking-wider">{org.name}</span>
-                          <span className="text-[9px] sm:text-xs text-zinc-400 font-medium mt-0.5">{org.tagline}</span>
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-
-                {/* Nightlife Events Grid */}
-                <div>
-                  <h4 className="text-lg font-bold text-white uppercase tracking-wider mb-4">
-                    Fiestas &amp; Eventos Nocturnos
-                  </h4>
-                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-                    {filteredCatalogEvents
-                      .filter((e) => classifyEventType(e) === "fiesta" || selectedOrganizer !== "todos")
-                      .map((evt) => (
-                        <div
-                          key={`party-${evt.id}`}
-                          onClick={() => {
-                            setSelectedCarouselEvent(evt);
-                            setShowDetailOverlay(true);
-                          }}
-                          className="group relative flex flex-col rounded-3xl bg-zinc-950 border border-zinc-800 overflow-hidden cursor-pointer hover:border-emerald-500 transition-all duration-300 hover:scale-105 shadow-xl"
-                        >
-                          <div className="relative w-full aspect-square bg-zinc-900 overflow-hidden">
-                            <Image
-                              src={evt.poster || "/images/now4go-hero-presentation-hd-v3.png"}
-                              alt={evt.title}
-                              fill
-                              className="object-cover group-hover:scale-110 transition-transform duration-500"
-                              sizes="200px"
-                            />
-                            <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-transparent to-transparent" />
-                            <span className="absolute top-2.5 right-2.5 px-2.5 py-1 rounded-full bg-emerald-400 text-black text-[10px] font-black shadow">
-                              ${evt.price || 10} USD
-                            </span>
-                          </div>
-
-                          <div className="p-3 flex flex-col justify-between flex-1 bg-[#09090b]">
-                            <div>
-                              <span className="text-[9px] font-black uppercase text-emerald-400 tracking-wider block">
-                                {evt.organizer || "4GO"}
-                              </span>
-                              <h4 className="text-xs font-bold text-white uppercase group-hover:text-emerald-300 transition-colors line-clamp-1">
-                                {evt.title}
-                              </h4>
-                              <p className="text-[10px] text-zinc-400 font-medium line-clamp-1 mt-0.5">
-                                {evt.subtitle || evt.venue}
-                              </p>
-                            </div>
-                            <div className="mt-3 pt-2 border-t border-zinc-800 flex items-center justify-between text-[9px] font-bold text-zinc-300">
-                              <span>{evt.dateLabel}</span>
-                              <span className="text-emerald-400 font-extrabold">Ver &rarr;</span>
-                            </div>
-                          </div>
-                        </div>
-                      ))}
-                  </div>
-                </div>
-              </motion.div>
-            )}
           </AnimatePresence>
-        </motion.div>
+        </div>
       </div>
 
       {/* ─── FLOATING BOTTOM NAVIGATION DOCK ─── */}

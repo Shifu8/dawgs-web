@@ -209,7 +209,10 @@ export default function OrganizerPublishScreen() {
             alt="4GO DJ Character Backdrop"
             fill
             priority
-            className="object-cover object-top sm:object-center w-full h-full opacity-85 transition-opacity duration-500"
+            quality={100}
+            unoptimized
+            sizes="100vw"
+            className="object-cover object-top sm:object-center w-full h-full opacity-85 transition-opacity duration-500 image-render-crisp"
           />
           {/* Soft Mobile & Desktop Gradient Overlays for Text Contrast */}
           <div className="absolute inset-0 bg-gradient-to-b from-black/80 via-black/50 to-black/90 sm:bg-gradient-to-r sm:from-black/90 sm:via-black/55 sm:to-transparent" />
@@ -312,6 +315,9 @@ export default function OrganizerPublishScreen() {
                     alt="4GO Surreal Flowers 3D Artwork"
                     fill
                     priority
+                    quality={100}
+                    unoptimized
+                    sizes="(max-width: 768px) 100vw, 50vw"
                     className="object-cover object-center group-hover:scale-105 transition-transform duration-700"
                   />
                   

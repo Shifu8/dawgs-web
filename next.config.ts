@@ -34,6 +34,11 @@ const nextConfig: NextConfig = {
     NEXT_PUBLIC_PAYPHONE_ENV: process.env.NEXT_PUBLIC_PAYPHONE_ENV || process.env.PAYPHONE_ENV || "",
   },
   images: {
+    deviceSizes: [640, 828, 1080, 1200, 1920, 2560, 3840],
+    imageSizes: [16, 32, 64, 96, 128, 256, 384],
+    formats: ["image/webp"],
+    qualities: [75, 85, 90, 95, 100],
+    minimumCacheTTL: 31536000,
     remotePatterns: [
       {
         protocol: "https",

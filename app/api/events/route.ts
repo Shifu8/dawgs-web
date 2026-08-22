@@ -68,16 +68,15 @@ export async function GET() {
     const adminEvents = loadAllEvents();
     const existingSlugs = new Set(adminEvents.map((e) => e.slug || e.id));
 
-    let merged: EventWithPosition[];
+    const activeAdmin = adminEvents
+      .filter((e) => e.status === "active")
+      .map(toFrontendEvent);
 
-    if (adminEvents.length === 0) {
-      merged = fallbackEvents.map((fe, i) => toFrontendEventFromFallback(fe, i));
-    } else {
-      merged = adminEvents
-        .filter((e) => e.status === "active")
-        .map(toFrontendEvent);
-    }
+    const fallbacksNotSaved = fallbackEvents
+      .filter((fe) => !existingSlugs.has(fe.id))
+      .map((fe, i) => toFrontendEventFromFallback(fe, i));
 
+    const merged = [...activeAdmin, ...fallbacksNotSaved];
     merged.sort((a, b) => a.position - b.position);
 
     return NextResponse.json({ success: true, events: merged });

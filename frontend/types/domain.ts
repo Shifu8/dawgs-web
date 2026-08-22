@@ -70,6 +70,7 @@ export type Event = {
 
   // Extended editorial fields
   organizer?: string;
+  organizers?: string[];
   venue?: string;
   time?: string;
   category?: string;

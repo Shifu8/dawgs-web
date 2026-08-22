@@ -1,5 +1,305 @@
 [
   {
+    "id": "satellite-cloonee",
+    "slug": "satellite-cloonee",
+    "title": "Satellite: Cloonee, Miluhska, Omar+ & Vintage Culture",
+    "subtitle": "SPACE TERRACE",
+    "location": "Miami",
+    "date": "2026-10-15",
+    "time": "23:00",
+    "price": 40.0,
+    "imageUrl": "/images/rauw_alejandro_card_bg.png",
+    "description": "Tech house vibes with Cloonee and Vintage Culture.",
+    "lineup": [
+      "Cloonee",
+      "Vintage Culture",
+      "Miluhska"
+    ],
+    "position": 9,
+    "status": "active",
+    "isFeatured": false,
+    "isAvailable": true,
+    "badge": "TECH HOUSE",
+    "organizer": "Cubic",
+    "venue": "Club Space Miami",
+    "category": "Tech House",
+    "ageRestriction": "21+",
+    "organizers": [
+      "Cubic"
+    ],
+    "poster": "/images/rauw_alejandro_card_bg.png",
+    "miniImage": "/images/rauw_alejandro_card_bg.png"
+  },
+  {
+    "id": "elderbrook-dj-set",
+    "slug": "elderbrook-dj-set",
+    "title": "Elderbrook (DJ Set), Laurence Guy, & Collect 200",
+    "subtitle": "DOWNTOWN MIAMI",
+    "location": "Miami",
+    "date": "2026-08-21",
+    "time": "23:00",
+    "price": 30.0,
+    "imageUrl": "/images/roa_artist_1779161704881.png",
+    "description": "Melodic & emotive electronic music live with Elderbrook.",
+    "lineup": [
+      "Elderbrook",
+      "Laurence Guy",
+      "Collect 200"
+    ],
+    "position": 8,
+    "status": "active",
+    "isFeatured": false,
+    "isAvailable": true,
+    "badge": "DJ SET",
+    "organizer": "Cubic",
+    "venue": "Club Space Miami",
+    "category": "Melodic House",
+    "ageRestriction": "21+",
+    "organizers": [
+      "Cubic"
+    ],
+    "poster": "/images/roa_artist_1779161704881.png",
+    "miniImage": "/images/roa_artist_1779161704881.png"
+  },
+  {
+    "id": "satellite-disco-lines",
+    "slug": "satellite-disco-lines",
+    "title": "Satellite: Disco Lines, Four Tet B2B Floating Points",
+    "subtitle": "CLUB SPACE B2B",
+    "location": "Miami",
+    "date": "2026-10-17",
+    "time": "23:00",
+    "price": 45.0,
+    "imageUrl": "/images/latin_loud_medellin_mobile_2026.png",
+    "description": "Exclusive B2B marathon set at Space Terrace.",
+    "lineup": [
+      "Disco Lines",
+      "Four Tet",
+      "Floating Points",
+      "Daphni"
+    ],
+    "position": 7,
+    "status": "active",
+    "isFeatured": true,
+    "isAvailable": true,
+    "badge": "SPACE TERRACE",
+    "organizer": "Cubic",
+    "venue": "Club Space Miami",
+    "category": "Electronic",
+    "ageRestriction": "21+",
+    "organizers": [
+      "Cubic"
+    ],
+    "poster": "/images/latin_loud_medellin_mobile_2026.png",
+    "miniImage": "/images/latin_loud_medellin_mobile_2026.png"
+  },
+  {
+    "id": "unreal-miami",
+    "slug": "unreal-miami",
+    "title": "UNREAL",
+    "subtitle": "INFINITY ROOM",
+    "location": "Miami",
+    "date": "2026-11-13",
+    "time": "23:00",
+    "price": 49.99,
+    "imageUrl": "/images/trap_loud_event_1779161392003.png",
+    "description": "Unreal Techno experience in the Infinity Room at Factory Town.",
+    "lineup": [
+      "UNREAL Residents"
+    ],
+    "position": 6,
+    "status": "active",
+    "isFeatured": true,
+    "isAvailable": true,
+    "badge": "INFINITY ROOM",
+    "organizer": "Cubic",
+    "venue": "Factory Town · Miami",
+    "category": "Industrial Techno",
+    "ageRestriction": "21+",
+    "organizers": [
+      "Cubic"
+    ],
+    "poster": "/images/trap_loud_event_1779161392003.png",
+    "miniImage": "/images/trap_loud_event_1779161392003.png"
+  },
+  {
+    "id": "satellite-33hr",
+    "slug": "satellite-33hr",
+    "title": "Satellite: 33+ Hour III Points Closing Party",
+    "subtitle": "CLUB SPACE",
+    "location": "Miami",
+    "date": "2026-10-18",
+    "time": "23:00",
+    "price": 35.0,
+    "imageUrl": "/images/rnb_loud_brent_1778966427864.png",
+    "description": "33+ Hour non-stop closing marathon party at Club Space.",
+    "lineup": [
+      "Seth Troxler",
+      "Marco Carola",
+      "Honey Dijon"
+    ],
+    "position": 5,
+    "status": "active",
+    "isFeatured": true,
+    "isAvailable": true,
+    "badge": "33+ HOUR",
+    "organizer": "Cubic",
+    "venue": "Club Space Miami",
+    "category": "Techno / House",
+    "ageRestriction": "21+",
+    "organizers": [
+      "Cubic"
+    ],
+    "poster": "/images/rnb_loud_brent_1778966427864.png",
+    "miniImage": "/images/rnb_loud_brent_1778966427864.png"
+  },
+  {
+    "id": "ahana-yoga",
+    "slug": "ahana-yoga",
+    "title": "Ahana x Perkhaus- Yoga activation w/live DJ",
+    "subtitle": "YOGA & MUSIC",
+    "location": "Miami",
+    "date": "2026-08-25",
+    "time": "18:00",
+    "price": 0,
+    "imageUrl": "/images/rnb_loud_la_mobile_2026.png",
+    "description": "Yoga class with live DJ ambient set.",
+    "lineup": [
+      "Cornelinho"
+    ],
+    "position": 4,
+    "status": "active",
+    "isFeatured": false,
+    "isAvailable": true,
+    "badge": "GRATIS",
+    "organizer": "Cubic",
+    "venue": "Ahana yoga · Miami",
+    "category": "Wellness / Music",
+    "ageRestriction": "All Ages",
+    "organizers": [
+      "Cubic"
+    ],
+    "poster": "/images/rnb_loud_la_mobile_2026.png",
+    "miniImage": "/images/rnb_loud_la_mobile_2026.png"
+  },
+  {
+    "id": "strippers-fl-tour",
+    "slug": "strippers-fl-tour",
+    "title": "Strippers FL Tour 2026",
+    "subtitle": "FACTORY TOWN",
+    "location": "Miami",
+    "date": "2026-09-15",
+    "time": "21:00",
+    "price": 75.0,
+    "imageUrl": "/images/trap_loud_sanjuan_mobile_2026.png",
+    "description": "Strippers FL Tour 2026 live at Factory Town.",
+    "lineup": [
+      "Strippers"
+    ],
+    "position": 3,
+    "status": "active",
+    "isFeatured": false,
+    "isAvailable": true,
+    "badge": "FL TOUR",
+    "organizer": "Cubic",
+    "venue": "Factory Town · Miami",
+    "category": "Urban / Hip-Hop",
+    "ageRestriction": "18+",
+    "organizers": [
+      "Cubic"
+    ],
+    "poster": "/images/trap_loud_sanjuan_mobile_2026.png",
+    "miniImage": "/images/trap_loud_sanjuan_mobile_2026.png"
+  },
+  {
+    "id": "armin-van-buuren",
+    "slug": "armin-van-buuren",
+    "title": "Armin van Buuren presents The Funk Tribu",
+    "subtitle": "NRG2000 TOUR",
+    "location": "Miami",
+    "date": "2026-10-10",
+    "time": "22:00",
+    "price": 75.0,
+    "imageUrl": "/images/trap_loud_miami_mobile_2026.png",
+    "description": "Trance & high BPM energy with Armin van Buuren.",
+    "lineup": [
+      "Armin van Buuren",
+      "Funk Tribu"
+    ],
+    "position": 2,
+    "status": "active",
+    "isFeatured": true,
+    "isAvailable": true,
+    "badge": "NRG2000",
+    "organizer": "Cubic",
+    "venue": "Factory Town · Miami",
+    "category": "Trance / Hard Dance",
+    "ageRestriction": "21+",
+    "organizers": [
+      "Cubic"
+    ],
+    "poster": "/images/trap_loud_miami_mobile_2026.png",
+    "miniImage": "/images/trap_loud_miami_mobile_2026.png"
+  },
+  {
+    "id": "fisher-miami",
+    "slug": "fisher-miami",
+    "title": "FISHER",
+    "subtitle": "FACTORY TOWN MIAMI",
+    "location": "Miami",
+    "date": "2026-09-26",
+    "time": "22:00",
+    "price": 130.5,
+    "imageUrl": "/images/trap_loud_trio_artists.png",
+    "description": "High energy house music with FISHER live in Miami.",
+    "lineup": [
+      "FISHER"
+    ],
+    "position": 1,
+    "status": "active",
+    "isFeatured": true,
+    "isAvailable": true,
+    "badge": "LIVE HOUSE",
+    "organizer": "Cubic",
+    "venue": "Factory Town · Miami",
+    "category": "Tech House",
+    "ageRestriction": "21+",
+    "organizers": [
+      "Cubic"
+    ],
+    "poster": "/images/trap_loud_trio_artists.png",
+    "miniImage": "/images/trap_loud_trio_artists.png"
+  },
+  {
+    "id": "kaskade-origin",
+    "slug": "kaskade-origin",
+    "title": "Kaskade: ORIGIN //",
+    "subtitle": "FACTORY TOWN",
+    "location": "Miami",
+    "date": "2026-09-18",
+    "time": "22:00",
+    "price": 52.74,
+    "imageUrl": "/images/4go_dj_green_alien_hero_2k.png",
+    "description": "Kaskade live in Miami at Factory Town for a special ORIGIN set.",
+    "lineup": [
+      "Kaskade"
+    ],
+    "position": 0,
+    "status": "active",
+    "isFeatured": true,
+    "isAvailable": true,
+    "badge": "ORIGIN //",
+    "organizer": "Cubic",
+    "venue": "Factory Town · Miami",
+    "category": "Electronic / House",
+    "ageRestriction": "21+",
+    "organizers": [
+      "Cubic"
+    ],
+    "poster": "/images/4go_dj_green_alien_hero_2k.png",
+    "miniImage": "/images/4go_dj_green_alien_hero_2k.png"
+  },
+  {
     "id": "dawg-night",
     "slug": "dawg-night",
     "title": "DAWG NIGHT",
@@ -139,7 +439,12 @@
       }
     ],
     "createdAt": "2026-06-03T23:57:02.581Z",
-    "updatedAt": "2026-07-25T01:50:12.826Z"
+    "updatedAt": "2026-07-25T01:50:12.826Z",
+    "organizers": [
+      "Cubic"
+    ],
+    "poster": "/images/omar_courtz_card_bg.jpg",
+    "miniImage": "/images/omar_courtz_card_bg.jpg"
   },
   {
     "id": "trap-eclipse",
@@ -151,7 +456,7 @@
     "time": "23:00",
     "countdownDate": "2026-10-31",
     "price": 10,
-    "imageUrl": "",
+    "imageUrl": "/images/now4go-hero-presentation-hd-v3.png",
     "description": "El eclipse del trap y R&B nocturno. Una noche monumental de vibras oscuras, bajos masivos y melancolía hipnótica en el escenario principal.",
     "lineup": [
       "DRAKE",
@@ -163,7 +468,7 @@
     "isAvailable": false,
     "badge": "SPECIAL PASS",
     "accentColor": "#ffffff",
-    "miniImage": "/images/roa_artist_1779161704881.png",
+    "miniImage": "/images/now4go-hero-presentation-hd-v3.png",
     "organizer": "Cubic",
     "venue": "Cubic Loja",
     "category": "R&B / Trap",
@@ -238,7 +543,11 @@
     "createdAt": "2026-06-03T23:57:02.581Z",
     "updatedAt": "2026-07-25T01:28:10.821Z",
     "onlineSalesCutoffTime": "14:00",
-    "drinks": []
+    "drinks": [],
+    "organizers": [
+      "Cubic"
+    ],
+    "poster": "/images/now4go-hero-presentation-hd-v3.png"
   },
   {
     "id": "trap-loud",
@@ -250,7 +559,7 @@
     "time": "21:00",
     "countdownDate": "2026-06-18",
     "price": 10,
-    "imageUrl": "",
+    "imageUrl": "/images/trap_loud_trio_artists.png",
     "description": "La escena subterránea cobra vida. Trap latino oscuro, bajo retumbante y energía inagotable. Luces de escenario crudas, beats pesados y acceso restringido.",
     "lineup": [
       "YAN BLOCK"
@@ -261,8 +570,8 @@
     "isAvailable": false,
     "badge": "LIVE ACCESS",
     "accentColor": "#ffffff",
-    "miniImage": "/images/yan_block_artist_1779161408288.png",
-    "organizer": "lequiat",
+    "miniImage": "/images/trap_loud_trio_artists.png",
+    "organizer": "Cubic",
     "venue": "Venue Privado · Loja",
     "category": "Trap / Urban",
     "ageRestriction": "18+",
@@ -339,7 +648,11 @@
       }
     ],
     "createdAt": "2026-05-30T23:41:19.326Z",
-    "updatedAt": "2026-07-11T18:52:26.955Z"
+    "updatedAt": "2026-07-11T18:52:26.955Z",
+    "organizers": [
+      "Cubic"
+    ],
+    "poster": "/images/trap_loud_trio_artists.png"
   },
   {
     "id": "rock-loud",
@@ -351,7 +664,7 @@
     "time": "20:00",
     "countdownDate": "2026-11-20",
     "price": 10,
-    "imageUrl": "",
+    "imageUrl": "/images/trap_loud_anuel_1778966415162.png",
     "description": "El sonido alternativo y clásico chocan. La distorsión melódica de Deftones, la oscuridad moderna de Novulent y el legado inmortal de Aerosmith.",
     "lineup": [
       "DEFTONES",
@@ -365,7 +678,7 @@
     "badge": "ALT ACCESS",
     "accentColor": "#ffffff",
     "miniImage": "/images/trap_loud_anuel_1778966415162.png",
-    "organizer": "NOW",
+    "organizer": "Cubic",
     "venue": "Stadium Loja",
     "category": "Rock / Alt",
     "ageRestriction": "18+",
@@ -433,7 +746,11 @@
       }
     ],
     "createdAt": "2026-06-03T23:57:02.581Z",
-    "updatedAt": "2026-06-03T23:58:28.823Z"
+    "updatedAt": "2026-06-03T23:58:28.823Z",
+    "organizers": [
+      "Cubic"
+    ],
+    "poster": "/images/trap_loud_anuel_1778966415162.png"
   },
   {
     "id": "latin-loud-badbunny",
@@ -458,7 +775,7 @@
     "badge": "GLOBAL WAVE",
     "accentColor": "#ffffff",
     "miniImage": "/images/latin_loud_bad_bunny_1778966469259.png",
-    "organizer": "NOW",
+    "organizer": "Cubic",
     "venue": "Estadio Atahualpa · Quito",
     "category": "Reggaetón / Urban",
     "ageRestriction": "18+",
@@ -475,7 +792,11 @@
     "drinks": [],
     "merch": [],
     "createdAt": "2026-07-25T12:00:00.000Z",
-    "updatedAt": "2026-07-25T12:00:00.000Z"
+    "updatedAt": "2026-07-25T12:00:00.000Z",
+    "organizers": [
+      "Cubic"
+    ],
+    "poster": "/images/latin_loud_bad_bunny_1778966469259.png"
   },
   {
     "id": "rnb-loud-brent",
@@ -499,7 +820,7 @@
     "badge": "NIGHT VISIONS",
     "accentColor": "#ffffff",
     "miniImage": "/images/rnb_loud_brent_1778966427864.png",
-    "organizer": "NENEZ",
+    "organizer": "Cubic",
     "venue": "Explanada Guayaquil",
     "category": "R&B / Soul",
     "ageRestriction": "18+",
@@ -516,7 +837,11 @@
     "drinks": [],
     "merch": [],
     "createdAt": "2026-07-25T12:00:00.000Z",
-    "updatedAt": "2026-07-25T12:00:00.000Z"
+    "updatedAt": "2026-07-25T12:00:00.000Z",
+    "organizers": [
+      "Cubic"
+    ],
+    "poster": "/images/rnb_loud_brent_1778966427864.png"
   },
   {
     "id": "urban-drop-roa",
@@ -540,7 +865,7 @@
     "badge": "URBAN WAVE",
     "accentColor": "#ffffff",
     "miniImage": "/images/roa_artist_1779161704881.png",
-    "organizer": "NOW",
+    "organizer": "Cubic",
     "venue": "Centro de Convenciones · Cuenca",
     "category": "Urban / Trap",
     "ageRestriction": "18+",
@@ -557,7 +882,11 @@
     "drinks": [],
     "merch": [],
     "createdAt": "2026-07-25T12:00:00.000Z",
-    "updatedAt": "2026-07-25T12:00:00.000Z"
+    "updatedAt": "2026-07-25T12:00:00.000Z",
+    "organizers": [
+      "Cubic"
+    ],
+    "poster": "/images/roa_artist_1779161704881.png"
   },
   {
     "id": "trap-loud-sanjuan",
@@ -581,7 +910,7 @@
     "badge": "SPECIAL DROP",
     "accentColor": "#ffffff",
     "miniImage": "/images/trap_loud_event_1779161392003.png",
-    "organizer": "NENEZ",
+    "organizer": "Cubic",
     "venue": "Playa Murciélago · Manta",
     "category": "Trap / Urban",
     "ageRestriction": "18+",
@@ -598,6 +927,10 @@
     "drinks": [],
     "merch": [],
     "createdAt": "2026-07-25T12:00:00.000Z",
-    "updatedAt": "2026-07-25T12:00:00.000Z"
+    "updatedAt": "2026-07-25T12:00:00.000Z",
+    "organizers": [
+      "Cubic"
+    ],
+    "poster": "/images/trap_loud_event_1779161392003.png"
   }
 ]

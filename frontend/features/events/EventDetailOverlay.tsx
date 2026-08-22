@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
-import { motion, AnimatePresence, useMotionValue, useTransform } from "framer-motion";
+import { motion, AnimatePresence, useMotionValue, useTransform, useDragControls } from "framer-motion";
 import {
   ArrowLeft,
   Heart,
@@ -17,6 +17,7 @@ import {
   Sparkles,
 } from "lucide-react";
 import type { Event } from "@/frontend/types/domain";
+import { DEFAULT_HD_EVENT_POSTER, getHdImageSrc } from "@/frontend/utils/hdImages";
 
 interface EventDetailOverlayProps {
   event: Event;
@@ -77,14 +78,25 @@ export default function EventDetailOverlay({
   const [isExpandedDescription, setIsExpandedDescription] = useState(false);
   const [selectedPhaseId, setSelectedPhaseId] = useState("prev1");
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
-  const [isSheetCollapsed, setIsSheetCollapsed] = useState(false);
+  const [isSheetCollapsed, setIsSheetCollapsed] = useState(true);
+  const [collapseY, setCollapseY] = useState(550);
+  const dragControls = useDragControls();
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      setCollapseY(Math.round(window.innerHeight * 0.75));
+    }
+  }, []);
 
   // Real-time Motion Values for 1-to-1 Continuous Drag & Parallax Poster Motion
   const sheetY = useMotionValue(0);
-  const posterScale = useTransform(sheetY, [0, 420], [1.0, 1.12]);
-  const backdropOpacity = useTransform(sheetY, [0, 420], [0.85, 0.25]);
+  const posterScale = useTransform(sheetY, [0, collapseY], [1.0, 1.12]);
+  const backdropOpacity = useTransform(sheetY, [0, collapseY], [0.85, 0.1]);
 
-  const organizerSlug = (event.organizer || "Cubic").toLowerCase();
+  const organizerList =
+    event.organizers && event.organizers.length > 0
+      ? event.organizers
+      : [event.organizer || "Cubic"];
 
   const handleToggleSheet = (e?: React.SyntheticEvent) => {
     if (e) e.stopPropagation();
@@ -152,10 +164,12 @@ export default function EventDetailOverlay({
         className="relative w-full flex-1 bg-zinc-950 cursor-pointer overflow-hidden origin-top"
       >
         <Image
-          src={event.poster || "/images/now4go-hero-presentation-hd-v3.png"}
+          src={getHdImageSrc(event.poster || DEFAULT_HD_EVENT_POSTER)}
           alt={event.title}
           fill
           priority
+          quality={100}
+          sizes="100vw"
           className="object-cover object-center brightness-105 transition-all duration-300"
         />
         <motion.div
@@ -168,42 +182,47 @@ export default function EventDetailOverlay({
       <motion.div
         style={{ y: sheetY }}
         drag="y"
-        dragConstraints={{ top: 0, bottom: 420 }}
+        dragControls={dragControls}
+        dragListener={false}
+        dragConstraints={{ top: 0, bottom: collapseY }}
         dragElastic={0.05}
         onDragEnd={(_, info) => {
-          if (info.offset.y > 80 || info.velocity.y > 120) {
+          if (info.offset.y > 60 || info.velocity.y > 100) {
             setIsSheetCollapsed(true);
-          } else if (info.offset.y < -80 || info.velocity.y < -120) {
+          } else if (info.offset.y < -60 || info.velocity.y < -100) {
             setIsSheetCollapsed(false);
           }
         }}
-        animate={{ y: isSheetCollapsed ? 420 : 0 }}
+        animate={{ y: isSheetCollapsed ? collapseY : 0 }}
         transition={{ type: "spring", stiffness: 350, damping: 32 }}
-        className="absolute inset-x-0 bottom-0 z-20 max-w-4xl mx-auto px-0 sm:px-4 h-[82vh] flex flex-col"
+        className="absolute left-6 right-6 sm:left-8 sm:right-8 bottom-0 z-20 max-w-4xl mx-auto h-[82vh] flex flex-col"
       >
-        <div className="flex-1 rounded-t-[36px] sm:rounded-t-3xl bg-gradient-to-b from-white/15 via-[#0b0614]/95 to-[#0b0614] border-t border-x border-white/25 backdrop-blur-3xl p-5 sm:p-7 shadow-[0_-25px_60px_rgba(0,0,0,0.95)] overflow-y-auto no-scrollbar space-y-5 pb-16">
+        <div className="flex-1 rounded-t-[36px] sm:rounded-t-3xl bg-gradient-to-b from-white/15 via-[#0b0614]/95 to-[#0b0614] border-t border-x border-white/25 backdrop-blur-3xl p-5 sm:p-7 shadow-[0_-25px_60px_rgba(0,0,0,0.95)] overflow-y-auto no-scrollbar space-y-4 pb-16">
           
-          {/* REAL-TIME TOUCH & MOUSE DRAG HANDLE HEADER */}
+          {/* DRAG HANDLE — touch & mouse draggable */}
           <div
+            onPointerDown={(e) => {
+              dragControls.start(e);
+            }}
             onClick={handleToggleSheet}
-            className="w-full py-4 -mt-3 flex flex-col items-center justify-center cursor-grab active:cursor-grabbing select-none group touch-none z-30"
+            style={{ touchAction: "none" }}
+            className="w-full pt-2 pb-5 flex flex-col items-center justify-center cursor-grab active:cursor-grabbing select-none z-30 group"
           >
-            {/* THINNER SLEEK PILL LINE HANDLE */}
-            <div className="w-14 h-1.5 bg-white/70 group-hover:bg-white active:bg-emerald-400 rounded-full shadow-xl transition-all border border-white/20" />
+            <div className="w-12 h-1.5 bg-white/70 group-hover:bg-white active:bg-emerald-400 rounded-full shadow-md border border-white/20 transition-colors" />
           </div>
 
-          {/* Event Title & Subtitle */}
-          <div className="text-center sm:text-left space-y-1">
-            <h1 className="text-3xl sm:text-5xl font-black uppercase text-white tracking-tight leading-tight">
+          {/* Centered Event Title & Subtitle */}
+          <div className="text-center flex flex-col items-center justify-center space-y-1.5">
+            <h1 className="text-3xl sm:text-5xl font-black uppercase text-white tracking-tight leading-tight text-center">
               {event.title}
             </h1>
-            <p className="text-xs sm:text-sm font-bold text-zinc-300 tracking-wide uppercase">
-              {event.subtitle || event.venue || "Cubic Loja"}
+            <p className="text-xs sm:text-sm font-bold text-zinc-300 tracking-wide uppercase text-center">
+              {event.subtitle || event.venue || "CUBIC LOJA"}
             </p>
           </div>
 
-          {/* Badges & Compact Info Pill Row (Fecha, Ubicación, Genre, Age, Organizer) */}
-          <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2 pt-1">
+          {/* Badges & Compact Info Pill Row (Fecha, Ubicación, Genre, Age, Organizers) - CENTERED */}
+          <div className="flex flex-wrap items-center justify-center gap-2 pt-1">
             <span className="px-3.5 py-1.5 rounded-full bg-white/10 border border-white/15 text-xs font-extrabold text-white">
               Fiesta / Trap
             </span>
@@ -218,14 +237,17 @@ export default function EventDetailOverlay({
               <MapPin className="w-3.5 h-3.5 text-purple-400" />
               <span>{event.venue || "Cubic Loja"}</span>
             </span>
-            <button
-              type="button"
-              onClick={() => onOpenOrganizer?.(organizerSlug)}
-              className="px-3.5 py-1.5 rounded-full bg-purple-500/20 border border-purple-400/30 text-purple-300 text-xs font-extrabold flex items-center gap-1.5 hover:bg-purple-500/30 transition cursor-pointer"
-            >
-              <span>{event.organizer || "Cubic"}</span>
-              <BadgeCheck className="w-4 h-4 text-blue-400 fill-blue-500/20 shrink-0" />
-            </button>
+            {organizerList.map((orgName, idx) => (
+              <button
+                key={idx}
+                type="button"
+                onClick={() => onOpenOrganizer?.(orgName.toLowerCase())}
+                className="px-3.5 py-1.5 rounded-full bg-white/10 border border-white/15 text-white text-xs font-extrabold flex items-center gap-1.5 hover:bg-white/20 transition cursor-pointer"
+              >
+                <span>{orgName.toUpperCase()}</span>
+                <BadgeCheck className="w-4 h-4 text-blue-400 fill-blue-500/20 shrink-0" />
+              </button>
+            ))}
           </div>
 
           {/* Story Line / Description Section */}
@@ -378,10 +400,12 @@ export default function EventDetailOverlay({
             </button>
             <div className="relative max-w-4xl max-h-[85vh] w-full h-full flex items-center justify-center" onClick={(e) => e.stopPropagation()}>
               <Image
-                src={event.poster}
+                src={getHdImageSrc(event.poster || DEFAULT_HD_EVENT_POSTER)}
                 alt={event.title}
-                width={1000}
-                height={1000}
+                width={1600}
+                height={1600}
+                quality={100}
+                sizes="(max-width: 768px) 100vw, 85vw"
                 className="max-w-full max-h-[85vh] w-auto h-auto object-contain rounded-3xl shadow-2xl border border-white/15 select-none"
                 priority
               />
