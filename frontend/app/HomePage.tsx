@@ -1403,9 +1403,9 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                                   e.stopPropagation();
                                   setShowEventModal(true);
                                 }}
-                                className="px-8 py-3.5 rounded-full bg-purple-600 hover:bg-purple-500 text-white font-black text-xs uppercase tracking-widest backdrop-blur-xl border border-purple-400/40 shadow-[0_10px_30px_rgba(168,85,247,0.4)] transition-all hover:scale-105 active:scale-95 cursor-pointer flex items-center gap-2"
+                                className="px-8 py-3.5 rounded-full bg-zinc-900/80 hover:bg-zinc-800/90 text-white font-black text-xs uppercase tracking-widest backdrop-blur-2xl border border-white/30 shadow-[0_10px_30px_rgba(0,0,0,0.5)] transition-all hover:scale-105 active:scale-95 cursor-pointer flex items-center gap-2"
                               >
-                                <PlusCircle className="w-4 h-4" />
+                                <PlusCircle className="w-4 h-4 text-white" />
                                 CREAR EVENTO
                               </button>
                               <button
@@ -1414,7 +1414,7 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                                   e.stopPropagation();
                                   setActiveStoryScreen(2);
                                 }}
-                                className="px-8 py-3.5 rounded-full bg-white/20 hover:bg-white/35 text-white font-black text-xs uppercase tracking-widest backdrop-blur-xl border border-white/40 shadow-lg transition-all hover:scale-105 active:scale-95 cursor-pointer"
+                                className="px-8 py-3.5 rounded-full bg-zinc-900/80 hover:bg-zinc-800/90 text-white font-black text-xs uppercase tracking-widest backdrop-blur-2xl border border-white/30 shadow-[0_10px_30px_rgba(0,0,0,0.5)] transition-all hover:scale-105 active:scale-95 cursor-pointer"
                               >
                                 CARTELERA
                               </button>
