@@ -311,6 +311,9 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
 
   // Search & Catalog Filter State
   const [searchQuery, setSearchQuery] = useState("");
+  const [isHeaderSearchOpen, setIsHeaderSearchOpen] = useState(false);
+  const [headerSearchQuery, setHeaderSearchQuery] = useState("");
+  const headerSearchInputRef = useRef<HTMLInputElement>(null);
   const [selectedCity, setSelectedCity] = useState("Todas");
   const [selectedDay, setSelectedDay] = useState("todos");
   const [selectedOrganizer, setSelectedOrganizer] = useState("todos");
@@ -943,35 +946,151 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
             />
           </div>
 
-          {/* 2. DYNAMIC HEADER TITLE & ACCOUNT BADGE */}
+          {/* 2. DYNAMIC HEADER TITLE & ACCOUNT BADGE & EXPANDING GLASS SEARCH */}
           <div className="flex items-center justify-between gap-4">
-            {/* Left: Dynamic Screen Title (Sube tu evento | Home | Eventos | Fiestas & Clubs) */}
-            <div className="flex items-center gap-3">
-              <button
-                type="button"
-                onClick={() => {
-                  setActiveStoryScreen(1);
-                  window.scrollTo({ top: 0, behavior: "smooth" });
-                }}
-                className="flex items-center gap-2 cursor-pointer group focus:outline-none"
-              >
-                <AnimatePresence mode="wait">
-                  <motion.h1
-                    key={`header-title-${activeStoryScreen}`}
-                    initial={false}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: 6 }}
+            {/* Left: Dynamic Screen Title or Expanding Glass Search Bar */}
+            <div className="flex-1 flex items-center gap-3 min-w-0">
+              <AnimatePresence mode="wait">
+                {isHeaderSearchOpen ? (
+                  <motion.div
+                    key="header-search-bar"
+                    initial={{ opacity: 0, x: 20, scale: 0.95 }}
+                    animate={{ opacity: 1, x: 0, scale: 1 }}
+                    exit={{ opacity: 0, x: 20, scale: 0.95 }}
                     transition={{ duration: 0.25, ease: "easeOut" }}
-                    className="text-2xl sm:text-4xl font-extrabold tracking-tight text-white font-sans drop-shadow-md group-hover:text-purple-300 transition-colors whitespace-nowrap"
+                    className="relative w-full max-w-lg z-[260]"
                   >
-                    {storyScreens[activeStoryScreen]?.label || "Home"}
-                  </motion.h1>
-                </AnimatePresence>
-              </button>
+                    <div className="relative flex items-center w-full h-11 px-4 rounded-2xl bg-black/85 border border-white/25 backdrop-blur-2xl shadow-[0_10px_40px_rgba(0,0,0,0.9)]">
+                      <Search className="w-4 h-4 text-purple-400 shrink-0 mr-2.5" />
+                      <input
+                        ref={headerSearchInputRef}
+                        type="text"
+                        value={headerSearchQuery}
+                        onChange={(e) => setHeaderSearchQuery(e.target.value)}
+                        placeholder="Buscar eventos, organizadores (ej. Cubic), artistas..."
+                        className="w-full bg-transparent text-white placeholder-zinc-400 text-xs font-semibold focus:outline-none"
+                        autoFocus
+                      />
+                      {headerSearchQuery && (
+                        <button
+                          type="button"
+                          onClick={() => setHeaderSearchQuery("")}
+                          className="p-1 rounded-full text-zinc-400 hover:text-white mr-1"
+                        >
+                          <X className="w-3.5 h-3.5" />
+                        </button>
+                      )}
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setIsHeaderSearchOpen(false);
+                          setHeaderSearchQuery("");
+                        }}
+                        className="text-[10px] font-black text-zinc-400 hover:text-white px-2 py-1 uppercase tracking-wider transition-colors"
+                      >
+                        Cerrar
+                      </button>
+                    </div>
+
+                    {/* ─── YOUTUBE-STYLE LIVE AUTO-SUGGESTIONS DROPDOWN ─── */}
+                    <AnimatePresence>
+                      {headerSearchQuery.trim().length > 0 && (
+                        <motion.div
+                          initial={{ opacity: 0, y: 10, scale: 0.98 }}
+                          animate={{ opacity: 1, y: 0, scale: 1 }}
+                          exit={{ opacity: 0, y: 8, scale: 0.98 }}
+                          transition={{ duration: 0.2 }}
+                          className="absolute top-13 inset-x-0 rounded-2xl bg-zinc-950/95 border border-white/20 backdrop-blur-3xl p-3 shadow-[0_25px_60px_rgba(0,0,0,0.95)] space-y-2 max-h-[65vh] overflow-y-auto no-scrollbar z-[270]"
+                        >
+                          {(() => {
+                            const query = headerSearchQuery.toLowerCase().trim();
+                            const matchingEvents = events.filter((e) => {
+                              const titleMatch = e.title.toLowerCase().includes(query);
+                              const orgMatch = (e.organizer || "").toLowerCase().includes(query) || (e.organizers || []).some(o => o.toLowerCase().includes(query));
+                              const venueMatch = (e.venue || "").toLowerCase().includes(query) || (e.city || "").toLowerCase().includes(query);
+                              const subMatch = (e.subtitle || "").toLowerCase().includes(query);
+                              return titleMatch || orgMatch || venueMatch || subMatch;
+                            });
+
+                            if (matchingEvents.length === 0) {
+                              return (
+                                <div className="p-4 text-center text-xs font-semibold text-zinc-400">
+                                  No se encontraron resultados para "<span className="text-white font-bold">{headerSearchQuery}</span>"
+                                </div>
+                              );
+                            }
+
+                            return (
+                              <div className="space-y-1">
+                                <div className="px-2 py-1 text-[10px] font-black uppercase tracking-widest text-zinc-400 border-b border-white/10 mb-1 flex items-center justify-between">
+                                  <span>Sugerencias directas</span>
+                                  <span className="text-purple-400 font-bold">{matchingEvents.length} resultados</span>
+                                </div>
+                                {matchingEvents.map((evt) => (
+                                  <div
+                                    key={`header-sug-${evt.id}`}
+                                    onClick={() => {
+                                      setSelectedCarouselEvent(evt);
+                                      setShowDetailOverlay(true);
+                                      setIsHeaderSearchOpen(false);
+                                      setHeaderSearchQuery("");
+                                    }}
+                                    className="flex items-center gap-3 p-2 rounded-xl hover:bg-white/12 transition-colors cursor-pointer group"
+                                  >
+                                    <div className="relative w-11 h-11 rounded-xl overflow-hidden bg-zinc-900 shrink-0 border border-white/15">
+                                      <Image
+                                        src={evt.poster || "/images/now4go-hero-presentation-hd-v3.png"}
+                                        alt={evt.title}
+                                        fill
+                                        className="object-cover group-hover:scale-105 transition-transform"
+                                      />
+                                    </div>
+                                    <div className="flex-1 text-left min-w-0">
+                                      <h4 className="text-xs font-extrabold text-white truncate group-hover:text-purple-300 transition-colors">
+                                        {evt.title}
+                                      </h4>
+                                      <p className="text-[10px] font-medium text-zinc-400 truncate mt-0.5">
+                                        {evt.organizer || "Cubic"} · {evt.venue || "Factory Town"} · {evt.dateLabel}
+                                      </p>
+                                    </div>
+                                    <span className="text-xs font-black text-emerald-400 shrink-0">
+                                      {evt.price === 0 ? "Gratis" : `$${evt.price} USD`}
+                                    </span>
+                                  </div>
+                                ))}
+                              </div>
+                            );
+                          })()}
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </motion.div>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setActiveStoryScreen(1);
+                      window.scrollTo({ top: 0, behavior: "smooth" });
+                    }}
+                    className="flex items-center gap-2 cursor-pointer group focus:outline-none"
+                  >
+                    <motion.h1
+                      key={`header-title-${activeStoryScreen}`}
+                      initial={false}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: 6 }}
+                      transition={{ duration: 0.25, ease: "easeOut" }}
+                      className="text-2xl sm:text-4xl font-extrabold tracking-tight text-white font-sans drop-shadow-md group-hover:text-purple-300 transition-colors whitespace-nowrap"
+                    >
+                      {storyScreens[activeStoryScreen]?.label || "Home"}
+                    </motion.h1>
+                  </button>
+                )}
+              </AnimatePresence>
             </div>
 
             {/* Right: Avatar & Search Stacked Glass Buttons */}
-            <div className="flex flex-col items-center gap-2">
+            <div className="flex flex-col items-center gap-2 shrink-0">
               <button
                 type="button"
                 onClick={() => setShowUserMenu(!showUserMenu)}
@@ -984,11 +1103,16 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
               <button
                 type="button"
                 onClick={() => {
-                  setActiveStoryScreen(2);
-                  const searchInput = document.getElementById("catalog-search-input");
-                  if (searchInput) searchInput.focus();
+                  setIsHeaderSearchOpen((prev) => !prev);
+                  if (!isHeaderSearchOpen) {
+                    setTimeout(() => headerSearchInputRef.current?.focus(), 100);
+                  }
                 }}
-                className="w-10 h-10 rounded-full bg-white/10 border border-white/20 backdrop-blur-xl flex items-center justify-center text-white hover:bg-white/20 shadow-lg cursor-pointer transition-all active:scale-95"
+                className={`w-10 h-10 rounded-full border backdrop-blur-xl flex items-center justify-center text-white shadow-lg cursor-pointer transition-all active:scale-95 ${
+                  isHeaderSearchOpen
+                    ? "bg-purple-600/60 border-purple-400 text-white shadow-[0_0_20px_rgba(168,85,247,0.5)]"
+                    : "bg-white/10 border-white/20 hover:bg-white/20"
+                }`}
                 aria-label="Buscar eventos"
               >
                 <Search className="w-5 h-5 text-white" />
@@ -997,6 +1121,19 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
           </div>
         </div>
       </header>
+
+      {/* Translucent Glass Backdrop Blur for Search */}
+      <AnimatePresence>
+        {isHeaderSearchOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setIsHeaderSearchOpen(false)}
+            className="fixed inset-0 z-[240] bg-black/70 backdrop-blur-md transition-all cursor-pointer"
+          />
+        )}
+      </AnimatePresence>
 
       {/* ─── MAIN HOME CONTENT (FULL BLEED HERO photo STARTING AT TOP:0) ─── */}
       <div className="pb-28 min-h-screen bg-black text-white pt-0">
