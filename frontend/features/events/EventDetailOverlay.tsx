@@ -86,10 +86,42 @@ export default function EventDetailOverlay({
     if (typeof window !== "undefined") {
       setCollapseY(Math.round(window.innerHeight * 0.75));
       document.body.style.overflow = "hidden";
+
+      let touchStartY = 0;
+
+      const handleWheel = (e: WheelEvent) => {
+        if (Math.abs(e.deltaY) > 8) {
+          setIsSheetCollapsed(false);
+        }
+      };
+
+      const handleTouchStart = (e: TouchEvent) => {
+        if (e.touches.length >= 1) {
+          touchStartY = e.touches[0].clientY;
+        }
+      };
+
+      const handleTouchMove = (e: TouchEvent) => {
+        if (e.touches.length >= 1) {
+          const currentY = e.touches[0].clientY;
+          const diffY = touchStartY - currentY; // positive = swiping up
+          if (diffY > 20) {
+            setIsSheetCollapsed(false);
+          }
+        }
+      };
+
+      window.addEventListener("wheel", handleWheel, { passive: true });
+      window.addEventListener("touchstart", handleTouchStart, { passive: true });
+      window.addEventListener("touchmove", handleTouchMove, { passive: true });
+
+      return () => {
+        document.body.style.overflow = "";
+        window.removeEventListener("wheel", handleWheel);
+        window.removeEventListener("touchstart", handleTouchStart);
+        window.removeEventListener("touchmove", handleTouchMove);
+      };
     }
-    return () => {
-      document.body.style.overflow = "";
-    };
   }, []);
 
   // Real-time Motion Values for 1-to-1 Continuous Drag & Parallax Poster Motion
