@@ -1352,7 +1352,7 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: 30 }}
                 transition={{ duration: 0.3, ease: "easeOut" }}
-                className="px-4 sm:px-8 max-w-[1400px] mx-auto pt-32 sm:pt-36 space-y-8"
+                className="px-4 sm:px-8 max-w-[1400px] mx-auto pt-32 sm:pt-36 space-y-8 bg-black text-white min-h-screen"
               >
                 {/* ─── 2. EVENTOS EN GRID DE 2 COLUMNAS EN PC Y 1 COLUMNA EN MÓVIL ─── */}
                 <div className="space-y-6 pt-2">
