@@ -935,7 +935,7 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
       <Atmosphere />
 
       {/* ─── APPLE ARCADE FULL-BLEED TRANSPARENT TOP HEADER WITH STORIES LINES OVERLAY ─── */}
-      <header className="absolute inset-x-0 top-0 z-50 bg-gradient-to-b from-black/90 via-black/30 to-transparent px-4 sm:px-8 pt-3 pb-6 transition-all duration-300 pointer-events-none">
+      <header className={`absolute inset-x-0 top-0 ${isHeaderSearchOpen ? "z-[300]" : "z-50"} bg-gradient-to-b from-black/90 via-black/30 to-transparent px-4 sm:px-8 pt-3 pb-6 transition-all duration-300 pointer-events-none`}>
         <div className="mx-auto flex w-full max-w-[1400px] flex-col gap-3 pointer-events-auto">
           {/* 1. TOP STORY SEGMENT LINES (Superimposed over top of hero photo) */}
           <div className="w-full max-w-xl mx-auto">
