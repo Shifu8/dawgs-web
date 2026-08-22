@@ -84,6 +84,7 @@ export default function EventDetailOverlay({
 
   const isSheetCollapsedRef = useRef(isSheetCollapsed);
   const lastCollapseTimeRef = useRef(0);
+  const userGestureLockRef = useRef(0);
 
   useEffect(() => {
     isSheetCollapsedRef.current = isSheetCollapsed;
@@ -92,10 +93,12 @@ export default function EventDetailOverlay({
   const collapseSheet = () => {
     setIsSheetCollapsed(true);
     lastCollapseTimeRef.current = Date.now();
+    userGestureLockRef.current = Date.now() + 550;
   };
 
   const expandSheet = () => {
     setIsSheetCollapsed(false);
+    userGestureLockRef.current = Date.now() + 550;
   };
 
   useEffect(() => {
@@ -111,9 +114,11 @@ export default function EventDetailOverlay({
       let touchStartY = 0;
 
       const handleWheel = (e: WheelEvent) => {
-        if (e.deltaY > 8) {
+        if (Date.now() < userGestureLockRef.current) return;
+
+        if (e.deltaY > 15) {
           expandSheet();
-        } else if (e.deltaY < -8) {
+        } else if (e.deltaY < -15) {
           if (isSheetCollapsedRef.current) {
             // Only exit if sheet has been collapsed for more than 450ms
             if (Date.now() - lastCollapseTimeRef.current > 450) {
@@ -132,18 +137,22 @@ export default function EventDetailOverlay({
       };
 
       const handleTouchMove = (e: TouchEvent) => {
+        if (Date.now() < userGestureLockRef.current) return;
+
         if (e.touches.length >= 1) {
           const currentY = e.touches[0].clientY;
           const diffY = touchStartY - currentY; // positive = swiping up, negative = swiping down
-          if (diffY > 25) {
+          if (diffY > 40) {
             expandSheet();
-          } else if (diffY < -25) {
+            touchStartY = currentY;
+          } else if (diffY < -40) {
             if (isSheetCollapsedRef.current) {
               if (Date.now() - lastCollapseTimeRef.current > 450) {
                 onClose();
               }
             } else {
               collapseSheet();
+              touchStartY = currentY;
             }
           }
         }
