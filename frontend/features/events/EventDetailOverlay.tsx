@@ -87,6 +87,11 @@ export default function EventDetailOverlay({
       setCollapseY(Math.round(window.innerHeight * 0.75));
       document.body.style.overflow = "hidden";
 
+      // Auto-expand sheet modal after 1 second (1000ms)
+      const autoExpandTimer = setTimeout(() => {
+        setIsSheetCollapsed(false);
+      }, 1000);
+
       let touchStartY = 0;
 
       const handleWheel = (e: WheelEvent) => {
@@ -120,6 +125,7 @@ export default function EventDetailOverlay({
       window.addEventListener("touchmove", handleTouchMove, { passive: true });
 
       return () => {
+        clearTimeout(autoExpandTimer);
         document.body.style.overflow = "";
         window.removeEventListener("wheel", handleWheel);
         window.removeEventListener("touchstart", handleTouchStart);
@@ -148,26 +154,24 @@ export default function EventDetailOverlay({
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      transition={{ duration: 0.3 }}
+      transition={{ duration: 0.2 }}
       className="fixed inset-0 z-[300] bg-black text-white flex flex-col overflow-hidden select-none"
     >
-      {/* ─── VIP CONCERT NEON STAGE CURTAIN SWEEP ─── */}
+      {/* ─── 150MS BLACK EYE-BLINK SHUTTER FLASH ("PESTAÑAZO DE NEGRO") ─── */}
       <motion.div
-        initial={{ scaleY: 1 }}
-        animate={{ scaleY: 0 }}
-        exit={{ scaleY: 1 }}
-        transition={{ duration: 0.55, ease: [0.16, 1, 0.3, 1] }}
-        className="absolute inset-0 bg-gradient-to-b from-[#160029] via-[#090014] to-black z-[450] origin-top pointer-events-none flex items-center justify-center"
-      >
-        <div className="w-24 h-1 bg-gradient-to-r from-purple-500 via-pink-400 to-purple-500 rounded-full shadow-[0_0_30px_#e087ff] animate-pulse" />
-      </motion.div>
+        initial={{ opacity: 1 }}
+        animate={{ opacity: 0 }}
+        exit={{ opacity: 1 }}
+        transition={{ duration: 0.2, ease: "easeInOut" }}
+        className="absolute inset-0 bg-black z-[450] pointer-events-none"
+      />
 
-      {/* ─── INNER HERO CONTENT ELEVATION ─── */}
+      {/* ─── HERO POSTER & CONTENT ─── */}
       <motion.div
-        initial={{ opacity: 0, scale: 0.95, y: 35 }}
-        animate={{ opacity: 1, scale: 1, y: 0 }}
-        exit={{ opacity: 0, scale: 0.96, y: 25 }}
-        transition={{ duration: 0.5, delay: 0.08, ease: [0.16, 1, 0.3, 1] }}
+        initial={{ opacity: 0, scale: 0.98 }}
+        animate={{ opacity: 1, scale: 1 }}
+        exit={{ opacity: 0, scale: 0.98 }}
+        transition={{ duration: 0.25, ease: "easeOut" }}
         className="relative w-full h-full flex flex-col overflow-hidden"
       >
       
