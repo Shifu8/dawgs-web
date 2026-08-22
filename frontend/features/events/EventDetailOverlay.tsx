@@ -147,33 +147,35 @@ export default function EventDetailOverlay({
     <motion.div
       initial={{
         opacity: 0,
-        scale: 0.68,
-        y: 90,
-        rotateX: 18,
-        rotateY: -8,
-        filter: "blur(28px) brightness(1.6) contrast(1.2)",
+        scale: 0.85,
+        y: 40,
+        filter: "blur(24px) brightness(0)",
       }}
       animate={{
-        opacity: 1,
-        scale: 1,
-        y: 0,
-        rotateX: 0,
-        rotateY: 0,
-        filter: "blur(0px) brightness(1) contrast(1)",
+        opacity: [0, 1, 1],
+        scale: [0.85, 0.92, 1],
+        y: [40, 15, 0],
+        filter: [
+          "blur(24px) brightness(0)",
+          "blur(12px) brightness(0.5)",
+          "blur(0px) brightness(1)",
+        ],
       }}
       exit={{
-        opacity: 0,
-        scale: 0.75,
-        y: 60,
-        rotateX: -12,
-        filter: "blur(20px) brightness(0.7)",
+        opacity: [1, 0.8, 0],
+        scale: [1, 0.92, 0.85],
+        filter: [
+          "blur(0px) brightness(1)",
+          "blur(12px) brightness(0.3)",
+          "blur(24px) brightness(0)",
+        ],
       }}
       transition={{
-        duration: 0.55,
-        ease: [0.16, 1, 0.3, 1],
+        duration: 0.48,
+        times: [0, 0.22, 1],
+        ease: [0.22, 1, 0.36, 1],
       }}
-      style={{ perspective: 1200 }}
-      className="fixed inset-0 z-[300] bg-black text-white flex flex-col overflow-hidden select-none shadow-[0_0_150px_rgba(168,85,247,0.5)]"
+      className="fixed inset-0 z-[300] bg-black text-white flex flex-col overflow-hidden select-none"
     >
       
       {/* ─── 1. TOP FLOATING NAVIGATION BAR ─── */}
