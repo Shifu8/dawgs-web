@@ -63,6 +63,7 @@ import EventTicketCarousel, { CAROUSEL_EVENTS } from "@/frontend/components/Even
 import EventDetailOverlay from "@/frontend/features/events/EventDetailOverlay";
 import InstallApp from "@/frontend/components/InstallApp";
 import MobileDock from "@/frontend/components/MobileDock";
+import Footer from "@/components/Footer";
 import OrganizerProfileOverlay from "@/frontend/features/organizer/OrganizerProfileOverlay";
 import { QuickPreviewModal } from "@/frontend/components/QuickPreviewModal";
 import { gsap, useGSAP } from "@/frontend/animations/gsapSetup";
@@ -322,6 +323,37 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
   const [mobileDockTab, setMobileDockTab] = useState("inicio");
   const [heroIndex, setHeroIndex] = useState(0);
   const homeCarouselRef = useRef<HTMLDivElement>(null);
+  const [isCarouselHovered, setIsCarouselHovered] = useState(false);
+
+  // Smooth 60fps continuous slow auto-scroll to the right (no jumps, lentito)
+  useEffect(() => {
+    if (activeStoryScreen !== 1) return;
+
+    let animationFrameId: number;
+    const speed = 0.5; // Ultra-smooth, slow drift rate to the right
+
+    const step = () => {
+      if (homeCarouselRef.current && !isCarouselHovered) {
+        const container = homeCarouselRef.current;
+        container.scrollLeft += speed;
+
+        // Seamless infinite loop wrap check
+        const maxLoopPoint = (container.scrollWidth * 2) / 4;
+        if (container.scrollLeft >= maxLoopPoint) {
+          container.scrollLeft -= maxLoopPoint;
+        }
+      }
+      animationFrameId = requestAnimationFrame(step);
+    };
+
+    animationFrameId = requestAnimationFrame(step);
+
+    return () => {
+      if (animationFrameId) {
+        cancelAnimationFrame(animationFrameId);
+      }
+    };
+  }, [activeStoryScreen, isCarouselHovered]);
 
   const scrollHomeCarousel = (direction: "left" | "right") => {
     if (!homeCarouselRef.current) return;
@@ -621,31 +653,6 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
       })
       .catch(() => { });
   }, []);
-
-  const [isCarouselHovered, setIsCarouselHovered] = useState(false);
-
-  // Continuous 60fps butter-smooth linear marquee drift to the right
-  useEffect(() => {
-    let animId: number;
-    const el = homeCarouselRef.current;
-    if (!el || events.length === 0) return;
-
-    const speed = 0.2; // Super slow, elegant continuous drift speed
-
-    const step = () => {
-      if (el && !isCarouselHovered) {
-        el.scrollLeft += speed;
-        const halfWidth = el.scrollWidth / 2;
-        if (el.scrollLeft >= halfWidth) {
-          el.scrollLeft -= halfWidth;
-        }
-      }
-      animId = requestAnimationFrame(step);
-    };
-
-    animId = requestAnimationFrame(step);
-    return () => cancelAnimationFrame(animId);
-  }, [isCarouselHovered, events]);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -1142,7 +1149,7 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
       </AnimatePresence>
 
       {/* ─── MAIN HOME CONTENT (FULL BLEED HERO photo STARTING AT TOP:0) ─── */}
-      <div className="pb-28 min-h-screen bg-black text-white pt-0">
+      <div className="pb-0 min-h-screen bg-black text-white pt-0">
         <div className="w-full">
           <AnimatePresence mode="wait">
             {activeStoryScreen === 0 && (
@@ -1152,92 +1159,150 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -30 }}
                 transition={{ duration: 0.35, ease: "easeOut" }}
-                className="relative w-full min-h-[100dvh] pt-32 sm:pt-36 pb-16 px-4 sm:px-8 max-w-[1400px] mx-auto flex flex-col md:flex-row items-center justify-between gap-10 select-none"
+                className="relative w-full min-h-[100dvh] flex flex-col lg:flex-row items-stretch select-none -mt-20 sm:-mt-24 -mb-16 lg:-mb-24"
               >
-                {/* ─── LEFT COLUMN: TYPOGRAPHY & SUBIR EVENTO BUTTON (DICE STYLE) ─── */}
-                <div className="w-full md:w-1/2 flex flex-col items-start space-y-6 z-20">
-                  <span className="px-3.5 py-1 rounded-full bg-white/10 border border-white/20 text-xs font-black uppercase tracking-widest text-emerald-400 backdrop-blur-md shadow-md">
-                    NOW 4GO PLATFORM
-                  </span>
-                  
-                  <h1 className="text-4xl sm:text-6xl lg:text-7xl font-black uppercase tracking-tight text-white font-sans leading-[0.95] drop-shadow-2xl">
-                    WELCOME<br />
-                    TO THE<br />
-                    ALTERNATIVE
-                  </h1>
+                {/* ─── 1. LEFT COLUMN (30% WIDTH): EXTENDED VERTICAL PHOTO FLUSH ON FOOTER BORDER LINE ─── */}
+                <div className="relative w-full lg:w-[30%] min-h-[600px] lg:min-h-[calc(100vh+6rem)] self-stretch bg-zinc-950 overflow-hidden flex-shrink-0">
+                  <Image
+                    src="/images/4go_red_girl_showcase.jpg"
+                    alt="4GO Red Girl Showcase"
+                    fill
+                    priority
+                    className="object-cover brightness-105"
+                    sizes="30vw"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-transparent to-transparent opacity-90" />
 
-                  <p className="text-sm sm:text-base text-zinc-300 font-medium max-w-md leading-relaxed">
-                    Incredible live shows. Upfront pricing. Relevant recommendations. 4GO makes going out easy.
-                  </p>
-
-                  <div className="pt-2">
-                    <button
-                      type="button"
-                      onClick={() => setShowEventModal(true)}
-                      className="px-8 py-4 rounded-full bg-white text-black font-black text-xs uppercase tracking-widest hover:bg-emerald-400 hover:scale-105 active:scale-95 transition-all duration-300 cursor-pointer shadow-[0_0_30px_rgba(255,255,255,0.3)] flex items-center gap-3"
-                    >
-                      <PlusCircle className="w-4 h-4 text-purple-600" />
-                      <span>SUBIR EVENTO</span>
-                    </button>
+                  {/* Bottom Left Copyright Overlay (Exact match to user screenshot) */}
+                  <div className="absolute bottom-6 left-5 z-10">
+                    <span className="text-[11px] sm:text-xs font-bold text-white tracking-tight drop-shadow-md">
+                      © 4GO 2026, all rights reserved
+                    </span>
                   </div>
                 </div>
 
-                {/* ─── RIGHT COLUMN: IPHONE 15 MOCKUP WITH EVENT PREVIEW ─── */}
-                <div className="w-full md:w-1/2 flex items-center justify-center z-20">
-                  <div className="relative w-full max-w-[400px] aspect-[9/16] bg-[#121212] rounded-[44px] p-4 border border-white/15 shadow-[0_20px_80px_rgba(0,0,0,0.9)] flex items-center justify-center overflow-hidden">
-                    {/* iPhone Outer Frame Border */}
-                    <div className="relative w-full h-full rounded-[36px] bg-black border-[4px] border-zinc-800 overflow-hidden shadow-inner flex flex-col justify-between p-3">
-                      {/* Dynamic Island Notch */}
-                      <div className="absolute top-4 left-1/2 -translate-x-1/2 w-28 h-6 rounded-full bg-black border border-zinc-800 z-40 flex items-center justify-end px-3">
-                        <div className="w-2.5 h-2.5 rounded-full bg-blue-900/60 border border-blue-500/40" />
+                {/* ─── 2. RIGHT COLUMN (70% WIDTH): CENTERED AUTH FORM WITH BACKGROUND VIDEO ─── */}
+                <div className="relative w-full lg:w-[70%] min-h-screen px-6 sm:px-12 py-16 sm:py-20 flex flex-col items-center justify-center bg-black text-black font-sans overflow-hidden">
+                  {/* Background Video (From Downloads) */}
+                  <video
+                    autoPlay
+                    loop
+                    muted
+                    playsInline
+                    className="absolute inset-0 w-full h-full object-cover brightness-90"
+                  >
+                    <source src="/videos/subir_evento_bg.mp4" type="video/mp4" />
+                  </video>
+
+                  {/* Overlay for legibility */}
+                  <div className="absolute inset-0 bg-black/30 backdrop-blur-[2px]" />
+
+                  {/* Centered Glass Auth Card */}
+                  <div className="relative z-10 w-full max-w-lg mx-auto bg-white/95 backdrop-blur-xl p-6 sm:p-10 rounded-3xl border border-white/40 shadow-2xl space-y-6">
+                    {/* Header: Title & Subtitle (No Logo) */}
+                    <div className="text-center space-y-2">
+                      <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-black font-sans leading-tight">
+                        Inicia sesión o crea tu cuenta 4GO
+                      </h1>
+                      <p className="text-xs sm:text-sm text-zinc-500 font-medium max-w-md mx-auto leading-relaxed">
+                        Create and manage events, sell tickets, and grow your audience.
+                      </p>
+                    </div>
+
+                    {/* Social Logins (Apple & Google) */}
+                    <div className="space-y-3 pt-1">
+                      {/* Continue with Apple */}
+                      <button
+                        type="button"
+                        onClick={() => router.push("/organizer/login")}
+                        className="w-full py-3.5 px-6 rounded-xl bg-black text-white font-extrabold text-sm flex items-center justify-center gap-3 hover:bg-zinc-800 transition active:scale-[0.99] cursor-pointer shadow-md"
+                      >
+                        <svg className="w-5 h-5 fill-white" viewBox="0 0 24 24">
+                          <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M15.97 6.85c.66-.8 1.11-1.92.99-3.04-.96.04-2.12.64-2.8 1.44-.61.71-1.14 1.86-.99 2.96 1.07.08 2.14-.56 2.8-1.36z"/>
+                        </svg>
+                        <span>Continuar con Apple</span>
+                      </button>
+
+                      {/* Divider */}
+                      <div className="relative flex items-center justify-center my-2">
+                        <div className="border-t border-zinc-200 w-full" />
+                        <span className="absolute bg-white px-3 text-xs text-zinc-400 font-semibold">o</span>
                       </div>
 
-                      {/* Screen Content */}
-                      <div className="relative w-full h-full rounded-[28px] overflow-hidden bg-zinc-950 flex flex-col justify-between pt-10 pb-4 px-3">
-                        <Image
-                          src="/images/event_kaskade.png"
-                          alt="Boiler Room / Event Preview"
-                          fill
-                          className="object-cover brightness-105"
-                        />
-                        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent" />
+                      {/* Continue with Google */}
+                      <button
+                        type="button"
+                        onClick={() => router.push("/organizer/login")}
+                        className="w-full py-3.5 px-6 rounded-xl bg-white text-zinc-800 font-extrabold text-sm border border-zinc-300 flex items-center justify-center gap-3 hover:bg-zinc-50 transition active:scale-[0.99] cursor-pointer shadow-sm"
+                      >
+                        <svg className="w-5 h-5" viewBox="0 0 24 24">
+                          <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                          <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                          <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
+                          <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
+                        </svg>
+                        <span>Continuar con Google</span>
+                      </button>
+                    </div>
 
-                        {/* Top Event Info */}
-                        <div className="relative z-10 space-y-1">
-                          <span className="text-[10px] font-black uppercase tracking-widest text-emerald-400">
-                            Sat 21st Sept / 4pm-12am
-                          </span>
-                          <h3 className="text-xl font-extrabold text-white tracking-tight leading-tight">
-                            Boiler Room: LA | Saturday
-                          </h3>
-                          <p className="text-[10px] font-medium text-zinc-300">
-                            El Pueblo De Los Angeles Historical Monument
-                          </p>
+                    {/* Input Form Fields */}
+                    <div className="space-y-4 pt-1 text-left">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                        <div className="space-y-1">
+                          <label className="text-xs font-black text-zinc-900 block">Nombre completo</label>
+                          <input
+                            type="text"
+                            placeholder="Ej. Alex Rivera"
+                            className="w-full px-4 py-2.5 rounded-xl bg-zinc-50 border border-zinc-200 text-xs font-semibold text-zinc-900 focus:outline-none focus:border-black focus:bg-white transition"
+                          />
+                          <span className="text-[10px] text-zinc-400 font-medium block">Tu nombre para entradas oficiales.</span>
                         </div>
-
-                        {/* Ticket Modal inside Phone Screen */}
-                        <div className="relative z-10 p-4 rounded-2xl bg-white text-black shadow-2xl space-y-3">
-                          <div className="flex items-center justify-between">
-                            <div>
-                              <div className="text-xs font-black uppercase tracking-tight text-zinc-900">
-                                General Admission
-                              </div>
-                              <div className="text-[10px] font-medium text-zinc-500">
-                                1 ticket
-                              </div>
-                            </div>
-                            <span className="text-xs font-black text-purple-600">$79.99</span>
-                          </div>
-
-                          <button
-                            type="button"
-                            onClick={() => setShowEventModal(true)}
-                            className="w-full py-2.5 rounded-xl bg-yellow-400 hover:bg-yellow-300 text-black font-black text-xs uppercase tracking-wider transition shadow-md cursor-pointer text-center"
-                          >
-                            PURCHASE TICKETS
-                          </button>
+                        <div className="space-y-1">
+                          <label className="text-xs font-black text-zinc-900 block">Correo electrónico</label>
+                          <input
+                            type="email"
+                            placeholder="tu@email.com"
+                            className="w-full px-4 py-2.5 rounded-xl bg-zinc-50 border border-zinc-200 text-xs font-semibold text-zinc-900 focus:outline-none focus:border-black focus:bg-white transition"
+                          />
+                          <span className="text-[10px] text-zinc-400 font-medium block">Recibirás tus accesos aquí.</span>
                         </div>
                       </div>
+
+                      <div className="space-y-1">
+                        <label className="text-xs font-black text-zinc-900 block">Ciudad</label>
+                        <select
+                          className="w-full px-4 py-2.5 rounded-xl bg-zinc-50 border border-zinc-200 text-xs font-semibold text-zinc-900 focus:outline-none focus:border-black focus:bg-white transition cursor-pointer"
+                        >
+                          <option value="quito">Quito</option>
+                          <option value="cuenca">Cuenca</option>
+                          <option value="guayaquil">Guayaquil</option>
+                          <option value="salinas">Salinas</option>
+                          <option value="loja">Loja</option>
+                        </select>
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={() => router.push("/organizer/login")}
+                        className="w-full py-3.5 rounded-xl bg-black text-white font-extrabold text-xs uppercase tracking-wider hover:bg-zinc-800 transition active:scale-[0.99] cursor-pointer shadow-md text-center mt-2"
+                      >
+                        Crear cuenta de usuario & Reservar
+                      </button>
+                    </div>
+
+                    {/* Promoter Account Note (Small Footer inside Card) */}
+                    <div className="pt-5 border-t border-zinc-200 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-center sm:text-left">
+                      <div>
+                        <span className="font-extrabold text-zinc-900 block sm:inline">Ready to go live?</span>{" "}
+                        <span className="text-zinc-500 font-medium">Create a promoter account to get started.</span>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => router.push("/organizer/register")}
+                        className="px-4 py-2 rounded-full bg-zinc-900 hover:bg-black text-white font-extrabold text-xs uppercase tracking-wider transition cursor-pointer shrink-0 shadow"
+                      >
+                        Get started
+                      </button>
                     </div>
                   </div>
                 </div>
@@ -1251,7 +1316,7 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -30 }}
                 transition={{ duration: 0.3, ease: "easeOut" }}
-                className="space-y-8"
+                className="space-y-8 bg-white text-black min-h-screen pt-4 pb-16 font-sans"
               >
                 {/* ─── 1. FULL-BLEED HERO SHOWCASE ─── */}
                 <section className="relative w-full overflow-hidden">
@@ -1260,9 +1325,9 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                       {
                         id: "4go-chef-intro",
                         poster: "/images/4go_dj_green_alien_hero.png",
-                        title: "4go",
+                        title: "",
                         line1: "Los mejores shots y la previa... ¿estás listo?",
-                        line2: "Explora y vive la fiesta con 4go",
+                        line2: "Explora y vive la fiesta con 4GO",
                         event: events[0] || fallbackEvents[0],
                       },
                       ...events.map((e) => ({
@@ -1318,9 +1383,11 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                           {/* Seamless gradient overlay fading smoothly down into solid pure black */}
                           <div className="absolute inset-x-0 bottom-0 h-48 bg-gradient-to-b from-transparent via-black/60 via-black/90 to-black z-10 pointer-events-none" />
                           <div className="absolute bottom-6 inset-x-0 p-6 flex flex-col items-center text-center z-10 max-w-xl mx-auto">
-                            <h2 className="text-4xl sm:text-6xl font-black text-white tracking-tight uppercase leading-tight drop-shadow-2xl">
-                              {currentSlide.title}
-                            </h2>
+                            {currentSlide.title && currentSlide.title.toLowerCase() !== "4go" && (
+                              <h2 className="text-4xl sm:text-6xl font-black text-white tracking-tight uppercase leading-tight drop-shadow-2xl">
+                                {currentSlide.title}
+                              </h2>
+                            )}
                             <div className="mt-1.5 flex flex-col items-center text-center space-y-0.5">
                               <p className="text-xs sm:text-sm font-bold text-zinc-100 drop-shadow line-clamp-1">
                                 {currentSlide.line1}
@@ -1359,130 +1426,190 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                   })()}
                 </section>
 
-                {/* ─── HORIZONTAL EVENT CAROUSEL ("Trending on 4GO" EXACT MATCHING SCREENSHOT) ─── */}
-                <section className="px-4 sm:px-8 max-w-[1400px] mx-auto space-y-4 -mt-4 sm:-mt-8 relative z-20 pb-4">
-                  <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-white/10 pb-4">
-                    <div className="max-w-2xl">
-                      <h2 className="text-2xl sm:text-3xl font-black text-white tracking-tight font-sans drop-shadow-md">
-                        Trending on 4GO
-                      </h2>
-                      <p className="text-xs sm:text-sm text-zinc-300 font-medium mt-1 leading-relaxed">
-                        Check out some of the most popular events coming up in your city, from club nights and gigs to artist signings and comedy shows.
-                      </p>
-                    </div>
-                    
-                    {/* BROWSE EVENTS Pill Button & Controls */}
-                    <div className="flex items-center gap-3 shrink-0">
-                      <button
-                        type="button"
-                        onClick={() => setActiveStoryScreen(2)}
-                        className="px-5 py-2.5 rounded-full bg-white text-black font-black text-xs uppercase tracking-wider hover:bg-zinc-200 transition-all hover:scale-105 active:scale-95 cursor-pointer shadow-md"
-                      >
-                        BROWSE EVENTS
-                      </button>
-                      <div className="flex items-center gap-1.5">
+                {/* ─── HORIZONTAL EVENT CAROUSEL ("Trending on 4GO" FULL BLEED 100% WHITE) ─── */}
+                <section className="w-full bg-white text-black py-8 sm:py-12 relative z-20">
+                  <div className="max-w-[1400px] mx-auto px-4 sm:px-8 space-y-6">
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-zinc-200 pb-4">
+                      <div className="max-w-2xl">
+                        <h2 className="text-2xl sm:text-3xl font-black text-black tracking-tight font-sans drop-shadow-sm">
+                          Trending on 4GO
+                        </h2>
+                        <p className="text-xs sm:text-sm text-zinc-600 font-medium mt-1 leading-relaxed">
+                          Check out some of the most popular events coming up in your city, from club nights and gigs to artist signings and comedy shows.
+                        </p>
+                      </div>
+                      
+                      {/* BROWSE EVENTS Pill Button (Arrows removed as requested) */}
+                      <div className="flex items-center gap-3 shrink-0">
                         <button
                           type="button"
-                          onClick={() => scrollHomeCarousel("left")}
-                          className="w-8 h-8 rounded-full bg-white/10 border border-white/15 flex items-center justify-center text-white hover:bg-white/20 transition cursor-pointer"
-                          aria-label="Anterior"
+                          onClick={() => setActiveStoryScreen(2)}
+                          className="px-6 py-2.5 rounded-full bg-black text-white font-black text-xs uppercase tracking-wider hover:bg-zinc-800 transition-all hover:scale-105 active:scale-95 cursor-pointer shadow-md"
                         >
-                          ‹
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => scrollHomeCarousel("right")}
-                          className="w-8 h-8 rounded-full bg-white/10 border border-white/15 flex items-center justify-center text-white hover:bg-white/20 transition cursor-pointer"
-                          aria-label="Siguiente"
-                        >
-                          ›
+                          BROWSE EVENTS
                         </button>
                       </div>
                     </div>
-                  </div>
 
-                  {/* Horizontal Scroll Row (Butter-smooth continuous 60fps linear marquee drift) */}
+                  {/* Horizontal Scroll Row (GPU-Accelerated 100% Stutter-Free Ultra-Slow Linear Drift) */}
+                  {/* Horizontal Scroll Row (Mobile & PC 100% Identical Marquee Movement) */}
                   <div
-                    ref={homeCarouselRef}
                     onMouseEnter={() => setIsCarouselHovered(true)}
                     onMouseLeave={() => setIsCarouselHovered(false)}
-                    className="flex items-center gap-4 overflow-x-auto no-scrollbar py-2 -mx-4 px-4 sm:mx-0 sm:px-0 select-none"
+                    onTouchStart={() => setIsCarouselHovered(true)}
+                    onTouchEnd={() => setIsCarouselHovered(false)}
+                    className="relative w-full overflow-hidden py-2 select-none touch-pan-y"
                   >
-                    {[...events, ...events].map((evt, idx) => (
-                      <div
-                        key={`carousel-card-${evt.id}-${idx}`}
-                        onClick={() => {
-                          setSelectedCarouselEvent(evt);
-                          setShowDetailOverlay(true);
-                        }}
-                        className="w-44 sm:w-52 shrink-0 flex flex-col space-y-2 cursor-pointer group"
-                      >
-                        {/* Square Artwork Container with Rounded Corners */}
-                        <div className="relative w-full aspect-square rounded-2xl overflow-hidden bg-zinc-900 shadow-xl border border-white/10 group-hover:border-purple-500/60 transition-all duration-300">
-                          <Image
-                            src={evt.poster || "/images/now4go-hero-presentation-hd-v3.png"}
-                            alt={evt.title}
-                            fill
-                            className="object-cover group-hover:scale-105 transition-transform duration-500 brightness-105"
-                            sizes="220px"
-                          />
-                          {/* Gradient Overlay for text contrast */}
-                          <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent" />
+                    <style>{`
+                      @keyframes marqueeLeftResponsive {
+                        0% { transform: translate3d(0%, 0, 0); }
+                        100% { transform: translate3d(-50%, 0, 0); }
+                      }
+                    `}</style>
+                    <div
+                      className="flex items-center gap-4 sm:gap-5 shrink-0 w-max"
+                      style={{
+                        animation: "marqueeLeftResponsive 240s linear infinite",
+                        animationPlayState: isCarouselHovered ? "paused" : "running",
+                        willChange: "transform",
+                        WebkitBackfaceVisibility: "hidden",
+                      }}
+                    >
+                      {[...events, ...events].map((evt, idx) => (
+                        <div
+                          key={`carousel-card-${evt.id}-${idx}`}
+                          onClick={() => {
+                            setSelectedCarouselEvent(evt);
+                            setShowDetailOverlay(true);
+                          }}
+                          className="w-48 sm:w-60 shrink-0 flex flex-col space-y-2 cursor-pointer group"
+                        >
+                          {/* Square Artwork Container with Rounded Corners (No Zoom) */}
+                          <div className="relative w-full aspect-square rounded-2xl overflow-hidden bg-zinc-900 shadow-xl border border-zinc-200 group-hover:border-purple-500/60 transition-colors duration-300">
+                            <Image
+                              src={evt.poster || "/images/now4go-hero-presentation-hd-v3.png"}
+                              alt={evt.title}
+                              fill
+                              className="object-cover brightness-105"
+                              sizes="240px"
+                            />
+                            {/* Gradient Overlay for text contrast */}
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent" />
 
-                          {/* Text Superimposed at Card Bottom Left (Matching Screenshot 1) */}
-                          <div className="absolute bottom-2.5 left-2.5 right-16 z-10 flex flex-col justify-end">
-                            <h4 className="text-xs sm:text-sm font-black uppercase text-white tracking-tight leading-tight line-clamp-1 drop-shadow-md">
+                            {/* Text Superimposed at Card Bottom Left */}
+                            <div className="absolute bottom-2.5 left-2.5 right-16 z-10 flex flex-col justify-end">
+                              <h4 className="text-xs sm:text-sm font-black uppercase text-white tracking-tight leading-tight line-clamp-1 drop-shadow-md">
+                                {evt.title}
+                              </h4>
+                              <span className="text-[10px] font-bold text-zinc-300 drop-shadow line-clamp-1">
+                                {evt.subtitle || evt.dateLabel}
+                              </span>
+                            </div>
+
+                            {/* Action Overlay Buttons (Play & Heart) in Bottom Right */}
+                            <div className="absolute bottom-2.5 right-2.5 flex items-center gap-1.5 z-10">
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setSelectedCarouselEvent(evt);
+                                  setShowDetailOverlay(true);
+                                }}
+                                className="w-7 h-7 rounded-full bg-black/75 backdrop-blur-md border border-white/20 flex items-center justify-center text-white hover:scale-110 active:scale-95 transition-transform shadow-lg cursor-pointer"
+                                aria-label="Ver preview"
+                              >
+                                <Play className="w-3 h-3 text-white fill-white ml-0.5" />
+                              </button>
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                }}
+                                className="w-7 h-7 rounded-full bg-black/75 backdrop-blur-md border border-white/20 flex items-center justify-center text-white hover:scale-110 active:scale-95 transition-transform shadow-lg cursor-pointer"
+                                aria-label="Guardar favorito"
+                              >
+                                <Heart className="w-3 h-3 text-white hover:text-red-400 transition-colors" />
+                              </button>
+                            </div>
+                          </div>
+
+                          {/* Event Details Text Below Artwork */}
+                          <div className="flex flex-col space-y-0.5 px-0.5 pt-1 text-black">
+                            <h4 className="text-sm font-extrabold text-black tracking-tight leading-tight line-clamp-1 group-hover:text-purple-600 transition-colors">
                               {evt.title}
                             </h4>
-                            <span className="text-[10px] font-bold text-zinc-300 drop-shadow line-clamp-1">
-                              {evt.subtitle || evt.dateLabel}
+                            <span className="text-xs font-bold text-zinc-800">
+                              {evt.dateLabel || "sáb, 26 sept"}
+                            </span>
+                            <span className="text-xs font-semibold text-zinc-600 truncate">
+                              {evt.venue || "Factory Town"}
+                            </span>
+                            <span className="text-xs font-black text-black pt-0.5">
+                              {evt.price === 0 ? "Desde Gratis" : `Desde ${evt.price || "52,74"} $`}
                             </span>
                           </div>
-
-                          {/* Action Overlay Buttons (Play & Heart) in Bottom Right */}
-                          <div className="absolute bottom-2.5 right-2.5 flex items-center gap-1.5 z-10">
-                            <button
-                              type="button"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setSelectedCarouselEvent(evt);
-                                setShowDetailOverlay(true);
-                              }}
-                              className="w-7 h-7 rounded-full bg-black/75 backdrop-blur-md border border-white/20 flex items-center justify-center text-white hover:scale-110 active:scale-95 transition-transform shadow-lg cursor-pointer"
-                              aria-label="Ver preview"
-                            >
-                              <Play className="w-3 h-3 text-white fill-white ml-0.5" />
-                            </button>
-                            <button
-                              type="button"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                              }}
-                              className="w-7 h-7 rounded-full bg-black/75 backdrop-blur-md border border-white/20 flex items-center justify-center text-white hover:scale-110 active:scale-95 transition-transform shadow-lg cursor-pointer"
-                              aria-label="Guardar favorito"
-                            >
-                              <Heart className="w-3 h-3 text-white hover:text-red-400 transition-colors" />
-                            </button>
-                          </div>
                         </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </section>
 
-                        {/* Event Details Text Below Artwork (Matching DICE style layout) */}
-                        <div className="flex flex-col space-y-0.5 px-0.5 pt-1">
-                          <h4 className="text-sm font-extrabold text-white tracking-tight leading-tight line-clamp-1 group-hover:text-purple-300 transition-colors">
-                            {evt.title}
-                          </h4>
-                          <span className="text-xs font-bold text-zinc-100">
-                            {evt.dateLabel || "sáb, 26 sept"}
-                          </span>
-                          <span className="text-xs font-semibold text-zinc-300 truncate">
-                            {evt.venue || "Factory Town"}
-                          </span>
-                          <span className="text-xs font-black text-white pt-0.5">
-                            {evt.price === 0 ? "Desde Gratis" : `Desde ${evt.price || "52,74"} $`}
-                          </span>
+                {/* ─── 3. BLACK FEATURE SECTION ("Weirdly easy ticketing" EXACT MATCHING USER SCREENSHOT) ─── */}
+                <section className="w-full bg-black text-white py-16 sm:py-24 relative z-20 font-sans border-t border-zinc-900">
+                  <div className="max-w-[1200px] mx-auto px-6 sm:px-12 text-center space-y-12 sm:space-y-16">
+                    {/* Centered Title */}
+                    <h2 className="text-3xl sm:text-5xl font-black text-white tracking-tight font-sans">
+                      Weirdly easy ticketing
+                    </h2>
+
+                    {/* 3 Feature Columns */}
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-10 sm:gap-12 items-start">
+                      {/* Column 1 */}
+                      <div className="flex flex-col items-center text-center space-y-4 group">
+                        <div className="relative w-36 h-36 sm:w-44 sm:h-44 transition-transform duration-300 group-hover:scale-105">
+                          <Image
+                            src="/green_star_logo.png"
+                            alt="Quick Ticketing"
+                            fill
+                            className="object-contain filter drop-shadow-xl"
+                          />
                         </div>
+                        <p className="text-sm sm:text-base font-extrabold text-zinc-100 max-w-xs leading-snug">
+                          Get tickets in less time than it took to read this
+                        </p>
                       </div>
-                    ))}
+
+                      {/* Column 2 */}
+                      <div className="flex flex-col items-center text-center space-y-4 group">
+                        <div className="relative w-36 h-36 sm:w-44 sm:h-44 transition-transform duration-300 group-hover:scale-105">
+                          <Image
+                            src="/favicon_circular.png"
+                            alt="Transparent Pricing"
+                            fill
+                            className="object-contain filter drop-shadow-xl"
+                          />
+                        </div>
+                        <p className="text-sm sm:text-base font-extrabold text-zinc-100 max-w-xs leading-snug">
+                          See the full price upfront, with no surprises at checkout
+                        </p>
+                      </div>
+
+                      {/* Column 3 */}
+                      <div className="flex flex-col items-center text-center space-y-4 group">
+                        <div className="relative w-36 h-36 sm:w-44 sm:h-44 transition-transform duration-300 group-hover:scale-105">
+                          <Image
+                            src="/alien_avatar.png"
+                            alt="Personalised Recommendations"
+                            fill
+                            className="object-contain filter drop-shadow-xl"
+                          />
+                        </div>
+                        <p className="text-sm sm:text-base font-extrabold text-zinc-100 max-w-xs leading-snug">
+                          Personalised recommendations on your unique Home feed
+                        </p>
+                      </div>
+                    </div>
                   </div>
                 </section>
               </motion.div>
@@ -1495,68 +1622,127 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: 30 }}
                 transition={{ duration: 0.3, ease: "easeOut" }}
-                className="px-4 sm:px-8 max-w-[1400px] mx-auto pt-32 sm:pt-36 space-y-8 bg-black text-white min-h-screen"
+                className="px-4 sm:px-8 max-w-[1400px] mx-auto pt-28 sm:pt-32 space-y-8 bg-black text-white min-h-screen"
               >
-                {/* ─── 2. EVENTOS EN GRID DE 2 COLUMNAS EN PC Y 1 COLUMNA EN MÓVIL ─── */}
-                <div className="space-y-6 pt-2">
-                  <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-white/10 pb-4">
-                    <div>
-                      <h2 className="text-3xl sm:text-4xl font-black text-white uppercase tracking-tight font-sans drop-shadow-md">
-                        Cartelera de Eventos
-                      </h2>
-                      <p className="text-xs sm:text-sm text-zinc-300 font-medium mt-1">
-                        Próximas fechas y conciertos en vivo
+                {/* ─── 2. EVENTOS EN GRID DE 4 COLUMNAS (EXACT MATCHING SCREENSHOT) ─── */}
+                <div className="space-y-8 pt-2">
+                  {/* Top Pills Bar (Location, Date, Price) */}
+                  <div className="flex flex-wrap items-center gap-3">
+                    <button
+                      type="button"
+                      className="flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-zinc-900/90 border border-white/15 text-xs font-bold uppercase tracking-wider text-white hover:bg-zinc-800 transition cursor-pointer shadow-md"
+                    >
+                      <MapPin className="w-4 h-4 text-zinc-400" />
+                      <span>ECUADOR</span>
+                    </button>
+                    <button
+                      type="button"
+                      className="flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-zinc-900/90 border border-white/15 text-xs font-bold uppercase tracking-wider text-white hover:bg-zinc-800 transition cursor-pointer shadow-md"
+                    >
+                      <Calendar className="w-4 h-4 text-zinc-400" />
+                      <span>FECHA</span>
+                    </button>
+                    <button
+                      type="button"
+                      className="flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-zinc-900/90 border border-white/15 text-xs font-bold uppercase tracking-wider text-white hover:bg-zinc-800 transition cursor-pointer shadow-md"
+                    >
+                      <CreditCard className="w-4 h-4 text-zinc-400" />
+                      <span>PRECIO</span>
+                    </button>
+                  </div>
+
+                  {/* Category Square Icons Row */}
+                  <div className="flex items-center gap-3 overflow-x-auto no-scrollbar py-1">
+                    {[
+                      { id: "dj", label: "DJ", icon: "🎧" },
+                      { id: "party", label: "Party", icon: "🌐" },
+                      { id: "comedy", label: "Comedy", icon: "😄" },
+                      { id: "gigs", label: "Gigs", icon: "🎤" },
+                      { id: "food", label: "Food & drink", icon: "🍴" },
+                      { id: "social", label: "Social", icon: "💬" },
+                      { id: "wellbeing", label: "Wellbeing", icon: "🌿" },
+                    ].map((cat) => (
+                      <button
+                        key={`cat-icon-${cat.id}`}
+                        type="button"
+                        onClick={() => setSelectedDay(cat.id === "dj" ? "todos" : cat.id)}
+                        className="flex flex-col items-center justify-center w-16 h-16 rounded-2xl bg-zinc-900/90 border border-white/10 hover:border-white/30 hover:bg-zinc-800 text-white transition-all cursor-pointer shrink-0 gap-1 shadow-md"
+                      >
+                        <span className="text-lg">{cat.icon}</span>
+                        <span className="text-[10px] font-bold tracking-tight text-zinc-300">{cat.label}</span>
+                      </button>
+                    ))}
+                  </div>
+
+                  {/* Spotify / Apple Music Banner Card */}
+                  <div className="relative w-full rounded-3xl bg-zinc-900/90 border border-white/10 p-6 sm:p-8 overflow-hidden flex flex-col md:flex-row items-start md:items-center justify-between gap-6 shadow-2xl">
+                    <div className="space-y-4 max-w-xl z-10">
+                      <h3 className="text-2xl sm:text-4xl font-extrabold text-white tracking-tight leading-tight">
+                        Encuentra shows de tus artistxs favoritxs
+                      </h3>
+                      <p className="text-xs sm:text-sm text-zinc-300 font-medium">
+                        Conecta tu Spotify o Apple Music
                       </p>
+                      <div className="flex flex-wrap items-center gap-3 pt-2">
+                        <button
+                          type="button"
+                          className="flex items-center gap-2.5 px-5 py-2.5 rounded-full bg-white text-black font-black text-xs uppercase tracking-wider hover:bg-zinc-200 transition-transform active:scale-95 cursor-pointer shadow-md"
+                        >
+                          <svg className="w-4 h-4 fill-emerald-600" viewBox="0 0 24 24">
+                            <path d="M12 0C5.376 0 0 5.376 0 12s5.376 12 12 12 12-5.376 12-12S18.624 0 12 0zm5.521 17.341c-.217.357-.682.469-1.039.252-2.846-1.74-6.429-2.133-10.65-1.168-.403.093-.806-.164-.899-.567-.093-.403.164-.806.567-.899 4.629-1.058 8.577-.61 11.769 1.343.357.217.469.682.252 1.039zm1.478-3.284c-.273.444-.856.586-1.3.313-3.257-2.002-8.223-2.584-12.077-1.414-.499.151-1.026-.134-1.177-.633-.151-.499.134-1.026.633-1.177 4.409-1.337 9.878-.696 13.608 1.6 4.44.273.586.856.313 1.3zm.143-3.418c-3.905-2.319-10.347-2.533-14.116-1.389-.607.184-1.246-.162-1.43-.769-.184-.607.162-1.246.769-1.43 4.316-1.31 11.43-1.056 15.93 1.616.547.325.727 1.034.402 1.581-.325.547-1.034.727-1.555.391z"/>
+                          </svg>
+                          <span>SPOTIFY</span>
+                        </button>
+                        <button
+                          type="button"
+                          className="flex items-center gap-2.5 px-5 py-2.5 rounded-full bg-white text-black font-black text-xs uppercase tracking-wider hover:bg-zinc-200 transition-transform active:scale-95 cursor-pointer shadow-md"
+                        >
+                          <svg className="w-4 h-4 fill-black" viewBox="0 0 24 24">
+                            <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M15.97 6.85c.66-.8 1.11-1.92.99-3.04-.96.04-2.12.64-2.8 1.44-.61.71-1.14 1.86-.99 2.96 1.07.08 2.14-.56 2.8-1.36z"/>
+                          </svg>
+                          <span>APPLE MUSIC</span>
+                        </button>
+                      </div>
                     </div>
 
-                    {/* Day Filter Chips */}
-                    <div className="flex items-center gap-2 overflow-x-auto scrollbar-none py-1 max-w-full">
-                      {[
-                        { id: "todos", label: "Todos" },
-                        { id: "viernes", label: "Viernes" },
-                        { id: "sabado", label: "Sábado" },
-                        { id: "domingo", label: "Domingo" },
-                        { id: "lunes", label: "Lunes" },
-                      ].map((day) => {
-                        const isActive = selectedDay === day.id;
-
-                        return (
-                          <button
-                            key={`filter-day-${day.id}`}
-                            type="button"
-                            onClick={() => setSelectedDay(day.id)}
-                            className={`px-4 py-2 rounded-full text-xs font-black uppercase tracking-wider border transition-all cursor-pointer whitespace-nowrap ${
-                              isActive
-                                ? "bg-white text-black border-white shadow-md scale-105"
-                                : "bg-white/10 text-white/80 border-white/20 hover:bg-white/20 hover:text-white"
-                            }`}
-                          >
-                            {day.label}
-                          </button>
-                        );
-                      })}
+                    {/* DJ Mascot Character Illustration */}
+                    <div className="relative w-40 h-40 md:w-52 md:h-52 shrink-0 flex items-center justify-center">
+                      <Image
+                        src="/favicon_circular.png"
+                        alt="DJ Mascot"
+                        width={220}
+                        height={220}
+                        className="w-full h-full object-contain filter drop-shadow-[0_0_30px_rgba(34,197,94,0.3)]"
+                      />
                     </div>
                   </div>
 
-                  {/* GRID OF 1 COLUMN ON MOBILE & 2 COLUMNS ON PC (EXACT USER DIRECTIVE) */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                  {/* Section Title */}
+                  <div className="pt-2">
+                    <h2 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">
+                      Eventos populares <span className="text-zinc-500 font-normal">en Ecuador</span>
+                    </h2>
+                  </div>
+
+                  {/* ─── GRID OF 4 COLUMNS ON DESKTOP (EXACT USER DIRECTIVE) ─── */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
                     {filteredCatalogEvents.map((evt) => (
                       <div
-                        key={`cat-2col-${evt.id}`}
+                        key={`cat-4col-${evt.id}`}
                         onClick={() => {
                           setSelectedCarouselEvent(evt);
                           setShowDetailOverlay(true);
                         }}
                         className="group relative flex flex-col space-y-2 cursor-pointer"
                       >
-                        {/* Artwork Box */}
+                        {/* Artwork Box with Rounded Corners & Overlay Play/Heart Buttons */}
                         <div className="relative w-full aspect-square rounded-2xl overflow-hidden bg-zinc-900 shadow-2xl border border-white/10 group-hover:border-purple-500/60 transition-all duration-300">
                           <Image
                             src={evt.poster || "/images/now4go-hero-presentation-hd-v3.png"}
                             alt={evt.title}
                             fill
                             className="object-cover group-hover:scale-105 transition-transform duration-500 brightness-105"
-                            sizes="400px"
+                            sizes="320px"
                           />
                           <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-80" />
 
@@ -1565,25 +1751,37 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                             HD
                           </span>
 
-                          {/* Top Right Price Tag */}
-                          <span className="absolute top-2.5 right-2.5 px-2.5 py-1 rounded-full bg-purple-600/90 text-white text-[10px] font-black shadow-lg backdrop-blur-md">
-                            {evt.price === 0 ? "Gratis" : `$${evt.price} USD`}
-                          </span>
-
-                          {/* Action Overlay Button (Play) */}
+                          {/* Action Overlay Buttons (Play & Heart) in Bottom Right */}
                           <div className="absolute bottom-2.5 right-2.5 flex items-center gap-1.5 z-10">
-                            <div className="w-8 h-8 rounded-full bg-black/75 backdrop-blur-md border border-white/20 flex items-center justify-center text-white group-hover:scale-110 transition-transform shadow-lg">
-                              <Play className="w-3.5 h-3.5 text-white fill-white ml-0.5" />
-                            </div>
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setSelectedCarouselEvent(evt);
+                                setShowDetailOverlay(true);
+                              }}
+                              className="w-7 h-7 rounded-full bg-black/75 backdrop-blur-md border border-white/20 flex items-center justify-center text-white hover:scale-110 active:scale-95 transition-transform shadow-lg cursor-pointer"
+                            >
+                              <Play className="w-3 h-3 text-white fill-white ml-0.5" />
+                            </button>
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                              }}
+                              className="w-7 h-7 rounded-full bg-black/75 backdrop-blur-md border border-white/20 flex items-center justify-center text-white hover:scale-110 active:scale-95 transition-transform shadow-lg cursor-pointer"
+                            >
+                              <Heart className="w-3 h-3 text-white hover:text-red-400 transition-colors" />
+                            </button>
                           </div>
                         </div>
 
-                        {/* Event Details Text Below Artwork (Clean & Fully Visible) */}
-                        <div className="flex flex-col space-y-0.5 px-0.5">
-                          <h4 className="text-sm sm:text-base font-extrabold text-white tracking-tight leading-tight line-clamp-1 group-hover:text-purple-300 transition-colors">
+                        {/* Event Details Text Below Artwork (Clean & Exact Match to Screenshot) */}
+                        <div className="flex flex-col space-y-0.5 px-0.5 pt-1">
+                          <h4 className="text-sm font-extrabold text-white tracking-tight leading-tight line-clamp-1 group-hover:text-purple-300 transition-colors">
                             {evt.title}
                           </h4>
-                          <span className="text-xs font-bold text-zinc-200">
+                          <span className="text-xs font-bold text-yellow-400">
                             {evt.dateLabel || "sáb, 26 sept"}
                           </span>
                           <span className="text-xs font-medium text-zinc-400 truncate">
@@ -1600,6 +1798,9 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
               </motion.div>
             )}
           </AnimatePresence>
+
+          {/* Footer with DevEc Software Development Branding */}
+          <Footer />
         </div>
       </div>
 

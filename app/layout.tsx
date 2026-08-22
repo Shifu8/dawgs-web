@@ -36,9 +36,9 @@ export const metadata: Metadata = {
   manifest: "/manifest.json",
   icons: {
     icon: [
+      { url: "/favicon_circular.png", type: "image/png" },
       { url: "/icon.png", type: "image/png" },
-      { url: "/alien_avatar.png", type: "image/png" },
-      { url: "/favicon.svg", type: "image/svg+xml" },
+      { url: "/favicon.ico", type: "image/x-icon" },
     ],
     apple: "/apple-icon.png",
   },
@@ -63,6 +63,8 @@ export default function RootLayout({
     >
       <head>
         <link rel="manifest" href="/manifest.json" />
+        <link rel="icon" href="/favicon_circular.png" type="image/png" />
+        <link rel="shortcut icon" href="/favicon_circular.png" type="image/png" />
         <meta name="theme-color" content="#050505" />
         <meta name="mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
