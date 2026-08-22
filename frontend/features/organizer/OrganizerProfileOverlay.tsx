@@ -19,6 +19,7 @@ import {
   Megaphone,
 } from "lucide-react";
 import type { Event } from "@/frontend/types/domain";
+import { getHdImageSrc, DEFAULT_HD_EVENT_POSTER } from "@/frontend/utils/hdImages";
 
 type OrganizerProfileOverlayProps = {
   isOpen: boolean;
@@ -102,6 +103,11 @@ export default function OrganizerProfileOverlay({
 
   const displayEvents = orgEvents.length > 0 ? orgEvents : allEvents.slice(0, 6);
 
+  // Dynamic vibrant background image from event poster or fallback
+  const bgPosterSrc = getHdImageSrc(
+    displayEvents[0]?.poster || (key === "cubic" ? "/images/trap_loud_event_1779161392003.png" : org.logo)
+  );
+
   const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
     if (e.currentTarget.scrollTop > 300) {
       setIsScrolledDown(true);
@@ -129,21 +135,21 @@ export default function OrganizerProfileOverlay({
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
         transition={{ duration: 0.2 }}
-        className="fixed inset-0 z-[500] bg-[#0c0714] text-white flex flex-col select-none overflow-hidden"
+        className="fixed inset-0 z-[500] bg-[#101014] text-white flex flex-col select-none overflow-hidden"
       >
-        {/* ─── ULTRA-VIVID AMBIENT COLOR BLUR BACKDROP (MATCHING EVENT DETAIL PAGE) ─── */}
-        <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden bg-[#0c0714]">
+        {/* ─── ULTRA-VIVID AMBIENT EVENT COLOR BLUR BACKDROP (EXACT MATCH TO EVENT DETAIL PAGE) ─── */}
+        <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden bg-[#0e0d14]">
           <Image
-            src={org.logo}
+            src={bgPosterSrc}
             alt={org.name}
             fill
             priority
             quality={100}
             sizes="100vw"
-            className="object-cover object-center scale-150 blur-[110px] saturate-200 brightness-110 opacity-75"
+            className="object-cover object-center scale-150 blur-[120px] saturate-200 brightness-110 opacity-75"
           />
-          {/* Dark Gradient Overlay */}
-          <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-black/40 to-[#0c0714]/95" />
+          {/* Dark Gray Vignette Overlay */}
+          <div className="absolute inset-0 bg-gradient-to-b from-[#121218]/70 via-[#0e0d14]/85 to-[#0b0a10]" />
         </div>
 
         {/* ─── TOP FLOATING NAVIGATION BAR ─── */}
@@ -239,7 +245,7 @@ export default function OrganizerProfileOverlay({
               </div>
 
               {/* Instagram Official Handle Box */}
-              <div className="bg-white/5 border border-white/10 rounded-2xl p-4 flex items-center justify-between shadow-lg backdrop-blur-md">
+              <div className="bg-zinc-900/80 border border-zinc-800 rounded-2xl p-4 flex items-center justify-between shadow-lg backdrop-blur-md">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-yellow-500 via-pink-500 to-purple-600 p-0.5 flex items-center justify-center shrink-0">
                     <div className="w-full h-full bg-black rounded-full flex items-center justify-center">
@@ -322,18 +328,8 @@ export default function OrganizerProfileOverlay({
                 </button>
               </div>
 
-              {/* ─── "Acerca de" Section ─── */}
-              <div className="space-y-3 pt-4 border-t border-white/10">
-                <h2 className="text-2xl font-black text-white tracking-tight">
-                  Acerca de
-                </h2>
-                <p className="text-sm text-zinc-300 leading-relaxed font-medium">
-                  {org.description}
-                </p>
-              </div>
-
               {/* ─── "Eventos de [Organizador]" (Strict 2-Column Grid Layout) ─── */}
-              <div ref={eventsSectionRef} className="space-y-4 pt-6 border-t border-white/10">
+              <div ref={eventsSectionRef} className="space-y-4 pt-4 border-t border-white/10">
                 <div className="flex items-center justify-between">
                   <h2 className="text-2xl font-black text-white tracking-tight">
                     Eventos de {org.name}
