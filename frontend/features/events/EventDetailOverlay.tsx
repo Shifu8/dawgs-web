@@ -145,30 +145,31 @@ export default function EventDetailOverlay({
 
   return (
     <motion.div
-      initial={{
-        opacity: 0,
-        y: 60,
-        scale: 0.88,
-        clipPath: "inset(25% 15% 25% 15% round 36px)",
-      }}
-      animate={{
-        opacity: 1,
-        y: 0,
-        scale: 1,
-        clipPath: "inset(0% 0% 0% 0% round 0px)",
-      }}
-      exit={{
-        opacity: 0,
-        y: 40,
-        scale: 0.90,
-        clipPath: "inset(25% 15% 25% 15% round 36px)",
-      }}
-      transition={{
-        duration: 0.52,
-        ease: [0.32, 0.72, 0, 1],
-      }}
-      className="fixed inset-0 z-[300] bg-black text-white flex flex-col overflow-hidden select-none shadow-2xl"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.3 }}
+      className="fixed inset-0 z-[300] bg-black text-white flex flex-col overflow-hidden select-none"
     >
+      {/* ─── VIP CONCERT NEON STAGE CURTAIN SWEEP ─── */}
+      <motion.div
+        initial={{ scaleY: 1 }}
+        animate={{ scaleY: 0 }}
+        exit={{ scaleY: 1 }}
+        transition={{ duration: 0.55, ease: [0.16, 1, 0.3, 1] }}
+        className="absolute inset-0 bg-gradient-to-b from-[#160029] via-[#090014] to-black z-[450] origin-top pointer-events-none flex items-center justify-center"
+      >
+        <div className="w-24 h-1 bg-gradient-to-r from-purple-500 via-pink-400 to-purple-500 rounded-full shadow-[0_0_30px_#e087ff] animate-pulse" />
+      </motion.div>
+
+      {/* ─── INNER HERO CONTENT ELEVATION ─── */}
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95, y: 35 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        exit={{ opacity: 0, scale: 0.96, y: 25 }}
+        transition={{ duration: 0.5, delay: 0.08, ease: [0.16, 1, 0.3, 1] }}
+        className="relative w-full h-full flex flex-col overflow-hidden"
+      >
       
       {/* ─── 1. TOP FLOATING NAVIGATION BAR ─── */}
       <header className="absolute top-0 inset-x-0 z-50 flex items-center justify-between px-4 sm:px-8 py-4 bg-gradient-to-b from-black/90 via-black/40 to-transparent pointer-events-none">
@@ -471,6 +472,7 @@ export default function EventDetailOverlay({
         )}
       </AnimatePresence>
 
+      </motion.div>
     </motion.div>
   );
 }
