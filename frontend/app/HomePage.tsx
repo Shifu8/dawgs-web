@@ -1124,7 +1124,7 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
         </div>
       </header>
 
-      {/* ─── TARGETED HERO IMAGE BLUR & GRADIENT BLUR FADE FOR LOWER EVENTS WHEN SEARCH IS OPEN ─── */}
+      {/* ─── TARGETED HERO IMAGE BLUR ONLY WHEN SEARCH IS OPEN ─── */}
       <AnimatePresence>
         {isHeaderSearchOpen && (
           <motion.div
@@ -1135,13 +1135,8 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
               setIsHeaderSearchOpen(false);
               setHeaderSearchQuery("");
             }}
-            className="fixed inset-0 z-[250] transition-all cursor-pointer pointer-events-auto flex flex-col"
-          >
-            {/* Top portion (Hero image blur) */}
-            <div className="h-[55vh] w-full bg-black/45 backdrop-blur-md transition-all" />
-            {/* Bottom portion (Gradient blur fade over events below) */}
-            <div className="flex-1 w-full bg-gradient-to-b from-black/60 via-black/85 to-black backdrop-blur-lg transition-all" />
-          </motion.div>
+            className="fixed top-0 inset-x-0 h-[55vh] sm:h-[60vh] z-[250] bg-black/45 backdrop-blur-md transition-all cursor-pointer pointer-events-auto"
+          />
         )}
       </AnimatePresence>
 
