@@ -85,7 +85,11 @@ export default function EventDetailOverlay({
   useEffect(() => {
     if (typeof window !== "undefined") {
       setCollapseY(Math.round(window.innerHeight * 0.75));
+      document.body.style.overflow = "hidden";
     }
+    return () => {
+      document.body.style.overflow = "";
+    };
   }, []);
 
   // Real-time Motion Values for 1-to-1 Continuous Drag & Parallax Poster Motion
