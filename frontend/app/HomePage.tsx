@@ -204,6 +204,7 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
 
   useEffect(() => {
     const handleTouchStart = (e: TouchEvent) => {
+      if (showDetailOverlay || isTicketModalOpen || showEventModal || showHiddenMenu || showUserMenu) return;
       if (e.touches.length > 0) {
         touchStartX.current = e.touches[0].clientX;
         touchStartY.current = e.touches[0].clientY;
@@ -211,8 +212,16 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
     };
 
     const handleTouchEnd = (e: TouchEvent) => {
+      if (showDetailOverlay || isTicketModalOpen || showEventModal || showHiddenMenu || showUserMenu) return;
       if (touchStartX.current === null || touchStartY.current === null) return;
       if (!e.changedTouches || e.changedTouches.length === 0) return;
+
+      const now = Date.now();
+      if (now - lastSwipeTime.current < 750) {
+        touchStartX.current = null;
+        touchStartY.current = null;
+        return;
+      }
 
       const touchEndX = e.changedTouches[0].clientX;
       const touchEndY = e.changedTouches[0].clientY;
@@ -220,12 +229,14 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
       const diffX = touchEndX - touchStartX.current;
       const diffY = touchEndY - touchStartY.current;
 
-      // Ensure horizontal swipe is dominant and above 25px threshold
-      if (Math.abs(diffX) > 25 && Math.abs(diffX) > Math.abs(diffY)) {
-        if (diffX < -25) {
+      // Ensure horizontal swipe is dominant and above 35px threshold
+      if (Math.abs(diffX) > 35 && Math.abs(diffX) > Math.abs(diffY) * 1.5) {
+        if (diffX < -35) {
           setActiveStoryScreen((prev) => Math.min(prev + 1, storyScreens.length - 1));
-        } else if (diffX > 25) {
+          lastSwipeTime.current = now;
+        } else if (diffX > 35) {
           setActiveStoryScreen((prev) => Math.max(prev - 1, 0));
+          lastSwipeTime.current = now;
         }
       }
 
@@ -234,15 +245,17 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
     };
 
     const handleWheel = (e: WheelEvent) => {
+      if (showDetailOverlay || isTicketModalOpen || showEventModal || showHiddenMenu || showUserMenu) return;
+
       const now = Date.now();
-      if (now - lastSwipeTime.current < 400) return;
+      if (now - lastSwipeTime.current < 750) return;
 
       // Trackpad 2-finger horizontal scroll detection (deltaX)
-      if (Math.abs(e.deltaX) > 12 && Math.abs(e.deltaX) > Math.abs(e.deltaY)) {
-        if (e.deltaX > 12) {
+      if (Math.abs(e.deltaX) > 20 && Math.abs(e.deltaX) > Math.abs(e.deltaY) * 1.5) {
+        if (e.deltaX > 20) {
           setActiveStoryScreen((prev) => Math.min(prev + 1, storyScreens.length - 1));
           lastSwipeTime.current = now;
-        } else if (e.deltaX < -12) {
+        } else if (e.deltaX < -20) {
           setActiveStoryScreen((prev) => Math.max(prev - 1, 0));
           lastSwipeTime.current = now;
         }
@@ -254,10 +267,15 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
       if (["INPUT", "TEXTAREA"].includes(activeTag)) return;
       if (showDetailOverlay || isTicketModalOpen || showEventModal || showHiddenMenu || showUserMenu) return;
 
+      const now = Date.now();
+      if (now - lastSwipeTime.current < 400) return;
+
       if (e.key === "ArrowRight") {
         setActiveStoryScreen((prev) => Math.min(prev + 1, storyScreens.length - 1));
+        lastSwipeTime.current = now;
       } else if (e.key === "ArrowLeft") {
         setActiveStoryScreen((prev) => Math.max(prev - 1, 0));
+        lastSwipeTime.current = now;
       }
     };
 
