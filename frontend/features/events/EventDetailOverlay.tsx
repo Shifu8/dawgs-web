@@ -20,6 +20,8 @@ import {
   Megaphone,
   ShieldCheck,
   Tag,
+  ChevronUp,
+  ChevronDown,
 } from "lucide-react";
 import type { Event } from "@/frontend/types/domain";
 import { DEFAULT_HD_EVENT_POSTER, getHdImageSrc } from "@/frontend/utils/hdImages";
@@ -36,43 +38,6 @@ interface EventDetailOverlayProps {
   isCheckoutOpen?: boolean;
 }
 
-const TICKET_PHASES = [
-  {
-    id: "prev1",
-    name: "1ra Preventa",
-    price: 5,
-    status: "active",
-    statusLabel: "Habilitado",
-    urgentBadge: "¡Quedan pocos días para reservar a este precio!",
-    desc: "Acceso preferencial garantizado. La tarifa más baja antes del cambio de fase.",
-  },
-  {
-    id: "prev2",
-    name: "2da Preventa",
-    price: 10,
-    status: "locked",
-    statusLabel: "Pronto se habilita",
-    urgentBadge: null,
-    desc: "Se activará automáticamente al agotarse la 1ra Preventa ($5 USD).",
-  },
-  {
-    id: "vip",
-    name: "Pase VIP Stage",
-    price: 20,
-    status: "locked",
-    statusLabel: "Próximamente",
-    urgentBadge: null,
-    desc: "Frente al escenario con mesa exclusiva y atención personalizada.",
-  },
-];
-
-const CAST_MEMBERS = [
-  { id: "c1", name: "Omar Courtz", role: "Headliner", img: "/images/omar_courtz_artist_1779161689015.png" },
-  { id: "c2", name: "Yan Block", role: "Artist", img: "/images/yan_block_artist_1779161408288.png" },
-  { id: "c3", name: "Roa", role: "Artist", img: "/images/roa_artist_1779161704881.png" },
-  { id: "c4", name: "Anuel AA", role: "Special Guest", img: "https://images.unsplash.com/photo-1516280440614-37939bbacd81?auto=format&fit=crop&w=300&q=80" },
-];
-
 export default function EventDetailOverlay({
   event,
   onClose,
@@ -81,14 +46,13 @@ export default function EventDetailOverlay({
 }: EventDetailOverlayProps) {
   const [isFavorite, setIsFavorite] = useState(false);
   const [isExpandedDescription, setIsExpandedDescription] = useState(false);
-  const [selectedPhaseId, setSelectedPhaseId] = useState("prev1");
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
   const [isPlayingAudio, setIsPlayingAudio] = useState(false);
   const [showPromoCodeInput, setShowPromoCodeInput] = useState(false);
   const [promoCodeText, setPromoCodeText] = useState("");
 
-  const [isSheetCollapsed, setIsSheetCollapsed] = useState(true);
-  const [collapseY, setCollapseY] = useState(550);
+  const [isSheetCollapsed, setIsSheetCollapsed] = useState(false);
+  const [collapseY, setCollapseY] = useState(480);
   const dragControls = useDragControls();
 
   const isSheetCollapsedRef = useRef(isSheetCollapsed);
@@ -112,7 +76,7 @@ export default function EventDetailOverlay({
 
   useEffect(() => {
     if (typeof window !== "undefined") {
-      setCollapseY(Math.round(window.innerHeight * 0.75));
+      setCollapseY(Math.round(window.innerHeight * 0.55));
       document.body.style.overflow = "hidden";
 
       return () => {
@@ -123,14 +87,15 @@ export default function EventDetailOverlay({
 
   // Real-time Motion Values for Dragging
   const sheetY = useMotionValue(0);
-  const posterScale = useTransform(sheetY, [0, collapseY], [1.0, 1.05]);
-
-  const organizerList =
-    event.organizers && event.organizers.length > 0
-      ? event.organizers
-      : [event.organizer || "Factory Town"];
+  const backdropBlur = useTransform(sheetY, [0, collapseY], [110, 40]);
+  const backdropOpacity = useTransform(sheetY, [0, collapseY], [0.85, 0.5]);
 
   const displayPrice = event.price === 0 ? "Gratis" : `${event.price || "79,99"} $`;
+
+  const handleToggleSheet = (e?: React.SyntheticEvent) => {
+    if (e) e.stopPropagation();
+    setIsSheetCollapsed((prev) => !prev);
+  };
 
   return (
     <motion.div
@@ -138,10 +103,10 @@ export default function EventDetailOverlay({
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       transition={{ duration: 0.2 }}
-      className="fixed inset-0 z-[300] bg-[#0c0714] text-white flex flex-col overflow-y-auto no-scrollbar select-none"
+      className="fixed inset-0 z-[300] bg-[#0c0714] text-white flex flex-col overflow-hidden select-none"
     >
-      {/* ─── DYNAMIC BLURRED BACKGROUND DERIVED FROM POSTER ─── */}
-      <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden">
+      {/* ─── VIVID AMBIENT POSTER COLOR BLUR BACKDROP (MATCHING SCREENSHOT 100%) ─── */}
+      <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden bg-[#0c0714]">
         <Image
           src={getHdImageSrc(event.poster || DEFAULT_HD_EVENT_POSTER)}
           alt={event.title}
@@ -149,25 +114,26 @@ export default function EventDetailOverlay({
           priority
           quality={100}
           sizes="100vw"
-          className="object-cover object-center blur-3xl opacity-30 scale-110 brightness-75"
+          className="object-cover object-center scale-150 blur-[100px] saturate-200 brightness-110 opacity-75"
         />
-        <div className="absolute inset-0 bg-gradient-to-b from-[#0c0714]/80 via-[#0c0714]/90 to-[#0c0714]" />
+        {/* Subtle Dark Gradient Overlay for optimal contrast */}
+        <div className="absolute inset-0 bg-gradient-to-b from-black/25 via-black/45 to-[#0c0714]/95" />
       </div>
 
       {/* ─── TOP FLOATING NAVIGATION BAR ─── */}
-      <header className="fixed top-0 inset-x-0 z-50 flex items-center justify-between px-4 sm:px-8 py-4 bg-gradient-to-b from-[#0c0714] via-[#0c0714]/80 to-transparent">
+      <header className="fixed top-0 inset-x-0 z-[350] flex items-center justify-between px-4 sm:px-8 py-4 bg-gradient-to-b from-[#0c0714]/90 via-[#0c0714]/50 to-transparent pointer-events-none">
         {/* Left: Back Arrow Button [←] */}
         <button
           type="button"
           onClick={onClose}
-          className="flex items-center justify-center w-11 h-11 rounded-full bg-black/60 border border-white/20 text-white hover:bg-white/20 backdrop-blur-md transition-all cursor-pointer shadow-2xl active:scale-95"
+          className="pointer-events-auto flex items-center justify-center w-11 h-11 rounded-full bg-black/60 border border-white/20 text-white hover:bg-white/20 backdrop-blur-md transition-all cursor-pointer shadow-2xl active:scale-95"
           aria-label="Volver"
         >
           <ArrowLeft className="w-5 h-5" />
         </button>
 
         {/* Right Controls: Favorite Heart & Share */}
-        <div className="flex items-center gap-2">
+        <div className="pointer-events-auto flex items-center gap-2">
           <button
             type="button"
             onClick={() => {
@@ -196,212 +162,256 @@ export default function EventDetailOverlay({
         </div>
       </header>
 
-      {/* ─── MAIN 2-COLUMN LAYOUT (EXACT MATCHING USER SCREENSHOT) ─── */}
-      <div className="relative z-10 max-w-6xl mx-auto px-4 sm:px-8 pt-24 pb-36 w-full grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-14 items-start">
-        
-        {/* ─── LEFT COLUMN (POSTER + AUDIO PLAYER + TRUST BADGES) ─── */}
-        <div className="lg:col-span-5 flex flex-col space-y-6">
-          {/* Poster Artwork Container */}
+      {/* ─── DRAGGABLE GLASSMORPHIC SHEET CONTAINER ("LA COSITA PARA SUBIR Y BAJAR") ─── */}
+      <motion.div
+        style={{ y: sheetY }}
+        drag="y"
+        dragControls={dragControls}
+        dragListener={false}
+        dragConstraints={{ top: 0, bottom: collapseY }}
+        dragElastic={0.05}
+        onDragEnd={(_, info) => {
+          if (info.offset.y > 80 || info.velocity.y > 150) {
+            collapseSheet();
+          } else if (info.offset.y < -80 || info.velocity.y < -150) {
+            expandSheet();
+          }
+        }}
+        animate={{ y: isSheetCollapsed ? collapseY : 0 }}
+        transition={{ type: "spring", stiffness: 350, damping: 32 }}
+        className="fixed inset-x-0 bottom-0 z-10 w-full h-[92vh] flex flex-col"
+      >
+        <div className="flex-1 rounded-t-[36px] sm:rounded-t-[44px] bg-gradient-to-b from-white/10 via-[#0c0714]/95 to-[#0c0714] border-t border-x border-white/20 backdrop-blur-3xl p-4 sm:p-8 shadow-[0_-25px_60px_rgba(0,0,0,0.95)] overflow-y-auto no-scrollbar space-y-6 pb-28">
+          
+          {/* DRAG HANDLE BAR ("LA COSITA PARA SUBIR Y BAJAR") */}
           <div
-            onClick={() => setIsLightboxOpen(true)}
-            className="relative w-full aspect-square max-w-[380px] mx-auto rounded-3xl overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.8)] border border-white/15 bg-zinc-950 cursor-pointer group"
+            onPointerDown={(e) => {
+              dragControls.start(e);
+            }}
+            onClick={handleToggleSheet}
+            style={{ touchAction: "none" }}
+            className="w-full pt-1 pb-4 flex flex-col items-center justify-center cursor-grab active:cursor-grabbing select-none z-30 group"
           >
-            <Image
-              src={getHdImageSrc(event.poster || DEFAULT_HD_EVENT_POSTER)}
-              alt={event.title}
-              fill
-              priority
-              quality={100}
-              sizes="(max-width: 768px) 100vw, 380px"
-              className="object-cover object-center brightness-105 group-hover:scale-105 transition-transform duration-500"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-60" />
-
-            {/* Overlaid Action Buttons Bottom Right */}
-            <div className="absolute bottom-3 right-3 flex items-center gap-2 z-10">
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setIsFavorite(!isFavorite);
-                }}
-                className={`w-9 h-9 rounded-full backdrop-blur-md border flex items-center justify-center transition-transform active:scale-95 ${
-                  isFavorite
-                    ? "bg-red-500/40 border-red-400 text-red-400"
-                    : "bg-black/70 border-white/20 text-white hover:bg-black/90"
-                }`}
-                aria-label="Guardar favorito"
-              >
-                <Heart className={`w-4 h-4 ${isFavorite ? "fill-red-400 text-red-400" : ""}`} />
-              </button>
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  if (navigator.share) {
-                    navigator.share({ title: event.title, url: window.location.href });
-                  }
-                }}
-                className="w-9 h-9 rounded-full bg-black/70 border border-white/20 text-white flex items-center justify-center backdrop-blur-md hover:bg-black/90 transition-transform active:scale-95"
-                aria-label="Compartir"
-              >
-                <Share2 className="w-4 h-4" />
-              </button>
-            </div>
-          </div>
-
-          {/* "Tema más popular" (Music Preview Box) */}
-          <div className="bg-white/5 border border-white/10 rounded-2xl p-4 flex items-center justify-between shadow-lg">
-            <div className="flex flex-col space-y-0.5 max-w-[240px]">
-              <span className="text-xs font-black text-white tracking-wide">
-                Tema más popular
-              </span>
-              <span className="text-xs text-zinc-300 font-medium truncate">
-                {(event as any).artistTrack || `${event.title} - Forever Young`}
-              </span>
-            </div>
-
-            <button
-              type="button"
-              onClick={() => setIsPlayingAudio(!isPlayingAudio)}
-              className="w-10 h-10 rounded-full bg-white/10 border border-white/20 flex items-center justify-center text-white hover:bg-white hover:text-black transition-all cursor-pointer shrink-0 shadow-md active:scale-95"
-              aria-label="Reproducir tema"
-            >
-              <Play className={`w-4 h-4 ml-0.5 ${isPlayingAudio ? "fill-white" : ""}`} />
-            </button>
-          </div>
-
-          {/* 4GO Anti-Scalping Protection Badge */}
-          <div className="space-y-2 pt-1">
-            <p className="text-xs text-zinc-400 leading-relaxed font-medium">
-              4GO protege a fans y artistas de la reventa ilegal. Tus entradas se guardarán de forma segura en la app.
-            </p>
-
-            {/* ¿Tienes un código? Link */}
-            <div>
-              <button
-                type="button"
-                onClick={() => setShowPromoCodeInput(!showPromoCodeInput)}
-                className="text-xs font-bold text-white hover:underline cursor-pointer transition-colors"
-              >
-                ¿Tienes un código?
-              </button>
-
-              {showPromoCodeInput && (
-                <div className="mt-2 flex items-center gap-2">
-                  <input
-                    type="text"
-                    value={promoCodeText}
-                    onChange={(e) => setPromoCodeText(e.target.value)}
-                    placeholder="Ingresa tu código promo"
-                    className="px-3.5 py-2 rounded-xl bg-white/10 border border-white/20 text-xs text-white placeholder-zinc-400 focus:outline-none focus:border-yellow-400 flex-1"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => {
-                      if (promoCodeText.trim()) {
-                        alert(`Código "${promoCodeText}" aplicado exitosamente.`);
-                        setShowPromoCodeInput(false);
-                      }
-                    }}
-                    className="px-4 py-2 rounded-xl bg-yellow-400 text-black text-xs font-black uppercase hover:bg-yellow-300 transition cursor-pointer"
-                  >
-                    Aplicar
-                  </button>
-                </div>
+            <div className="w-14 h-1.5 bg-white/70 group-hover:bg-white active:bg-yellow-400 rounded-full shadow-md border border-white/20 transition-colors" />
+            <div className="flex items-center gap-1 text-[10px] font-bold text-zinc-400 uppercase tracking-widest mt-1.5 opacity-80 group-hover:opacity-100 transition-opacity">
+              <span>{isSheetCollapsed ? "Desliza para ver más" : "Desliza para contraer"}</span>
+              {isSheetCollapsed ? (
+                <ChevronUp className="w-3 h-3 text-yellow-400" />
+              ) : (
+                <ChevronDown className="w-3 h-3 text-yellow-400" />
               )}
             </div>
           </div>
-        </div>
 
-        {/* ─── RIGHT COLUMN (EVENT INFO + YELLOW COMPRAR TICKET BOX) ─── */}
-        <div className="lg:col-span-7 flex flex-col space-y-6">
-          
-          {/* Title & Subtitle */}
-          <div className="space-y-2">
-            <h1 className="text-4xl sm:text-6xl font-black text-white tracking-tight leading-none font-sans drop-shadow-md">
-              {event.title}
-            </h1>
-            <p className="text-xl sm:text-2xl font-bold text-zinc-200 tracking-tight">
-              {event.subtitle || event.venue || "Factory Town"}
-            </p>
-          </div>
+          {/* ─── MAIN 2-COLUMN GRID (DICE EXACT MATCHING SCREENSHOT) ─── */}
+          <div className="max-w-6xl mx-auto w-full grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-14 items-start">
+            
+            {/* ─── LEFT COLUMN (POSTER + AUDIO PLAYER + TRUST BADGES) ─── */}
+            <div className="lg:col-span-5 flex flex-col space-y-6">
+              {/* Poster Artwork Container */}
+              <div
+                onClick={() => setIsLightboxOpen(true)}
+                className="relative w-full aspect-square max-w-[380px] mx-auto rounded-3xl overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.85)] border border-white/20 bg-zinc-950 cursor-pointer group"
+              >
+                <Image
+                  src={getHdImageSrc(event.poster || DEFAULT_HD_EVENT_POSTER)}
+                  alt={event.title}
+                  fill
+                  priority
+                  quality={100}
+                  sizes="(max-width: 768px) 100vw, 380px"
+                  className="object-cover object-center brightness-105 group-hover:scale-105 transition-transform duration-500"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-60" />
 
-          {/* Date & Time Highlight (Yellow bold text exact match to screenshot) */}
-          <div className="space-y-1">
-            <p className="text-lg sm:text-xl font-bold text-yellow-400 tracking-tight">
-              {event.dateLabel || "sáb, 19 sept, 22:00 GMT-4"}
-            </p>
-            <div className="flex items-center gap-4 text-xs font-bold text-zinc-300 pt-1">
-              <span className="flex items-center gap-1.5">
-                <Tag className="w-3.5 h-3.5 text-zinc-400" />
-                <span>DJ</span>
-              </span>
-              <span className="flex items-center gap-1.5">
-                <MapPin className="w-3.5 h-3.5 text-zinc-400" />
-                <span>{event.city || "Miami"}</span>
-              </span>
-            </div>
-          </div>
-
-          {/* ─── DARK TICKET PRICE BOX WITH YELLOW COMPRAR BUTTON (EXACT MATCH TO SCREENSHOT) ─── */}
-          <div className="bg-zinc-900/90 border border-zinc-800 rounded-3xl p-6 sm:p-7 flex flex-col sm:flex-row sm:items-center justify-between gap-5 shadow-2xl backdrop-blur-2xl">
-            <div className="space-y-1">
-              <div className="text-2xl sm:text-3xl font-black text-white tracking-tight">
-                Desde {displayPrice}
+                {/* Overlaid Action Buttons Bottom Right */}
+                <div className="absolute bottom-3 right-3 flex items-center gap-2 z-10">
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setIsFavorite(!isFavorite);
+                    }}
+                    className={`w-9 h-9 rounded-full backdrop-blur-md border flex items-center justify-center transition-transform active:scale-95 ${
+                      isFavorite
+                        ? "bg-red-500/40 border-red-400 text-red-400"
+                        : "bg-black/70 border-white/20 text-white hover:bg-black/90"
+                    }`}
+                    aria-label="Guardar favorito"
+                  >
+                    <Heart className={`w-4 h-4 ${isFavorite ? "fill-red-400 text-red-400" : ""}`} />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      if (navigator.share) {
+                        navigator.share({ title: event.title, url: window.location.href });
+                      }
+                    }}
+                    className="w-9 h-9 rounded-full bg-black/70 border border-white/20 text-white flex items-center justify-center backdrop-blur-md hover:bg-black/90 transition-transform active:scale-95"
+                    aria-label="Compartir"
+                  >
+                    <Share2 className="w-4 h-4" />
+                  </button>
+                </div>
               </div>
-              <p className="text-xs text-zinc-400 font-medium leading-normal">
-                Este es el precio que pagarás. Sin sorpresas de última hora.
-              </p>
+
+              {/* "Tema más popular" (Music Preview Box) */}
+              <div className="bg-white/5 border border-white/10 rounded-2xl p-4 flex items-center justify-between shadow-lg backdrop-blur-md">
+                <div className="flex flex-col space-y-0.5 max-w-[240px]">
+                  <span className="text-xs font-black text-white tracking-wide">
+                    Tema más popular
+                  </span>
+                  <span className="text-xs text-zinc-300 font-medium truncate">
+                    {(event as any).artistTrack || `${event.title} - Forever Young`}
+                  </span>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => setIsPlayingAudio(!isPlayingAudio)}
+                  className="w-10 h-10 rounded-full bg-white/10 border border-white/20 flex items-center justify-center text-white hover:bg-white hover:text-black transition-all cursor-pointer shrink-0 shadow-md active:scale-95"
+                  aria-label="Reproducir tema"
+                >
+                  <Play className={`w-4 h-4 ml-0.5 ${isPlayingAudio ? "fill-white" : ""}`} />
+                </button>
+              </div>
+
+              {/* 4GO Anti-Scalping Protection Badge */}
+              <div className="space-y-2 pt-1">
+                <p className="text-xs text-zinc-400 leading-relaxed font-medium">
+                  4GO protege a fans y artistas de la reventa ilegal. Tus entradas se guardarán de forma segura en la app.
+                </p>
+
+                {/* ¿Tienes un código? Link */}
+                <div>
+                  <button
+                    type="button"
+                    onClick={() => setShowPromoCodeInput(!showPromoCodeInput)}
+                    className="text-xs font-bold text-white hover:underline cursor-pointer transition-colors"
+                  >
+                    ¿Tienes un código?
+                  </button>
+
+                  {showPromoCodeInput && (
+                    <div className="mt-2 flex items-center gap-2">
+                      <input
+                        type="text"
+                        value={promoCodeText}
+                        onChange={(e) => setPromoCodeText(e.target.value)}
+                        placeholder="Ingresa tu código promo"
+                        className="px-3.5 py-2 rounded-xl bg-white/10 border border-white/20 text-xs text-white placeholder-zinc-400 focus:outline-none focus:border-yellow-400 flex-1"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (promoCodeText.trim()) {
+                            alert(`Código "${promoCodeText}" aplicado exitosamente.`);
+                            setShowPromoCodeInput(false);
+                          }
+                        }}
+                        className="px-4 py-2 rounded-xl bg-yellow-400 text-black text-xs font-black uppercase hover:bg-yellow-300 transition cursor-pointer"
+                      >
+                        Aplicar
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
             </div>
 
-            <button
-              type="button"
-              onClick={() => onBuy(event)}
-              className="px-9 py-4 rounded-full bg-[#dfff28] hover:bg-[#cbf01a] text-black font-black text-xs uppercase tracking-widest shadow-[0_0_25px_rgba(223,255,40,0.4)] transition-all hover:scale-105 active:scale-95 cursor-pointer shrink-0 text-center"
-            >
-              COMPRAR
-            </button>
-          </div>
+            {/* ─── RIGHT COLUMN (EVENT INFO + YELLOW COMPRAR TICKET BOX) ─── */}
+            <div className="lg:col-span-7 flex flex-col space-y-6">
+              
+              {/* Title & Subtitle */}
+              <div className="space-y-2">
+                <h1 className="text-4xl sm:text-6xl font-black text-white tracking-tight leading-none font-sans drop-shadow-md">
+                  {event.title}
+                </h1>
+                <p className="text-xl sm:text-2xl font-bold text-zinc-200 tracking-tight">
+                  {event.subtitle || event.venue || "Factory Town"}
+                </p>
+              </div>
 
-          {/* ─── "Información" Section ─── */}
-          <div className="space-y-3 pt-4 border-t border-white/10">
-            <h2 className="text-2xl font-black text-white tracking-tight">
-              Información
-            </h2>
-            <p className={`text-sm text-zinc-300 leading-relaxed font-medium ${!isExpandedDescription ? "line-clamp-4" : ""}`}>
-              {event.description ||
-                `${event.title} returns for a headline debut on Saturday with special guests, plus Close Friends Only. Limited VIP tables are available, contact our team to book.`}
-            </p>
-            <button
-              type="button"
-              onClick={() => setIsExpandedDescription(!isExpandedDescription)}
-              className="text-xs font-bold text-white hover:underline cursor-pointer"
-            >
-              {isExpandedDescription ? "Leer menos" : "Leer más"}
-            </button>
-          </div>
+              {/* Date & Time Highlight (Yellow bold text exact match to screenshot) */}
+              <div className="space-y-1">
+                <p className="text-lg sm:text-xl font-bold text-yellow-400 tracking-tight">
+                  {event.dateLabel || "sáb, 19 sept, 22:00 GMT-4"}
+                </p>
+                <div className="flex items-center gap-4 text-xs font-bold text-zinc-300 pt-1">
+                  <span className="flex items-center gap-1.5">
+                    <Tag className="w-3.5 h-3.5 text-zinc-400" />
+                    <span>DJ</span>
+                  </span>
+                  <span className="flex items-center gap-1.5">
+                    <MapPin className="w-3.5 h-3.5 text-zinc-400" />
+                    <span>{event.city || "Miami"}</span>
+                  </span>
+                </div>
+              </div>
 
-          {/* ─── Event Badges / Icons (Exact Match to Screenshot) ─── */}
-          <div className="space-y-3 pt-4 border-t border-white/10">
-            <div className="flex items-center gap-3 text-xs text-zinc-300 font-medium">
-              <Info className="w-4 h-4 text-zinc-400 shrink-0" />
-              <span>This is an 18+ event</span>
-            </div>
-            <div className="flex items-center gap-3 text-xs text-zinc-300 font-medium">
-              <Megaphone className="w-4 h-4 text-zinc-400 shrink-0" />
-              <span>Presented by {event.organizer || "Factory Town"}</span>
-            </div>
-            <div className="flex items-center gap-3 text-xs text-zinc-300 font-medium">
-              <ShieldCheck className="w-4 h-4 text-zinc-400 shrink-0" />
-              <span>Puedes obtener un reembolso si el evento es cancelado o reprogramado.</span>
+              {/* ─── DARK TICKET PRICE BOX WITH YELLOW COMPRAR BUTTON ─── */}
+              <div className="bg-zinc-900/90 border border-zinc-800 rounded-3xl p-6 sm:p-7 flex flex-col sm:flex-row sm:items-center justify-between gap-5 shadow-2xl backdrop-blur-2xl">
+                <div className="space-y-1">
+                  <div className="text-2xl sm:text-3xl font-black text-white tracking-tight">
+                    Desde {displayPrice}
+                  </div>
+                  <p className="text-xs text-zinc-400 font-medium leading-normal">
+                    Este es el precio que pagarás. Sin sorpresas de última hora.
+                  </p>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => onBuy(event)}
+                  className="px-9 py-4 rounded-full bg-[#dfff28] hover:bg-[#cbf01a] text-black font-black text-xs uppercase tracking-widest shadow-[0_0_25px_rgba(223,255,40,0.4)] transition-all hover:scale-105 active:scale-95 cursor-pointer shrink-0 text-center"
+                >
+                  COMPRAR
+                </button>
+              </div>
+
+              {/* ─── "Información" Section ─── */}
+              <div className="space-y-3 pt-4 border-t border-white/10">
+                <h2 className="text-2xl font-black text-white tracking-tight">
+                  Información
+                </h2>
+                <p className={`text-sm text-zinc-300 leading-relaxed font-medium ${!isExpandedDescription ? "line-clamp-4" : ""}`}>
+                  {event.description ||
+                    `${event.title} returns for a headline debut on Saturday with special guests, plus Close Friends Only. Limited VIP tables are available, contact our team to book.`}
+                </p>
+                <button
+                  type="button"
+                  onClick={() => setIsExpandedDescription(!isExpandedDescription)}
+                  className="text-xs font-bold text-white hover:underline cursor-pointer"
+                >
+                  {isExpandedDescription ? "Leer menos" : "Leer más"}
+                </button>
+              </div>
+
+              {/* ─── Event Badges / Icons (Exact Match to Screenshot) ─── */}
+              <div className="space-y-3 pt-4 border-t border-white/10">
+                <div className="flex items-center gap-3 text-xs text-zinc-300 font-medium">
+                  <Info className="w-4 h-4 text-zinc-400 shrink-0" />
+                  <span>This is an 18+ event</span>
+                </div>
+                <div className="flex items-center gap-3 text-xs text-zinc-300 font-medium">
+                  <Megaphone className="w-4 h-4 text-zinc-400 shrink-0" />
+                  <span>Presented by {event.organizer || "Factory Town"}</span>
+                </div>
+                <div className="flex items-center gap-3 text-xs text-zinc-300 font-medium">
+                  <ShieldCheck className="w-4 h-4 text-zinc-400 shrink-0" />
+                  <span>Puedes obtener un reembolso si el evento es cancelado o reprogramado.</span>
+                </div>
+              </div>
+
             </div>
           </div>
 
         </div>
-      </div>
+      </motion.div>
 
-      {/* ─── STICKY BOTTOM BUY BAR (PARALLEL STICKY BAR Preserved for Mobile & Desktop) ─── */}
+      {/* ─── STICKY BOTTOM BUY BAR ─── */}
       <div className="fixed bottom-0 inset-x-0 z-40 bg-zinc-950/95 border-t border-white/15 backdrop-blur-2xl px-6 py-4 flex items-center justify-between max-w-6xl mx-auto shadow-[0_-15px_40px_rgba(0,0,0,0.9)]">
         <div className="flex flex-col">
           <span className="text-[10px] uppercase font-bold text-zinc-400 tracking-wider">
