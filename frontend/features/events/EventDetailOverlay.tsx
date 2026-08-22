@@ -90,8 +90,10 @@ export default function EventDetailOverlay({
       let touchStartY = 0;
 
       const handleWheel = (e: WheelEvent) => {
-        if (Math.abs(e.deltaY) > 8) {
+        if (e.deltaY > 8) {
           setIsSheetCollapsed(false);
+        } else if (e.deltaY < -8) {
+          setIsSheetCollapsed(true);
         }
       };
 
@@ -104,9 +106,11 @@ export default function EventDetailOverlay({
       const handleTouchMove = (e: TouchEvent) => {
         if (e.touches.length >= 1) {
           const currentY = e.touches[0].clientY;
-          const diffY = touchStartY - currentY; // positive = swiping up
-          if (diffY > 20) {
+          const diffY = touchStartY - currentY; // positive = swiping up, negative = swiping down
+          if (diffY > 25) {
             setIsSheetCollapsed(false);
+          } else if (diffY < -25) {
+            setIsSheetCollapsed(true);
           }
         }
       };
