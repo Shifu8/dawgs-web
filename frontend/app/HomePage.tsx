@@ -1052,101 +1052,75 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                 </button>
               </div>
 
-              {/* ─── LIVE AUTO-SUGGESTIONS DROPDOWN ALIGNED RIGHT UNDER INPUT ─── */}
+              {/* ─── LIVE AUTO-SUGGESTIONS DROPDOWN (ONLY RENDERS WHEN TYPING) ─── */}
               <AnimatePresence>
-                {isHeaderSearchOpen && (
+                {isHeaderSearchOpen && headerSearchQuery.trim().length > 0 && (
                   <motion.div
-                    initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                    initial={{ opacity: 0, y: 8, scale: 0.98 }}
                     animate={{ opacity: 1, y: 0, scale: 1 }}
-                    exit={{ opacity: 0, y: 8, scale: 0.95 }}
+                    exit={{ opacity: 0, y: 8, scale: 0.98 }}
                     transition={{ duration: 0.2 }}
-                    className="absolute top-12 right-12 w-80 sm:w-96 rounded-3xl bg-[#0c0616]/95 border border-purple-500/40 backdrop-blur-3xl p-3.5 shadow-[0_30px_80px_rgba(0,0,0,0.95)] z-[310] space-y-3 max-h-[65vh] overflow-y-auto no-scrollbar"
+                    className="absolute top-12 right-12 w-80 sm:w-96 rounded-2xl bg-black/85 border border-white/20 backdrop-blur-3xl p-3 shadow-2xl z-[310] space-y-2 max-h-[60vh] overflow-y-auto no-scrollbar"
                   >
-                    {/* Quick Trending Tags when query is empty */}
-                    {!headerSearchQuery.trim() ? (
-                      <div className="space-y-2.5 p-1">
-                        <div className="flex items-center justify-between text-[10px] font-black uppercase tracking-widest text-purple-300 border-b border-purple-500/20 pb-1.5">
-                          <span>🔥 Tendencias rápidas</span>
-                          <span className="text-zinc-500">Toca para buscar</span>
-                        </div>
-                        <div className="flex flex-wrap gap-1.5">
-                          {["Cubic", "Fisher", "Kaskade", "Factory Town", "Miami", "Trap"].map((tag) => (
-                            <button
-                              key={`trend-tag-${tag}`}
-                              type="button"
-                              onClick={() => setHeaderSearchQuery(tag)}
-                              className="px-3 py-1.5 rounded-full bg-purple-900/30 hover:bg-purple-600/50 border border-purple-500/30 text-xs font-bold text-white transition-all hover:scale-105 active:scale-95 cursor-pointer flex items-center gap-1.5"
-                            >
-                              <Sparkles className="w-3 h-3 text-purple-300" />
-                              {tag}
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-                    ) : (
-                      (() => {
-                        const query = headerSearchQuery.toLowerCase().trim();
-                        const matchingEvents = events.filter((e) => {
-                          const titleMatch = e.title.toLowerCase().includes(query);
-                          const orgMatch = (e.organizer || "").toLowerCase().includes(query) || (e.organizers || []).some((o) => o.toLowerCase().includes(query));
-                          const venueMatch = (e.venue || "").toLowerCase().includes(query) || (e.city || "").toLowerCase().includes(query);
-                          const subMatch = (e.subtitle || "").toLowerCase().includes(query);
-                          return titleMatch || orgMatch || venueMatch || subMatch;
-                        });
+                    {(() => {
+                      const query = headerSearchQuery.toLowerCase().trim();
+                      const matchingEvents = events.filter((e) => {
+                        const titleMatch = (e.title || "").toLowerCase().includes(query);
+                        const orgMatch = (e.organizer || "").toLowerCase().includes(query) || (e.organizers || []).some((o) => o.toLowerCase().includes(query));
+                        const venueMatch = (e.venue || "").toLowerCase().includes(query) || (e.city || "").toLowerCase().includes(query);
+                        const subMatch = (e.subtitle || "").toLowerCase().includes(query);
+                        return titleMatch || orgMatch || venueMatch || subMatch;
+                      });
 
-                        if (matchingEvents.length === 0) {
-                          return (
-                            <div className="p-6 text-center text-xs font-semibold text-zinc-400">
-                              No se encontraron eventos para "<span className="text-purple-300 font-bold">{headerSearchQuery}</span>"
-                            </div>
-                          );
-                        }
-
-                        // Limit to top 5 most relevant results for clean presentation
-                        const displayEvents = matchingEvents.slice(0, 6);
-
+                      if (matchingEvents.length === 0) {
                         return (
-                          <div className="space-y-2">
-                            <div className="px-2 py-1 text-[10px] font-black uppercase tracking-widest text-zinc-400 border-b border-white/10 mb-1 flex items-center justify-between">
-                              <span>Resultados encontrados</span>
-                              <span className="text-purple-400 font-bold">{matchingEvents.length} eventos</span>
-                            </div>
-                            {displayEvents.map((evt) => (
-                              <div
-                                key={`side-sug-${evt.id}`}
-                                onClick={() => {
-                                  setSelectedCarouselEvent(evt);
-                                  setShowDetailOverlay(true);
-                                  setIsHeaderSearchOpen(false);
-                                  setHeaderSearchQuery("");
-                                }}
-                                className="flex items-center gap-3 p-2.5 rounded-2xl bg-white/5 hover:bg-purple-950/60 border border-white/10 hover:border-purple-500/50 backdrop-blur-xl transition-all cursor-pointer group shadow-md"
-                              >
-                                <div className="relative w-12 h-12 rounded-xl overflow-hidden bg-black/50 shrink-0 border border-white/20">
-                                  <Image
-                                    src={evt.poster || "/images/now4go-hero-presentation-hd-v3.png"}
-                                    alt={evt.title}
-                                    fill
-                                    className="object-cover group-hover:scale-105 transition-transform"
-                                  />
-                                </div>
-                                <div className="flex-1 text-left min-w-0">
-                                  <h4 className="text-xs sm:text-sm font-extrabold text-white truncate group-hover:text-purple-300 transition-colors">
-                                    {evt.title}
-                                  </h4>
-                                  <p className="text-[10px] sm:text-xs font-medium text-zinc-400 truncate mt-0.5">
-                                    <span className="text-purple-400 font-bold">{evt.organizer || "Cubic"}</span> · {evt.venue || "Factory Town"}
-                                  </p>
-                                </div>
-                                <span className="text-xs font-black text-emerald-400 shrink-0">
-                                  {evt.price === 0 ? "Gratis" : `$${evt.price} USD`}
-                                </span>
-                              </div>
-                            ))}
+                          <div className="p-4 text-center text-xs font-semibold text-zinc-400">
+                            No se encontraron resultados para "<span className="text-white font-bold">{headerSearchQuery}</span>"
                           </div>
                         );
-                      })()
-                    )}
+                      }
+
+                      return (
+                        <div className="space-y-1.5">
+                          <div className="px-2 py-1 text-[10px] font-black uppercase tracking-widest text-zinc-400 border-b border-white/10 mb-1 flex items-center justify-between">
+                            <span>Resultados</span>
+                            <span className="text-purple-400 font-bold">{matchingEvents.length} eventos</span>
+                          </div>
+                          {matchingEvents.map((evt) => (
+                            <div
+                              key={`side-sug-${evt.id}`}
+                              onClick={() => {
+                                setSelectedCarouselEvent(evt);
+                                setShowDetailOverlay(true);
+                                setIsHeaderSearchOpen(false);
+                                setHeaderSearchQuery("");
+                              }}
+                              className="flex items-center gap-3 p-2 rounded-xl bg-white/10 hover:bg-white/20 border border-white/15 backdrop-blur-xl transition-all cursor-pointer group"
+                            >
+                              <div className="relative w-11 h-11 rounded-lg overflow-hidden bg-black/40 shrink-0 border border-white/15">
+                                <Image
+                                  src={evt.poster || "/images/now4go-hero-presentation-hd-v3.png"}
+                                  alt={evt.title}
+                                  fill
+                                  className="object-cover group-hover:scale-105 transition-transform"
+                                />
+                              </div>
+                              <div className="flex-1 text-left min-w-0">
+                                <h4 className="text-xs font-extrabold text-white truncate group-hover:text-purple-300 transition-colors">
+                                  {evt.title}
+                                </h4>
+                                <p className="text-[10px] font-medium text-zinc-300 truncate mt-0.5">
+                                  {evt.organizer || "Cubic"} · {evt.venue || "Factory Town"}
+                                </p>
+                              </div>
+                              <span className="text-xs font-black text-emerald-400 shrink-0">
+                                {evt.price === 0 ? "Gratis" : `$${evt.price} USD`}
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                      );
+                    })()}
                   </motion.div>
                 )}
               </AnimatePresence>
