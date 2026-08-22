@@ -970,8 +970,8 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
               </button>
             </div>
 
-            {/* Right: Avatar Button */}
-            <div className="flex items-center gap-3">
+            {/* Right: Avatar & Search Stacked Glass Buttons */}
+            <div className="flex flex-col items-center gap-2">
               <button
                 type="button"
                 onClick={() => setShowUserMenu(!showUserMenu)}
@@ -979,6 +979,19 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                 aria-label="Perfil de usuario"
               >
                 <User className="w-5 h-5 text-white" />
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setActiveStoryScreen(2);
+                  const searchInput = document.getElementById("catalog-search-input");
+                  if (searchInput) searchInput.focus();
+                }}
+                className="w-10 h-10 rounded-full bg-white/10 border border-white/20 backdrop-blur-xl flex items-center justify-center text-white hover:bg-white/20 shadow-lg cursor-pointer transition-all active:scale-95"
+                aria-label="Buscar eventos"
+              >
+                <Search className="w-5 h-5 text-white" />
               </button>
             </div>
           </div>
