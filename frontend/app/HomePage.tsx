@@ -1062,7 +1062,6 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                         id: "4go-chef-intro",
                         poster: "/images/4go_dj_green_alien_hero.png",
                         title: "4go",
-                        tagline: "FOR YOU",
                         line1: "Los mejores shots y la previa... ¿estás listo?",
                         line2: "Explora y vive la fiesta con 4go",
                         event: events[0] || fallbackEvents[0],
@@ -1071,7 +1070,6 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                         id: e.id,
                         poster: e.poster || "/images/now4go-hero-presentation-hd-v3.png",
                         title: e.title,
-                        tagline: "FOR YOU",
                         line1: e.subtitle || e.venue,
                         line2: e.description || "Entradas oficiales disponibles",
                         event: e,
@@ -1121,9 +1119,6 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                           {/* Seamless gradient overlay fading smoothly down into solid pure black */}
                           <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-b from-transparent via-black/80 to-black z-10 pointer-events-none" />
                           <div className="absolute bottom-6 inset-x-0 p-6 flex flex-col items-center text-center z-10 max-w-xl mx-auto">
-                            <span className="text-xs font-extrabold uppercase tracking-[0.25em] text-[#ff77a8] block mb-1 drop-shadow-md">
-                              {currentSlide.tagline}
-                            </span>
                             <h2 className="text-4xl sm:text-6xl font-black text-white tracking-tight uppercase leading-tight drop-shadow-2xl">
                               {currentSlide.title}
                             </h2>
