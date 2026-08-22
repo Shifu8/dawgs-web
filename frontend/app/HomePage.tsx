@@ -1117,7 +1117,7 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                             />
                           </picture>
                           {/* Seamless gradient overlay fading smoothly down into solid pure black */}
-                          <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-b from-transparent via-black/80 to-black z-10 pointer-events-none" />
+                          <div className="absolute inset-x-0 bottom-0 h-48 bg-gradient-to-b from-transparent via-black/60 via-black/90 to-black z-10 pointer-events-none" />
                           <div className="absolute bottom-6 inset-x-0 p-6 flex flex-col items-center text-center z-10 max-w-xl mx-auto">
                             <h2 className="text-4xl sm:text-6xl font-black text-white tracking-tight uppercase leading-tight drop-shadow-2xl">
                               {currentSlide.title}
@@ -1154,22 +1154,6 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                               </button>
                             </div>
                           </div>
-                        </div>
-
-                        <div className="flex items-center justify-center gap-2 -mt-2 mb-4 select-none relative z-20">
-                          {heroSlides.map((_, idx) => (
-                            <button
-                              key={`hero-dot-${idx}`}
-                              type="button"
-                              onClick={() => setHeroIndex(idx)}
-                              className={`h-2 rounded-full transition-all duration-300 cursor-pointer ${
-                                idx === (heroIndex % heroSlides.length)
-                                  ? "w-8 bg-white shadow-[0_0_12px_rgba(255,255,255,0.8)]"
-                                  : "w-2 bg-white/30 hover:bg-white/50"
-                              }`}
-                              aria-label={`Go to slide ${idx + 1}`}
-                            />
-                          ))}
                         </div>
                       </div>
                     );
