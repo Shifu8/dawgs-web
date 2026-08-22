@@ -147,23 +147,34 @@ export default function EventDetailOverlay({
     <motion.div
       initial={{
         opacity: 0,
-        scale: 0.90,
-        y: 30,
+        scale: 0.82,
+        y: 60,
+        filter: "brightness(0)",
       }}
       animate={{
-        opacity: [0, 0, 1],
-        scale: [0.90, 0.92, 1],
-        y: [30, 20, 0],
+        opacity: [0, 1, 1],
+        scale: [0.82, 0.86, 1],
+        y: [60, 35, 0],
+        filter: [
+          "brightness(0)",
+          "brightness(0.35)",
+          "brightness(1)",
+        ],
       }}
       exit={{
-        opacity: [1, 0.5, 0],
-        scale: [1, 0.95, 0.90],
-        y: [0, 15, 30],
+        opacity: [1, 0.7, 0],
+        scale: [1, 0.92, 0.84],
+        y: [0, 25, 50],
+        filter: [
+          "brightness(1)",
+          "brightness(0.3)",
+          "brightness(0)",
+        ],
       }}
       transition={{
-        duration: 0.65,
-        times: [0, 0.32, 1],
-        ease: [0.25, 1, 0.5, 1],
+        duration: 0.95,
+        times: [0, 0.38, 1],
+        ease: [0.16, 1, 0.3, 1],
       }}
       className="fixed inset-0 z-[300] bg-black text-white flex flex-col overflow-hidden select-none"
     >
