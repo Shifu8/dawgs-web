@@ -47,13 +47,13 @@ const DEFAULT_ORGANIZERS = [
     id: "cubic",
     name: "CUBIC",
     type: "Discoteca",
-    img: "/favicon_circular.png",
+    img: "/images/cubic-official-logo.png",
   },
   {
     id: "sata",
     name: "SATA",
     type: "Organizador de eventos",
-    img: "/alien_avatar.png",
+    img: "/images/sata-official-logo.jpg",
   },
 ];
 
@@ -439,8 +439,11 @@ export default function EventDetailOverlay({
                       key={org.id}
                       className="flex items-center justify-between py-2 border-b border-white/5 last:border-0"
                     >
-                      <div className="flex items-center gap-3.5">
-                        <div className="relative w-12 h-12 rounded-full overflow-hidden border border-white/20 bg-zinc-900 shrink-0">
+                      <div
+                        onClick={() => onOpenOrganizer?.(org.id)}
+                        className="flex items-center gap-3.5 cursor-pointer group"
+                      >
+                        <div className="relative w-12 h-12 rounded-full overflow-hidden border border-white/20 group-hover:border-yellow-400 bg-zinc-900 shrink-0 transition-colors">
                           <Image
                             src={org.img}
                             alt={org.name}
@@ -450,7 +453,7 @@ export default function EventDetailOverlay({
                           />
                         </div>
                         <div className="flex flex-col">
-                          <span className="text-base font-extrabold text-white leading-tight">
+                          <span className="text-base font-extrabold text-white leading-tight group-hover:text-yellow-400 transition-colors">
                             {org.name}
                           </span>
                           <span className="text-xs text-zinc-400 font-medium">
