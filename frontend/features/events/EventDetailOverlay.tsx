@@ -145,11 +145,35 @@ export default function EventDetailOverlay({
 
   return (
     <motion.div
-      initial={{ opacity: 0, scale: 0.90, y: 35, filter: "blur(14px)" }}
-      animate={{ opacity: 1, scale: 1, y: 0, filter: "blur(0px)" }}
-      exit={{ opacity: 0, scale: 0.94, y: 25, filter: "blur(10px)" }}
-      transition={{ type: "spring", stiffness: 320, damping: 28, mass: 0.8 }}
-      className="fixed inset-0 z-[300] bg-black text-white flex flex-col overflow-hidden select-none"
+      initial={{
+        opacity: 0,
+        scale: 0.68,
+        y: 90,
+        rotateX: 18,
+        rotateY: -8,
+        filter: "blur(28px) brightness(1.6) contrast(1.2)",
+      }}
+      animate={{
+        opacity: 1,
+        scale: 1,
+        y: 0,
+        rotateX: 0,
+        rotateY: 0,
+        filter: "blur(0px) brightness(1) contrast(1)",
+      }}
+      exit={{
+        opacity: 0,
+        scale: 0.75,
+        y: 60,
+        rotateX: -12,
+        filter: "blur(20px) brightness(0.7)",
+      }}
+      transition={{
+        duration: 0.55,
+        ease: [0.16, 1, 0.3, 1],
+      }}
+      style={{ perspective: 1200 }}
+      className="fixed inset-0 z-[300] bg-black text-white flex flex-col overflow-hidden select-none shadow-[0_0_150px_rgba(168,85,247,0.5)]"
     >
       
       {/* ─── 1. TOP FLOATING NAVIGATION BAR ─── */}
