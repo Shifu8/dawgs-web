@@ -1204,7 +1204,7 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                 </section>
 
                 {/* ─── HORIZONTAL EVENT CAROUSEL ("Trending on 4GO" EXACT MATCHING SCREENSHOT) ─── */}
-                <section className="px-4 sm:px-8 max-w-[1400px] mx-auto space-y-4 pt-6 pb-2">
+                <section className="px-4 sm:px-8 max-w-[1400px] mx-auto space-y-4 -mt-4 sm:-mt-8 relative z-20 pb-4">
                   <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-white/10 pb-4">
                     <div className="max-w-2xl">
                       <h2 className="text-2xl sm:text-3xl font-black text-white tracking-tight font-sans drop-shadow-md">
