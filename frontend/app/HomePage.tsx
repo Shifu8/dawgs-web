@@ -990,33 +990,29 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                 {isHeaderSearchOpen && (
                   <motion.div
                     initial={{ opacity: 0, width: 0, scale: 0.9 }}
-                    animate={{ opacity: 1, width: "270px", scale: 1 }}
+                    animate={{ opacity: 1, width: "260px", scale: 1 }}
                     exit={{ opacity: 0, width: 0, scale: 0.9 }}
                     transition={{ type: "spring", stiffness: 400, damping: 30 }}
-                    className="relative flex items-center h-10 px-3.5 rounded-full bg-[#0e0717]/95 border-2 border-purple-500/50 backdrop-blur-3xl shadow-[0_0_25px_rgba(168,85,247,0.4)] overflow-hidden self-end z-[320]"
+                    className="relative flex items-center h-10 px-3.5 rounded-full bg-white/15 border border-white/25 backdrop-blur-2xl shadow-2xl overflow-hidden self-end z-[320]"
                   >
-                    <Search className="w-4 h-4 text-purple-400 shrink-0 mr-2 animate-pulse" />
+                    <Search className="w-4 h-4 text-purple-300 shrink-0 mr-2" />
                     <input
                       ref={headerSearchInputRef}
                       type="text"
                       value={headerSearchQuery}
                       onChange={(e) => setHeaderSearchQuery(e.target.value)}
-                      placeholder="Buscar artista, evento, Cubic..."
-                      className="w-full bg-transparent text-white placeholder-zinc-400 text-xs font-bold focus:outline-none"
+                      placeholder="Buscar eventos (ej. Cubic)..."
+                      className="w-full bg-transparent text-white placeholder-white/60 text-xs font-semibold focus:outline-none"
                       autoFocus
                     />
-                    {headerSearchQuery ? (
+                    {headerSearchQuery && (
                       <button
                         type="button"
                         onClick={() => setHeaderSearchQuery("")}
-                        className="p-1 text-zinc-400 hover:text-white shrink-0 ml-1 cursor-pointer"
+                        className="p-1 text-white/70 hover:text-white shrink-0 ml-1 cursor-pointer"
                       >
                         <X className="w-3.5 h-3.5" />
                       </button>
-                    ) : (
-                      <span className="text-[9px] font-black text-purple-400 uppercase tracking-widest px-1 py-0.5 rounded bg-purple-900/40 border border-purple-500/30 shrink-0">
-                        LIVE
-                      </span>
                     )}
                   </motion.div>
                 )}
