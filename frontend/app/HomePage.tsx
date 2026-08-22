@@ -937,14 +937,24 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
       {/* ─── APPLE ARCADE FULL-BLEED TRANSPARENT TOP HEADER WITH STORIES LINES OVERLAY ─── */}
       <header className={`absolute inset-x-0 top-0 ${isHeaderSearchOpen ? "z-[300]" : "z-50"} bg-gradient-to-b from-black/90 via-black/30 to-transparent px-4 sm:px-8 pt-3 pb-6 transition-all duration-300 pointer-events-none`}>
         <div className="mx-auto flex w-full max-w-[1400px] flex-col gap-3 pointer-events-auto">
-          {/* 1. TOP STORY SEGMENT LINES (Superimposed over top of hero photo) */}
-          <div className="w-full max-w-xl mx-auto">
-            <StoryLinesHeader
-              screens={storyScreens}
-              activeScreen={activeStoryScreen}
-              onSelectScreen={(idx) => setActiveStoryScreen(idx)}
-            />
-          </div>
+          {/* 1. TOP STORY SEGMENT LINES (Hidden cleanly when search is open) */}
+          <AnimatePresence>
+            {!isHeaderSearchOpen && (
+              <motion.div
+                initial={{ opacity: 1, y: 0 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.2 }}
+                className="w-full max-w-xl mx-auto"
+              >
+                <StoryLinesHeader
+                  screens={storyScreens}
+                  activeScreen={activeStoryScreen}
+                  onSelectScreen={(idx) => setActiveStoryScreen(idx)}
+                />
+              </motion.div>
+            )}
+          </AnimatePresence>
 
           {/* 2. DYNAMIC HEADER TITLE & ACCOUNT BADGE */}
           <div className="flex items-center justify-between gap-4">
@@ -1114,7 +1124,7 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
         </div>
       </header>
 
-      {/* ─── GLASS BACKDROP BLUR FOR ENTIRE PAGE WHEN SEARCH IS OPEN ─── */}
+      {/* ─── TARGETED HERO IMAGE BLUR & GRADIENT BLUR FADE FOR LOWER EVENTS WHEN SEARCH IS OPEN ─── */}
       <AnimatePresence>
         {isHeaderSearchOpen && (
           <motion.div
@@ -1125,8 +1135,13 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
               setIsHeaderSearchOpen(false);
               setHeaderSearchQuery("");
             }}
-            className="fixed inset-0 z-[250] bg-black/60 backdrop-blur-md transition-all cursor-pointer"
-          />
+            className="fixed inset-0 z-[250] transition-all cursor-pointer pointer-events-auto flex flex-col"
+          >
+            {/* Top portion (Hero image blur) */}
+            <div className="h-[55vh] w-full bg-black/45 backdrop-blur-md transition-all" />
+            {/* Bottom portion (Gradient blur fade over events below) */}
+            <div className="flex-1 w-full bg-gradient-to-b from-black/60 via-black/85 to-black backdrop-blur-lg transition-all" />
+          </motion.div>
         )}
       </AnimatePresence>
 
