@@ -145,10 +145,10 @@ export default function EventDetailOverlay({
 
   return (
     <motion.div
-      initial={{ opacity: 0, scale: 0.98 }}
-      animate={{ opacity: 1, scale: 1 }}
-      exit={{ opacity: 0, scale: 0.98 }}
-      transition={{ duration: 0.22, ease: "easeInOut" }}
+      initial={{ opacity: 0, scale: 0.90, y: 35, filter: "blur(14px)" }}
+      animate={{ opacity: 1, scale: 1, y: 0, filter: "blur(0px)" }}
+      exit={{ opacity: 0, scale: 0.94, y: 25, filter: "blur(10px)" }}
+      transition={{ type: "spring", stiffness: 320, damping: 28, mass: 0.8 }}
       className="fixed inset-0 z-[300] bg-black text-white flex flex-col overflow-hidden select-none"
     >
       
