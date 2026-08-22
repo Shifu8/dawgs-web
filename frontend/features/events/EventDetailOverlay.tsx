@@ -197,8 +197,7 @@ export default function EventDetailOverlay({
       {/* ─── 2. HERO POSTER BACKDROP (DYNAMIC PARALLAX LINKED TO DRAG) ─── */}
       <motion.div
         onClick={() => {
-          if (isSheetCollapsed) setIsSheetCollapsed(false);
-          else setIsLightboxOpen(true);
+          setIsSheetCollapsed((prev) => !prev);
         }}
         style={{ scale: posterScale }}
         className="relative w-full flex-1 bg-zinc-950 cursor-pointer overflow-hidden origin-top"
