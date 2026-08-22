@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import { motion, AnimatePresence, useMotionValue, useTransform, useDragControls } from "framer-motion";
 import {
@@ -82,6 +82,11 @@ export default function EventDetailOverlay({
   const [collapseY, setCollapseY] = useState(550);
   const dragControls = useDragControls();
 
+  const isSheetCollapsedRef = useRef(isSheetCollapsed);
+  useEffect(() => {
+    isSheetCollapsedRef.current = isSheetCollapsed;
+  }, [isSheetCollapsed]);
+
   useEffect(() => {
     if (typeof window !== "undefined") {
       setCollapseY(Math.round(window.innerHeight * 0.75));
@@ -98,7 +103,11 @@ export default function EventDetailOverlay({
         if (e.deltaY > 8) {
           setIsSheetCollapsed(false);
         } else if (e.deltaY < -8) {
-          setIsSheetCollapsed(true);
+          if (isSheetCollapsedRef.current) {
+            onClose();
+          } else {
+            setIsSheetCollapsed(true);
+          }
         }
       };
 
@@ -115,7 +124,11 @@ export default function EventDetailOverlay({
           if (diffY > 25) {
             setIsSheetCollapsed(false);
           } else if (diffY < -25) {
-            setIsSheetCollapsed(true);
+            if (isSheetCollapsedRef.current) {
+              onClose();
+            } else {
+              setIsSheetCollapsed(true);
+            }
           }
         }
       };
@@ -132,7 +145,7 @@ export default function EventDetailOverlay({
         window.removeEventListener("touchmove", handleTouchMove);
       };
     }
-  }, []);
+  }, [onClose]);
 
   // Real-time Motion Values for 1-to-1 Continuous Drag & Parallax Poster Motion
   const sheetY = useMotionValue(0);
