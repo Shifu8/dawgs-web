@@ -1452,39 +1452,39 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                 </div>
 
                 {/* ─── LOWER FEATURE SECTION BELOW VIDEO & LOGIN HERO (SCROLLABLE DOWN) ─── */}
-                <div id="subir-features-section" className="w-full bg-white text-black py-16 sm:py-24 px-6 sm:px-12 font-sans border-t border-zinc-200">
+                <div id="subir-features-section" className="w-full bg-zinc-950 text-white pt-16 sm:pt-24 pb-28 sm:pb-36 px-6 sm:px-12 border-t border-zinc-800 font-sans">
                   <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
                     {/* Left Side: Marketing & Feature Text */}
                     <div className="lg:col-span-7 space-y-6 text-left">
-                      <h2 className="text-3xl sm:text-5xl font-black uppercase tracking-tight leading-tight text-black font-sans">
+                      <h2 className="text-3xl sm:text-5xl font-black uppercase tracking-tight leading-tight text-white font-sans">
                         Publica tus eventos &amp; Conecta con tu audiencia
                       </h2>
-                      <p className="text-sm sm:text-base text-zinc-600 leading-relaxed font-medium">
+                      <p className="text-sm sm:text-base text-zinc-300 leading-relaxed font-medium">
                         Diseñado exclusivamente para productores, creadores y clubes nocturnos. Gestiona preventas en tiempo real, validación QR ultrasónica en puerta y control total de entradas en una sola plataforma.
                       </p>
                       <div className="pt-2 flex flex-wrap items-center gap-4">
                         <button
                           type="button"
                           onClick={() => router.push("/organizer/register")}
-                          className="px-8 py-3.5 rounded-full bg-black hover:bg-zinc-800 text-white font-black text-xs uppercase tracking-widest transition-all shadow-xl active:scale-95 cursor-pointer"
+                          className="px-8 py-3.5 rounded-full bg-white hover:bg-zinc-200 text-black font-black text-xs uppercase tracking-widest transition-all shadow-xl active:scale-95 cursor-pointer"
                         >
                           Crear cuenta de organizador
                         </button>
                         <button
                           type="button"
                           onClick={() => setActiveStoryScreen(1)}
-                          className="px-8 py-3.5 rounded-full bg-transparent border-2 border-black hover:bg-black/5 text-black font-black text-xs uppercase tracking-widest transition-all shadow-xl active:scale-95 cursor-pointer"
+                          className="px-8 py-3.5 rounded-full bg-zinc-900 hover:bg-zinc-800 text-white border border-white/25 font-black text-xs uppercase tracking-widest transition-all shadow-xl active:scale-95 cursor-pointer"
                         >
                           Explorar eventos
                         </button>
                       </div>
                     </div>
 
-                    {/* Right Side: The Showcase Photo */}
-                    <div className="lg:col-span-5 relative w-full h-[400px] sm:h-[500px] rounded-3xl overflow-hidden shadow-2xl border border-black/10 group cursor-pointer bg-zinc-950">
+                    {/* Right Side: The Red Girl Showcase Photo */}
+                    <div className="lg:col-span-5 relative w-full h-[400px] sm:h-[500px] rounded-3xl overflow-hidden shadow-2xl border border-white/15 group cursor-pointer bg-zinc-950">
                       <Image
-                        src="/images/subir_evento_party_showcase.jpg"
-                        alt="4GO Showcase"
+                        src="/images/4go_red_girl_showcase.jpg"
+                        alt="4GO Red Girl Showcase"
                         fill
                         priority
                         className="object-cover group-hover:scale-105 transition-transform duration-500"
