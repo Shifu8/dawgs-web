@@ -1686,10 +1686,10 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                       <div className="flex flex-col items-center text-center space-y-4 group">
                         <div className="relative w-36 h-36 sm:w-44 sm:h-44 transition-transform duration-300 group-hover:scale-105">
                           <Image
-                            src="/favicon_circular.png"
+                            src="/images/4go_alien_hands_logo.png"
                             alt="Transparent Pricing"
                             fill
-                            className="object-contain filter drop-shadow-xl"
+                            className="object-contain filter drop-shadow-xl rounded-xl"
                           />
                         </div>
                         <p className="text-sm sm:text-base font-extrabold text-zinc-100 max-w-xs leading-snug">
@@ -1813,11 +1813,11 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
 
                     <div className="relative w-36 h-36 md:w-44 md:h-44 shrink-0 flex items-center justify-center">
                       <Image
-                        src="/favicon_circular.png"
-                        alt="DJ Mascot"
+                        src="/images/4go_alien_hands_logo.png"
+                        alt="4GO Official Mascot"
                         width={200}
                         height={200}
-                        className="w-full h-full object-contain filter drop-shadow-[0_0_30px_rgba(34,197,94,0.3)]"
+                        className="w-full h-full object-contain filter drop-shadow-[0_0_35px_rgba(34,197,94,0.4)] rounded-2xl"
                       />
                     </div>
                   </div>
