@@ -1607,44 +1607,7 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                               </p>
                             </div>
                             <div className="mt-5 flex flex-col items-center gap-3">
-                              {/* Row 1: CREAR EVENTO, CARTELERA & MERCH */}
-                              <div className="flex flex-wrap items-center justify-center gap-2.5 sm:gap-3">
-                                <button
-                                  type="button"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    setActiveStoryScreen(0);
-                                  }}
-                                  className="px-6 py-3 rounded-full bg-zinc-900/80 hover:bg-zinc-800/90 text-white font-black text-xs uppercase tracking-widest backdrop-blur-2xl border border-white/30 shadow-lg transition-all hover:scale-105 active:scale-95 cursor-pointer"
-                                >
-                                  CREAR EVENTO
-                                </button>
-                                <button
-                                  type="button"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    setActiveStoryScreen(2);
-                                  }}
-                                  className="px-6 py-3 rounded-full bg-zinc-900/80 hover:bg-zinc-800/90 text-white font-black text-xs uppercase tracking-widest backdrop-blur-2xl border border-white/30 shadow-lg transition-all hover:scale-105 active:scale-95 cursor-pointer"
-                                >
-                                  CARTELERA
-                                </button>
-                                <button
-                                  type="button"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    const el = document.getElementById("merch-4go-section");
-                                    if (el) {
-                                      el.scrollIntoView({ behavior: "smooth" });
-                                    }
-                                  }}
-                                  className="px-6 py-3 rounded-full bg-zinc-900/80 hover:bg-zinc-800/90 text-white font-black text-xs uppercase tracking-widest backdrop-blur-2xl border border-white/30 shadow-lg transition-all hover:scale-105 active:scale-95 cursor-pointer"
-                                >
-                                  MERCH
-                                </button>
-                              </div>
-
-                              {/* Row 2: GOOGLE & APPLE SOCIAL LOGIN BUTTONS */}
+                              {/* GOOGLE & APPLE SOCIAL LOGIN BUTTONS */}
                               <div className="flex flex-wrap items-center justify-center gap-2.5 sm:gap-3">
                                 {/* Google Login */}
                                 <button
