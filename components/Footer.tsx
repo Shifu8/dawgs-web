@@ -18,8 +18,16 @@ export default function Footer() {
       <div className="max-w-[1400px] mx-auto space-y-16 relative z-10">
         {/* ─── TOP SECTION: NAVIGATION COLUMNS ─── */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-6 items-start lg:items-center">
-          {/* Left Column: Description (Vertically Centered) */}
-          <div className="lg:col-span-4 lg:self-center flex flex-col justify-center h-full space-y-4">
+          {/* Left Column: Logo + Description (Vertically Centered) */}
+          <div className="lg:col-span-4 lg:self-center flex items-center gap-4 h-full">
+            <div className="relative w-16 h-16 sm:w-20 sm:h-20 shrink-0">
+              <Image
+                src="/images/4go_alien_hands_logo.png"
+                alt="4GO Logo"
+                fill
+                className="object-contain filter drop-shadow-[0_0_20px_rgba(34,197,94,0.3)] rounded-xl"
+              />
+            </div>
             <p className="text-xs text-zinc-400 font-medium max-w-sm leading-relaxed">
               Descubre los mejores eventos, conciertos y experiencias en Ecuador. Entradas oficiales y acceso instantáneo desde tu dispositivo.
             </p>
