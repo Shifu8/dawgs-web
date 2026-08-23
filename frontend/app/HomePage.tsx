@@ -48,6 +48,7 @@ import {
   Heart,
   Volume2,
   VolumeX,
+  Mic,
 } from "lucide-react";
 import { AnimatePresence, motion, useDragControls } from "framer-motion";
 import Atmosphere from "@/frontend/components/Atmosphere";
@@ -83,9 +84,38 @@ import { getOnlineSalesStatus } from "@/frontend/utils/cutoff";
 const HOME_NAV_ITEMS = [
   { id: "home", label: "Home" },
   { id: "explore", label: "Shows" },
-  { id: "wear", label: "Merch" },
-  { id: "support", label: "Support" },
-] as const;
+  { id: "merch", label: "Merch" },
+  { id: "access", label: "Passes" },
+];
+
+export interface SearchProfile {
+  id: string;
+  name: string;
+  type: "Artista" | "Perfil" | "Organizador";
+  avatar?: string;
+}
+
+export const SEARCH_PROFILES: SearchProfile[] = [
+  { id: "cubicolor", name: "Cubicolor", type: "Artista" },
+  { id: "the-cubical", name: "The Cubical", type: "Artista" },
+  { id: "julian-cubillos", name: "Julian Cubillos", type: "Artista" },
+  { id: "tory-silver", name: "Tory Silver", type: "Artista" },
+  { id: "annie-collette", name: "Annie Collette", type: "Artista" },
+  { id: "peter-gregson", name: "Peter Gregson", type: "Artista" },
+  { id: "bowie", name: "Bowie", type: "Artista" },
+  { id: "cubic", name: "Cubic", type: "Organizador", avatar: "/4go_organizer_artwork_v4.jpg" },
+  { id: "sata-music", name: "Sata Music", type: "Organizador", avatar: "/images/trap_loud_trio_artists.png" },
+  { id: "4go", name: "4Go", type: "Organizador", avatar: "/images/now4go-hero-presentation-hd-v3.png" },
+  { id: "yan-block", name: "YAN BLOCK", type: "Artista", avatar: "/images/yan_block_artist_1779161408288.png" },
+  { id: "omar-courtz", name: "OMAR COURTZ", type: "Artista", avatar: "/images/omar_courtz_artist_1779161689015.png" },
+  { id: "roa", name: "ROA", type: "Artista", avatar: "/images/roa_artist_1779161704881.png" },
+  { id: "anuel-aa", name: "ANUEL AA", type: "Artista" },
+  { id: "bad-bunny", name: "BAD BUNNY", type: "Artista" },
+  { id: "brent-faiyaz", name: "BRENT FAIYAZ", type: "Artista" },
+  { id: "kaskade", name: "Kaskade", type: "Artista", avatar: "/images/4go_dj_green_alien_hero_2k.png" },
+  { id: "fisher", name: "FISHER", type: "Artista" },
+  { id: "armin-van-buuren", name: "Armin van Buuren", type: "Artista" },
+];
 
 type HomeNavId = (typeof HOME_NAV_ITEMS)[number]["id"];
 
@@ -330,6 +360,7 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
   const homeCarouselRef = useRef<HTMLDivElement>(null);
   const [isCarouselHovered, setIsCarouselHovered] = useState(false);
   const [likedEvents, setLikedEvents] = useState<Record<string, boolean>>({});
+  const [followedProfiles, setFollowedProfiles] = useState<Record<string, boolean>>({});
 
   // Smooth 60fps continuous slow auto-scroll to the right (no jumps, lentito)
   useEffect(() => {
@@ -996,161 +1027,217 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
               </button>
             </div>
 
-            {/* Right: Avatar & Search Glass Container */}
-            <div className="relative flex items-end gap-2 shrink-0 z-[300]">
-              {/* Expanding Glass Search Input (Positioned right alongside search button) */}
-              <AnimatePresence>
-                {isHeaderSearchOpen && (
-                  <motion.div
-                    initial={{ opacity: 0, width: 0, scale: 0.9 }}
-                    animate={{ opacity: 1, width: "260px", scale: 1 }}
-                    exit={{ opacity: 0, width: 0, scale: 0.9 }}
-                    transition={{ type: "spring", stiffness: 400, damping: 30 }}
-                    className="relative flex items-center h-10 px-3.5 rounded-full bg-white/15 border border-white/25 backdrop-blur-2xl shadow-2xl overflow-hidden self-end z-[320]"
-                  >
-                    <Search className="w-4 h-4 text-purple-300 shrink-0 mr-2" />
-                    <input
-                      ref={headerSearchInputRef}
-                      type="text"
-                      value={headerSearchQuery}
-                      onChange={(e) => setHeaderSearchQuery(e.target.value)}
-                      placeholder="Buscar eventos (ej. Cubic)..."
-                      className="w-full bg-transparent text-white placeholder-white/60 text-xs font-semibold focus:outline-none"
-                      autoFocus
-                    />
-                    {headerSearchQuery && (
-                      <button
-                        type="button"
-                        onClick={() => setHeaderSearchQuery("")}
-                        className="p-1 text-white/70 hover:text-white shrink-0 ml-1 cursor-pointer"
-                      >
-                        <X className="w-3.5 h-3.5" />
-                      </button>
-                    )}
-                  </motion.div>
-                )}
-              </AnimatePresence>
+            {/* Right: Avatar & Clean Search Button */}
+            <div className="relative flex items-center gap-2 shrink-0 z-[300]">
+              <button
+                type="button"
+                onClick={() => setShowUserMenu(!showUserMenu)}
+                className="w-10 h-10 rounded-full bg-white/10 border border-white/20 backdrop-blur-xl flex items-center justify-center text-white hover:bg-white/20 shadow-lg cursor-pointer transition-all active:scale-95"
+                aria-label="Perfil de usuario"
+              >
+                <User className="w-5 h-5 text-white" />
+              </button>
 
-              {/* Stacked User Profile & Search Button */}
-              <div className="flex flex-col items-center gap-2">
-                <button
-                  type="button"
-                  onClick={() => setShowUserMenu(!showUserMenu)}
-                  className="w-10 h-10 rounded-full bg-white/10 border border-white/20 backdrop-blur-xl flex items-center justify-center text-white hover:bg-white/20 shadow-lg cursor-pointer transition-all active:scale-95"
-                  aria-label="Perfil de usuario"
-                >
-                  <User className="w-5 h-5 text-white" />
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => {
-                    setIsHeaderSearchOpen((prev) => !prev);
-                    if (!isHeaderSearchOpen) {
-                      setTimeout(() => headerSearchInputRef.current?.focus(), 100);
-                    }
-                  }}
-                  className={`w-10 h-10 rounded-full border backdrop-blur-xl flex items-center justify-center text-white shadow-lg cursor-pointer transition-all active:scale-95 ${
-                    isHeaderSearchOpen
-                      ? "bg-purple-600 border-purple-300 text-white shadow-[0_0_25px_rgba(168,85,247,0.7)] scale-105"
-                      : "bg-white/10 border-white/20 hover:bg-white/20"
-                  }`}
-                  aria-label="Buscar eventos"
-                >
-                  <Search className="w-5 h-5 text-white" />
-                </button>
-              </div>
-
-              {/* ─── LIVE AUTO-SUGGESTIONS DROPDOWN (ONLY RENDERS WHEN TYPING) ─── */}
-              <AnimatePresence>
-                {isHeaderSearchOpen && headerSearchQuery.trim().length > 0 && (
-                  <motion.div
-                    initial={{ opacity: 0, y: 8, scale: 0.98 }}
-                    animate={{ opacity: 1, y: 0, scale: 1 }}
-                    exit={{ opacity: 0, y: 8, scale: 0.98 }}
-                    transition={{ duration: 0.2 }}
-                    className="absolute top-12 right-12 w-80 sm:w-96 rounded-2xl bg-black/85 border border-white/20 backdrop-blur-3xl p-3 shadow-2xl z-[310] space-y-2 max-h-[60vh] overflow-y-auto no-scrollbar"
-                  >
-                    {(() => {
-                      const query = headerSearchQuery.toLowerCase().trim();
-                      const matchingEvents = events.filter((e) => {
-                        const titleMatch = (e.title || "").toLowerCase().includes(query);
-                        const orgMatch = (e.organizer || "").toLowerCase().includes(query) || (e.organizers || []).some((o) => o.toLowerCase().includes(query));
-                        const venueMatch = (e.venue || "").toLowerCase().includes(query) || (e.city || "").toLowerCase().includes(query);
-                        const subMatch = (e.subtitle || "").toLowerCase().includes(query);
-                        return titleMatch || orgMatch || venueMatch || subMatch;
-                      });
-
-                      if (matchingEvents.length === 0) {
-                        return (
-                          <div className="p-4 text-center text-xs font-semibold text-zinc-400">
-                            No se encontraron resultados para "<span className="text-white font-bold">{headerSearchQuery}</span>"
-                          </div>
-                        );
-                      }
-
-                      return (
-                        <div className="space-y-1.5">
-                          <div className="px-2 py-1 text-[10px] font-black uppercase tracking-widest text-zinc-400 border-b border-white/10 mb-1 flex items-center justify-between">
-                            <span>Resultados</span>
-                            <span className="text-purple-400 font-bold">{matchingEvents.length} eventos</span>
-                          </div>
-                          {matchingEvents.map((evt) => (
-                            <div
-                              key={`side-sug-${evt.id}`}
-                              onClick={() => {
-                                setSelectedCarouselEvent(evt);
-                                setShowDetailOverlay(true);
-                                setIsHeaderSearchOpen(false);
-                                setHeaderSearchQuery("");
-                              }}
-                              className="flex items-center gap-3 p-2 rounded-xl bg-white/10 hover:bg-white/20 border border-white/15 backdrop-blur-xl transition-all cursor-pointer group"
-                            >
-                              <div className="relative w-11 h-11 rounded-lg overflow-hidden bg-black/40 shrink-0 border border-white/15">
-                                <Image
-                                  src={evt.poster || "/images/now4go-hero-presentation-hd-v3.png"}
-                                  alt={evt.title}
-                                  fill
-                                  className="object-cover group-hover:scale-105 transition-transform"
-                                />
-                              </div>
-                              <div className="flex-1 text-left min-w-0">
-                                <h4 className="text-xs font-extrabold text-white truncate group-hover:text-purple-300 transition-colors">
-                                  {evt.title}
-                                </h4>
-                                <p className="text-[10px] font-medium text-zinc-300 truncate mt-0.5">
-                                  {evt.organizer || "Cubic"} · {evt.venue || "Factory Town"}
-                                </p>
-                              </div>
-                              <span className="text-xs font-black text-emerald-400 shrink-0">
-                                {evt.price === 0 ? "Gratis" : `$${evt.price} USD`}
-                              </span>
-                            </div>
-                          ))}
-                        </div>
-                      );
-                    })()}
-                  </motion.div>
-                )}
-              </AnimatePresence>
+              <button
+                type="button"
+                onClick={() => {
+                  setIsHeaderSearchOpen((prev) => !prev);
+                  if (!isHeaderSearchOpen) {
+                    setTimeout(() => headerSearchInputRef.current?.focus(), 100);
+                  }
+                }}
+                className={`w-10 h-10 rounded-full border backdrop-blur-xl flex items-center justify-center shadow-lg cursor-pointer transition-all active:scale-95 ${
+                  isHeaderSearchOpen
+                    ? "bg-white border-white text-zinc-900 shadow-xl scale-105"
+                    : "bg-white/10 border-white/20 hover:bg-white/20 text-white"
+                }`}
+                aria-label="Buscar eventos o perfiles"
+              >
+                <Search className={`w-5 h-5 ${isHeaderSearchOpen ? "text-zinc-900" : "text-white"}`} />
+              </button>
             </div>
           </div>
         </div>
       </header>
 
-      {/* ─── CONTINUOUS GLASS BACKDROP BLUR WHEN SEARCH IS OPEN (NO HARD CUT LINES) ─── */}
+      {/* ─── CLEAN SEARCH MODAL OVERLAY MATCHING DESIGN SCREENSHOT ─── */}
       <AnimatePresence>
         {isHeaderSearchOpen && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={() => {
-              setIsHeaderSearchOpen(false);
-              setHeaderSearchQuery("");
-            }}
-            className="fixed inset-0 z-[250] bg-black/50 backdrop-blur-md transition-all cursor-pointer pointer-events-auto"
-          />
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => {
+                setIsHeaderSearchOpen(false);
+                setHeaderSearchQuery("");
+              }}
+              className="fixed inset-0 z-[310] bg-black/60 backdrop-blur-md cursor-pointer"
+            />
+
+            <motion.div
+              initial={{ opacity: 0, y: -16, scale: 0.96 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -16, scale: 0.96 }}
+              transition={{ type: "spring", stiffness: 450, damping: 32 }}
+              className="fixed top-4 inset-x-3 sm:inset-x-auto sm:left-1/2 sm:-translate-x-1/2 sm:w-[540px] z-[320] pointer-events-auto"
+            >
+              {/* 1. White Pill Search Bar Input */}
+              <div className="relative flex items-center h-12 px-4 rounded-full bg-white border border-zinc-200 shadow-2xl text-zinc-900 w-full">
+                <Search className="w-5 h-5 text-zinc-500 shrink-0 mr-3" />
+                <input
+                  ref={headerSearchInputRef}
+                  type="text"
+                  value={headerSearchQuery}
+                  onChange={(e) => setHeaderSearchQuery(e.target.value)}
+                  placeholder="Buscar..."
+                  className="w-full bg-transparent text-zinc-900 placeholder-zinc-400 text-sm font-semibold focus:outline-none"
+                  autoFocus
+                />
+                {headerSearchQuery ? (
+                  <button
+                    type="button"
+                    onClick={() => setHeaderSearchQuery("")}
+                    className="p-1 text-zinc-400 hover:text-zinc-800 shrink-0 ml-1 cursor-pointer rounded-full hover:bg-zinc-100 transition-colors"
+                  >
+                    <X className="w-5 h-5" />
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => setIsHeaderSearchOpen(false)}
+                    className="p-1 text-zinc-400 hover:text-zinc-800 shrink-0 ml-1 cursor-pointer rounded-full hover:bg-zinc-100 transition-colors"
+                  >
+                    <X className="w-5 h-5" />
+                  </button>
+                )}
+              </div>
+
+              {/* 2. White Card Results Dropdown Box */}
+              <div className="mt-2.5 w-full rounded-2xl bg-white border border-zinc-200 shadow-2xl p-4 text-zinc-900 max-h-[68vh] overflow-y-auto no-scrollbar space-y-2">
+                <h3 className="text-sm font-extrabold text-zinc-900 tracking-tight px-1 mb-2">
+                  Resultados de la búsqueda
+                </h3>
+
+                {(() => {
+                  const query = headerSearchQuery.toLowerCase().trim();
+                  const matchingProfiles = SEARCH_PROFILES.filter((p) =>
+                    query === ""
+                      ? true
+                      : p.name.toLowerCase().includes(query) || p.type.toLowerCase().includes(query)
+                  );
+                  const matchingEvents = events.filter((e) => {
+                    if (query === "") return true;
+                    const titleMatch = (e.title || "").toLowerCase().includes(query);
+                    const orgMatch =
+                      (e.organizer || "").toLowerCase().includes(query) ||
+                      (e.organizers || []).some((o) => o.toLowerCase().includes(query));
+                    const venueMatch =
+                      (e.venue || "").toLowerCase().includes(query) || (e.city || "").toLowerCase().includes(query);
+                    const subMatch = (e.subtitle || "").toLowerCase().includes(query);
+                    const dateMatch = (e.dateLabel || "").toLowerCase().includes(query);
+                    return titleMatch || orgMatch || venueMatch || subMatch || dateMatch;
+                  });
+
+                  if (matchingProfiles.length === 0 && matchingEvents.length === 0) {
+                    return (
+                      <div className="p-6 text-center text-xs font-semibold text-zinc-500">
+                        No se encontraron resultados para &quot;<span className="text-zinc-900 font-bold">{headerSearchQuery}</span>&quot;
+                      </div>
+                    );
+                  }
+
+                  return (
+                    <div className="space-y-1">
+                      {/* Profiles List */}
+                      {matchingProfiles.map((prof) => (
+                        <div
+                          key={`search-prof-${prof.id}`}
+                          onClick={() => {
+                            if (prof.type === "Organizador") {
+                              setSelectedOrganizerSlug(prof.id);
+                              setShowOrganizerOverlay(true);
+                              setIsHeaderSearchOpen(false);
+                            }
+                          }}
+                          className="flex items-center justify-between gap-3 p-2 rounded-xl hover:bg-zinc-100/80 transition-colors cursor-pointer group"
+                        >
+                          <div className="flex items-center gap-3 min-w-0">
+                            <div className="w-11 h-11 rounded-full bg-zinc-800 flex items-center justify-center text-white shrink-0 overflow-hidden relative border border-zinc-200/80">
+                              {prof.avatar ? (
+                                <Image src={prof.avatar} alt={prof.name} fill className="object-cover" />
+                              ) : (
+                                <Mic className="w-5 h-5 text-zinc-300" />
+                              )}
+                            </div>
+                            <div className="flex-1 min-w-0 text-left">
+                              <h4 className="text-sm font-extrabold text-zinc-900 leading-tight truncate group-hover:text-black">
+                                {prof.name}
+                              </h4>
+                              <p className="text-xs font-medium text-zinc-500 mt-0.5">
+                                {prof.type}
+                              </p>
+                            </div>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setFollowedProfiles((prev) => ({
+                                ...prev,
+                                [prof.id]: !prev[prof.id],
+                              }));
+                            }}
+                            className={`px-5 py-2 rounded-full text-[11px] font-extrabold uppercase tracking-wider transition-all border shrink-0 cursor-pointer active:scale-95 ${
+                              followedProfiles[prof.id]
+                                ? "bg-zinc-900 text-white border-zinc-900 shadow-sm"
+                                : "bg-zinc-100 hover:bg-zinc-200 text-zinc-900 border-zinc-200/80"
+                            }`}
+                          >
+                            {followedProfiles[prof.id] ? "SIGUIENDO" : "SEGUIR"}
+                          </button>
+                        </div>
+                      ))}
+
+                      {/* Events List */}
+                      {matchingEvents.map((evt) => (
+                        <div
+                          key={`search-evt-${evt.id}`}
+                          onClick={() => {
+                            setSelectedCarouselEvent(evt);
+                            setShowDetailOverlay(true);
+                            setIsHeaderSearchOpen(false);
+                            setHeaderSearchQuery("");
+                          }}
+                          className="flex items-center gap-3 p-2 rounded-xl hover:bg-zinc-100/80 transition-colors cursor-pointer group"
+                        >
+                          <div className="relative w-11 h-11 sm:w-12 sm:h-12 rounded-xl overflow-hidden bg-zinc-100 shrink-0 border border-zinc-200/80">
+                            <Image
+                              src={evt.poster || "/images/now4go-hero-presentation-hd-v3.png"}
+                              alt={evt.title}
+                              fill
+                              className="object-cover group-hover:scale-105 transition-transform"
+                            />
+                          </div>
+                          <div className="flex-1 min-w-0 text-left">
+                            <h4 className="text-sm font-extrabold text-zinc-900 truncate group-hover:text-black leading-snug">
+                              {evt.title}
+                            </h4>
+                            <p className="text-xs font-medium text-zinc-500 truncate mt-0.5">
+                              {evt.dateLabel || "jue, 17 sept"}
+                            </p>
+                            <p className="text-xs font-medium text-zinc-400 truncate">
+                              {evt.venue || "Factory Town"}, {evt.city || "Miami"}
+                            </p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  );
+                })()}
+              </div>
+            </motion.div>
+          </>
         )}
       </AnimatePresence>
 
@@ -1540,9 +1627,9 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                   })()}
                 </section>
 
-                {/* ─── HORIZONTAL EVENT CAROUSEL ("Trending on 4GO" FULL BLEED 100% WHITE) ─── */}
-                <section className="w-full bg-white text-black py-8 sm:py-12 relative z-20">
-                  <div className="max-w-[1400px] mx-auto px-4 sm:px-8 space-y-6">
+                {/* ─── HORIZONTAL EVENT CAROUSEL ("Trending on 4GO" FULL BLEED EDGE-TO-EDGE) ─── */}
+                <section className="w-full bg-white text-black py-8 sm:py-12 relative z-20 overflow-x-hidden">
+                  <div className="max-w-[1400px] mx-auto px-4 sm:px-8 mb-6">
                     <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-zinc-200 pb-4">
                       <div className="max-w-2xl">
                         <h2 className="text-2xl sm:text-3xl font-black text-black tracking-tight font-sans drop-shadow-sm">
@@ -1553,7 +1640,7 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                         </p>
                       </div>
                       
-                      {/* BROWSE EVENTS Pill Button (Arrows removed as requested) */}
+                      {/* BROWSE EVENTS Pill Button */}
                       <div className="flex items-center gap-3 shrink-0">
                         <button
                           type="button"
@@ -1564,9 +1651,9 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                         </button>
                       </div>
                     </div>
+                  </div>
 
-                  {/* Horizontal Scroll Row (GPU-Accelerated 100% Stutter-Free Ultra-Slow Linear Drift) */}
-                  {/* Horizontal Scroll Row (Mobile & PC 100% Identical Marquee Movement) */}
+                  {/* Horizontal Scroll Row (Edge-to-Edge 100% Full Bleed Screen Width) */}
                   <div
                     onMouseEnter={() => setIsCarouselHovered(true)}
                     onMouseLeave={() => setIsCarouselHovered(false)}
@@ -1581,7 +1668,7 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                       }
                     `}</style>
                     <div
-                      className="flex items-center gap-4 sm:gap-5 shrink-0 w-max"
+                      className="flex items-center gap-4 sm:gap-5 shrink-0 w-max pl-4 sm:pl-6"
                       style={{
                         animation: "marqueeLeftResponsive 240s linear infinite",
                         animationPlayState: isCarouselHovered ? "paused" : "running",
@@ -1596,22 +1683,35 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                             setSelectedCarouselEvent(evt);
                             setShowDetailOverlay(true);
                           }}
-                          className="w-36 sm:w-56 shrink-0 flex flex-col space-y-2 cursor-pointer group"
+                          className="w-36 sm:w-56 md:w-60 lg:w-64 shrink-0 flex flex-col space-y-2 cursor-pointer group"
                         >
-                          {/* Square Artwork Container with Rounded Corners (No Zoom) */}
-                          <div className="relative w-full aspect-square rounded-2xl overflow-hidden bg-zinc-900 shadow-xl border border-zinc-200 group-hover:border-purple-500/60 transition-colors duration-300">
+                          {/* Square Artwork Container with Play & Heart Overlays */}
+                          <div className="relative w-full aspect-square rounded-2xl overflow-hidden bg-zinc-900 shadow-md border border-zinc-200 group-hover:border-zinc-400 transition-colors">
                             <Image
                               src={evt.poster || "/images/now4go-hero-presentation-hd-v3.png"}
                               alt={evt.title}
                               fill
                               className="object-cover brightness-105"
-                              sizes="(max-width: 640px) 150px, 240px"
+                              sizes="(max-width: 640px) 150px, 300px"
                             />
                             {/* Subtle Gradient Overlay */}
-                            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
 
-                            {/* Only Heart Overlay Button on Poster Image */}
-                            <div className="absolute bottom-2.5 right-2.5 z-10">
+                            {/* Play & Heart Overlay Buttons (Matching user screenshot) */}
+                            <div className="absolute bottom-2.5 right-2.5 z-10 flex items-center gap-1.5">
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setSelectedCarouselEvent(evt);
+                                  setShowDetailOverlay(true);
+                                }}
+                                className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-black/80 backdrop-blur-md border border-white/20 flex items-center justify-center text-white hover:scale-110 active:scale-95 transition-transform shadow-lg cursor-pointer"
+                                aria-label="Ver detalles"
+                              >
+                                <Play className="w-3.5 h-3.5 fill-white text-white ml-0.5" />
+                              </button>
+
                               <button
                                 type="button"
                                 onClick={(e) => {
@@ -1621,7 +1721,7 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                                     [evt.id]: !prev[evt.id],
                                   }));
                                 }}
-                                className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-black/75 backdrop-blur-md border border-white/20 flex items-center justify-center text-white hover:scale-110 active:scale-95 transition-transform shadow-lg cursor-pointer"
+                                className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-black/80 backdrop-blur-md border border-white/20 flex items-center justify-center text-white hover:scale-110 active:scale-95 transition-transform shadow-lg cursor-pointer"
                                 aria-label="Guardar favorito"
                               >
                                 <Heart
@@ -1654,8 +1754,7 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                       ))}
                     </div>
                   </div>
-                </div>
-              </section>
+                </section>
 
                 {/* ─── 3. BLACK FEATURE SECTION (EN ESPAÑOL) ─── */}
                 <section className="w-full bg-black text-white py-16 sm:py-24 relative z-20 font-sans border-t border-zinc-900">
