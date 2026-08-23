@@ -1816,7 +1816,7 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                 </section>
 
                 {/* ─── 4. WHITE ORGANIZER BANNER SECTION (PUBLICA TUS EVENTOS) ─── */}
-                <section id="subir-features-section" className="w-full bg-white text-black py-16 sm:py-24 relative z-20 font-sans border-t border-zinc-200">
+                <section id="subir-features-section" className="w-full bg-white text-black py-16 sm:py-24 relative z-20 font-sans">
                   <div className="max-w-[1300px] mx-auto px-6 sm:px-12">
                     <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8 items-center">
                       {/* Left Column: Title, Description & Action Buttons */}
@@ -1867,7 +1867,7 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                 </section>
 
                 {/* ─── 5. SECOND WHITE BANNER SECTION (IMAGE ON LEFT, TEXT ON RIGHT) ─── */}
-                <section className="w-full bg-white text-black py-16 sm:py-24 relative z-20 font-sans border-t border-zinc-200">
+                <section className="w-full bg-white text-black py-16 sm:py-24 relative z-20 font-sans">
                   <div className="max-w-[1300px] mx-auto px-6 sm:px-12">
                     <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8 items-center">
                       {/* Left Column: Image Container (Image on Left) */}
