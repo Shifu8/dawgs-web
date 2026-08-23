@@ -49,6 +49,7 @@ import {
   Volume2,
   VolumeX,
   Mic,
+  Building2,
 } from "lucide-react";
 import { AnimatePresence, motion, useDragControls } from "framer-motion";
 import Atmosphere from "@/frontend/components/Atmosphere";
@@ -91,30 +92,19 @@ const HOME_NAV_ITEMS = [
 export interface SearchProfile {
   id: string;
   name: string;
-  type: "Artista" | "Perfil" | "Organizador";
+  type: "Organizador" | "Discoteca / Club Nocturno";
   avatar?: string;
 }
 
 export const SEARCH_PROFILES: SearchProfile[] = [
-  { id: "cubicolor", name: "Cubicolor", type: "Artista" },
-  { id: "the-cubical", name: "The Cubical", type: "Artista" },
-  { id: "julian-cubillos", name: "Julian Cubillos", type: "Artista" },
-  { id: "tory-silver", name: "Tory Silver", type: "Artista" },
-  { id: "annie-collette", name: "Annie Collette", type: "Artista" },
-  { id: "peter-gregson", name: "Peter Gregson", type: "Artista" },
-  { id: "bowie", name: "Bowie", type: "Artista" },
   { id: "cubic", name: "Cubic", type: "Organizador", avatar: "/4go_organizer_artwork_v4.jpg" },
   { id: "sata-music", name: "Sata Music", type: "Organizador", avatar: "/images/trap_loud_trio_artists.png" },
   { id: "4go", name: "4Go", type: "Organizador", avatar: "/images/now4go-hero-presentation-hd-v3.png" },
-  { id: "yan-block", name: "YAN BLOCK", type: "Artista", avatar: "/images/yan_block_artist_1779161408288.png" },
-  { id: "omar-courtz", name: "OMAR COURTZ", type: "Artista", avatar: "/images/omar_courtz_artist_1779161689015.png" },
-  { id: "roa", name: "ROA", type: "Artista", avatar: "/images/roa_artist_1779161704881.png" },
-  { id: "anuel-aa", name: "ANUEL AA", type: "Artista" },
-  { id: "bad-bunny", name: "BAD BUNNY", type: "Artista" },
-  { id: "brent-faiyaz", name: "BRENT FAIYAZ", type: "Artista" },
-  { id: "kaskade", name: "Kaskade", type: "Artista", avatar: "/images/4go_dj_green_alien_hero_2k.png" },
-  { id: "fisher", name: "FISHER", type: "Artista" },
-  { id: "armin-van-buuren", name: "Armin van Buuren", type: "Artista" },
+  { id: "lost-beach-club", name: "Lost Beach Club", type: "Discoteca / Club Nocturno" },
+  { id: "soundgarden-club", name: "Soundgarden Club", type: "Discoteca / Club Nocturno" },
+  { id: "the-wall-club", name: "The Wall Club", type: "Discoteca / Club Nocturno" },
+  { id: "kika-club", name: "Kika Club", type: "Discoteca / Club Nocturno" },
+  { id: "puro-perreo-club", name: "Puro Perreo Club", type: "Discoteca / Club Nocturno" },
 ];
 
 type HomeNavId = (typeof HOME_NAV_ITEMS)[number]["id"];
@@ -1090,7 +1080,7 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                   type="text"
                   value={headerSearchQuery}
                   onChange={(e) => setHeaderSearchQuery(e.target.value)}
-                  placeholder="Buscar..."
+                  placeholder="Buscar eventos, discotecas..."
                   className="w-full bg-transparent text-zinc-900 placeholder-zinc-400 text-sm font-semibold focus:outline-none"
                   autoFocus
                 />
@@ -1123,7 +1113,7 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                       <div className="py-7 px-4 text-center flex flex-col items-center justify-center space-y-2 select-none">
                         <Search className="w-7 h-7 text-zinc-300 stroke-[1.75]" />
                         <p className="text-xs font-semibold text-zinc-400 max-w-xs leading-relaxed">
-                          Escribe para buscar eventos, artistas o perfiles...
+                          Escribe para buscar eventos, discotecas u organizadores...
                         </p>
                       </div>
                     );
@@ -1175,7 +1165,7 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                               {prof.avatar ? (
                                 <Image src={prof.avatar} alt={prof.name} fill className="object-cover" />
                               ) : (
-                                <Mic className="w-5 h-5 text-zinc-300" />
+                                <Building2 className="w-5 h-5 text-zinc-300" />
                               )}
                             </div>
                             <div className="flex-1 min-w-0 text-left">
