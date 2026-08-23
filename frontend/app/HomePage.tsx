@@ -1817,7 +1817,7 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                         alt="4GO Official Mascot"
                         width={200}
                         height={200}
-                        className="w-full h-full object-contain filter drop-shadow-[0_0_35px_rgba(34,197,94,0.4)] rounded-2xl"
+                        className="w-full h-full object-contain rounded-2xl"
                       />
                     </div>
                   </div>

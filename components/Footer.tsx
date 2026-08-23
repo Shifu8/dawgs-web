@@ -25,7 +25,7 @@ export default function Footer() {
                 src="/images/4go_alien_hands_logo.png"
                 alt="4GO Logo"
                 fill
-                className="object-contain filter drop-shadow-[0_0_20px_rgba(34,197,94,0.3)] rounded-xl"
+                className="object-contain rounded-xl"
               />
             </div>
             <p className="text-xs text-zinc-400 font-medium max-w-sm leading-relaxed">
