@@ -1606,32 +1606,57 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                                 {currentSlide.line2}
                               </p>
                             </div>
-                            <div className="mt-5 flex items-center gap-3">
-                              <button
-                                type="button"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  router.push("/organizer/login");
-                                }}
-                                className="px-8 py-3.5 rounded-full bg-zinc-900/80 hover:bg-zinc-800/90 text-white font-black text-xs uppercase tracking-widest backdrop-blur-2xl border border-white/30 shadow-[0_10px_30px_rgba(0,0,0,0.5)] transition-all hover:scale-105 active:scale-95 cursor-pointer flex items-center gap-2"
-                              >
-                                <UserCheck className="w-4 h-4 text-white" />
-                                INICIAR SESIÓN
-                              </button>
-                              <button
-                                type="button"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  const el = document.getElementById("merch-4go-section");
-                                  if (el) {
-                                    el.scrollIntoView({ behavior: "smooth" });
-                                  }
-                                }}
-                                className="px-8 py-3.5 rounded-full bg-zinc-900/80 hover:bg-zinc-800/90 text-white font-black text-xs uppercase tracking-widest backdrop-blur-2xl border border-white/30 shadow-[0_10px_30px_rgba(0,0,0,0.5)] transition-all hover:scale-105 active:scale-95 cursor-pointer flex items-center gap-2"
-                              >
-                                <ShoppingBag className="w-4 h-4 text-yellow-400 animate-pulse" />
-                                MERCH 4GO
-                              </button>
+                            <div className="mt-5 flex flex-col items-center gap-3">
+                              {/* Row 1: CREAR EVENTO & CARTELERA */}
+                              <div className="flex items-center justify-center gap-3">
+                                <button
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setActiveStoryScreen(0);
+                                  }}
+                                  className="px-8 py-3.5 rounded-full bg-zinc-900/80 hover:bg-zinc-800/90 text-white font-black text-xs uppercase tracking-widest backdrop-blur-2xl border border-white/30 shadow-[0_10px_30px_rgba(0,0,0,0.5)] transition-all hover:scale-105 active:scale-95 cursor-pointer"
+                                >
+                                  CREAR EVENTO
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setActiveStoryScreen(2);
+                                  }}
+                                  className="px-8 py-3.5 rounded-full bg-zinc-900/80 hover:bg-zinc-800/90 text-white font-black text-xs uppercase tracking-widest backdrop-blur-2xl border border-white/30 shadow-[0_10px_30px_rgba(0,0,0,0.5)] transition-all hover:scale-105 active:scale-95 cursor-pointer"
+                                >
+                                  CARTELERA
+                                </button>
+                              </div>
+
+                              {/* Row 2: INICIAR SESIÓN & MERCH 4GO */}
+                              <div className="flex items-center justify-center gap-3">
+                                <button
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    router.push("/organizer/login");
+                                  }}
+                                  className="px-8 py-3.5 rounded-full bg-zinc-900/80 hover:bg-zinc-800/90 text-white font-black text-xs uppercase tracking-widest backdrop-blur-2xl border border-white/30 shadow-[0_10px_30px_rgba(0,0,0,0.5)] transition-all hover:scale-105 active:scale-95 cursor-pointer"
+                                >
+                                  INICIAR SESIÓN
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    const el = document.getElementById("merch-4go-section");
+                                    if (el) {
+                                      el.scrollIntoView({ behavior: "smooth" });
+                                    }
+                                  }}
+                                  className="px-8 py-3.5 rounded-full bg-zinc-900/80 hover:bg-zinc-800/90 text-white font-black text-xs uppercase tracking-widest backdrop-blur-2xl border border-white/30 shadow-[0_10px_30px_rgba(0,0,0,0.5)] transition-all hover:scale-105 active:scale-95 cursor-pointer"
+                                >
+                                  MERCH 4GO
+                                </button>
+                              </div>
                             </div>
                           </div>
                         </div>
