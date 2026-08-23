@@ -1310,9 +1310,6 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                   <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
                     {/* Left Side: Marketing & Feature Text */}
                     <div className="lg:col-span-7 space-y-6 text-left">
-                      <span className="px-4 py-1.5 rounded-full bg-white/10 border border-white/20 text-xs font-black uppercase text-yellow-400 tracking-widest inline-block">
-                        EXPERIENCIA 4GO SHOWCASE
-                      </span>
                       <h2 className="text-3xl sm:text-5xl font-black uppercase tracking-tight leading-tight text-white font-sans">
                         Publica tus eventos &amp; Conecta con tu audiencia
                       </h2>
