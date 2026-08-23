@@ -561,7 +561,7 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
     if (toastTimeoutRef.current) {
       clearTimeout(toastTimeoutRef.current);
     }
-    
+
     let message = "Este evento estará disponible próximamente.";
     let type: 'coming-soon' | 'sold-out' | 'info' = 'coming-soon';
 
@@ -776,11 +776,11 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
             { scale: 0, rotation: -45, opacity: 0 },
             { scale: 1, rotation: 0, opacity: 1, duration: 0.8, ease: "back.out(1.7)" }
           )
-          .fromTo(".logo-char",
-            { opacity: 0, y: 15, scale: 0.7, transformOrigin: "50% 100%" },
-            { opacity: 1, y: 0, scale: 1, duration: 0.45, stagger: 0.04, ease: "back.out(1.5)" },
-            "-=0.5"
-          );
+            .fromTo(".logo-char",
+              { opacity: 0, y: 15, scale: 0.7, transformOrigin: "50% 100%" },
+              { opacity: 1, y: 0, scale: 1, duration: 0.45, stagger: 0.04, ease: "back.out(1.5)" },
+              "-=0.5"
+            );
 
           // Animación adicional del hero (solo en desktop)
           if (isDesktop) {
@@ -877,22 +877,22 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
 
   // Glow color per tab for the screen transition
   const TAB_GLOW: Record<string, string> = {
-    all:        "rgba(139,92,246,0.55)",
-    fiestas:    "rgba(225,0,117,0.55)",
+    all: "rgba(139,92,246,0.55)",
+    fiestas: "rgba(225,0,117,0.55)",
     conciertos: "rgba(194,217,2,0.45)",
-    publish:    "rgba(139,92,246,0.65)",
+    publish: "rgba(139,92,246,0.65)",
   };
   const TAB_LABEL: Record<string, string> = {
-    all:        "Todo",
-    fiestas:    "Fiestas",
+    all: "Todo",
+    fiestas: "Fiestas",
     conciertos: "Conciertos",
-    publish:    "Sube tu Evento",
+    publish: "Sube tu Evento",
   };
   const TAB_SUB: Record<string, string> = {
-    all:        "Toda la cartelera disponible",
-    fiestas:    "Trap · Urban · RnB · Nocturno",
+    all: "Toda la cartelera disponible",
+    fiestas: "Trap · Urban · RnB · Nocturno",
     conciertos: "Latin · Live · Concerts",
-    publish:    "Publica y gestiona tus eventos en Ecuador",
+    publish: "Publica y gestiona tus eventos en Ecuador",
   };
 
   return (
@@ -1049,11 +1049,10 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                     setTimeout(() => headerSearchInputRef.current?.focus(), 100);
                   }
                 }}
-                className={`w-10 h-10 rounded-full border backdrop-blur-xl flex items-center justify-center shadow-lg cursor-pointer transition-all active:scale-95 ${
-                  isHeaderSearchOpen
+                className={`w-10 h-10 rounded-full border backdrop-blur-xl flex items-center justify-center shadow-lg cursor-pointer transition-all active:scale-95 ${isHeaderSearchOpen
                     ? "bg-white border-white text-zinc-900 shadow-xl scale-105"
                     : "bg-white/10 border-white/20 hover:bg-white/20 text-white"
-                }`}
+                  }`}
                 aria-label="Buscar eventos o perfiles"
               >
                 <Search className={`w-5 h-5 ${isHeaderSearchOpen ? "text-zinc-900" : "text-white"}`} />
@@ -1197,11 +1196,10 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                                 [prof.id]: !prev[prof.id],
                               }));
                             }}
-                            className={`px-5 py-2 rounded-full text-[11px] font-extrabold uppercase tracking-wider transition-all border shrink-0 cursor-pointer active:scale-95 ${
-                              followedProfiles[prof.id]
+                            className={`px-5 py-2 rounded-full text-[11px] font-extrabold uppercase tracking-wider transition-all border shrink-0 cursor-pointer active:scale-95 ${followedProfiles[prof.id]
                                 ? "bg-zinc-900 text-white border-zinc-900 shadow-sm"
                                 : "bg-zinc-100 hover:bg-zinc-200 text-zinc-900 border-zinc-200/80"
-                            }`}
+                              }`}
                           >
                             {followedProfiles[prof.id] ? "SIGUIENDO" : "SEGUIR"}
                           </button>
@@ -1365,7 +1363,7 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                           className="w-full py-3.5 px-6 rounded-xl bg-black text-white font-extrabold text-sm flex items-center justify-center gap-3 hover:bg-zinc-800 transition active:scale-[0.99] cursor-pointer shadow-md"
                         >
                           <svg className="w-5 h-5 fill-white" viewBox="0 0 24 24">
-                            <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M15.97 6.85c.66-.8 1.11-1.92.99-3.04-.96.04-2.12.64-2.8 1.44-.61.71-1.14 1.86-.99 2.96 1.07.08 2.14-.56 2.8-1.36z"/>
+                            <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M15.97 6.85c.66-.8 1.11-1.92.99-3.04-.96.04-2.12.64-2.8 1.44-.61.71-1.14 1.86-.99 2.96 1.07.08 2.14-.56 2.8-1.36z" />
                           </svg>
                           <span>Continuar con Apple</span>
                         </button>
@@ -1381,10 +1379,10 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                           className="w-full py-3.5 px-6 rounded-xl bg-white text-zinc-800 font-extrabold text-sm border border-zinc-300 flex items-center justify-center gap-3 hover:bg-zinc-50 transition active:scale-[0.99] cursor-pointer shadow-sm"
                         >
                           <svg className="w-5 h-5" viewBox="0 0 24 24">
-                            <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-                            <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-                            <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
-                            <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
+                            <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
+                            <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
+                            <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z" />
+                            <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z" />
                           </svg>
                           <span>Continuar con Google</span>
                         </button>
@@ -1568,7 +1566,7 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                             aria-hidden="true"
                             className="hidden sm:block object-cover object-center scale-110 blur-2xl brightness-[0.4] saturate-150"
                           />
-                          
+
                           {/* ─── HD ULTRA-CRISP RESPONSIVE PICTURE ELEMENT ─── */}
                           <picture className="absolute inset-0 z-10 flex items-center justify-center w-full h-full">
                             {/* 1. Prioritize Modern WebP format with 1x & 2x Retina resolution density */}
@@ -1690,7 +1688,7 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                           Descubre algunos de los eventos más populares en tu ciudad, desde noches de fiesta y conciertos hasta festivales y espectáculos en vivo.
                         </p>
                       </div>
-                      
+
                       {/* VER EVENTOS Pill Button */}
                       <div className="flex items-center gap-3 shrink-0">
                         <button
@@ -1698,7 +1696,7 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                           onClick={() => setActiveStoryScreen(2)}
                           className="px-6 py-2.5 rounded-full bg-black text-white font-black text-xs uppercase tracking-wider hover:bg-zinc-800 transition-all hover:scale-105 active:scale-95 cursor-pointer shadow-md"
                         >
-                          VER EVENTOS
+                          DESCUBRE MÁS EVENTOS
                         </button>
                       </div>
                     </div>
@@ -1776,11 +1774,10 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                                 aria-label="Guardar favorito"
                               >
                                 <Heart
-                                  className={`w-3.5 h-3.5 transition-colors ${
-                                    likedEvents[evt.id]
+                                  className={`w-3.5 h-3.5 transition-colors ${likedEvents[evt.id]
                                       ? "text-red-500 fill-red-500"
                                       : "text-white hover:text-red-400"
-                                  }`}
+                                    }`}
                                 />
                               </button>
                             </div>
@@ -1986,6 +1983,60 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                           </button>
                         </div>
                       </div>
+                </section>
+
+                {/* ─── 6. THIRD WHITE BANNER SECTION (VIVE EXPERIENCIAS ÚNICAS & FAN SUPPORT) ─── */}
+                <section className="w-full bg-white text-black py-16 sm:py-24 relative z-20 font-sans border-t border-zinc-200">
+                  <div className="max-w-[1300px] mx-auto px-6 sm:px-12">
+                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8 items-center">
+                      {/* Left Column: Title, Description & Action Buttons */}
+                      <div className="lg:col-span-6 space-y-6 text-left">
+                        <h2 className="text-3xl sm:text-5xl lg:text-6xl font-black text-black tracking-tight font-sans uppercase leading-[1.05]">
+                          VIVE EXPERIENCIAS ÚNICAS &amp; ACCEDE AL INSTANTE
+                        </h2>
+                        <p className="text-xs sm:text-sm text-zinc-600 font-semibold leading-relaxed max-w-xl">
+                          Acceso QR ultrasónico desde tu teléfono, transferencias de entradas en segundos entre amigos y notificaciones en tiempo real sobre los mejores eventos y clubes de Ecuador.
+                        </p>
+
+                        {/* Action Buttons */}
+                        <div className="flex flex-wrap items-center gap-3.5 pt-2">
+                          <button
+                            type="button"
+                            onClick={() => setActiveStoryScreen(2)}
+                            className="px-6 py-3.5 rounded-full bg-black text-white hover:bg-zinc-800 text-xs sm:text-sm font-black uppercase tracking-wider transition-all active:scale-95 shadow-xl inline-flex items-center justify-center cursor-pointer"
+                          >
+                            VER EVENTOS DESTACADOS
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              if (typeof window !== "undefined") {
+                                window.dispatchEvent(new CustomEvent("open-ai-chatbot"));
+                              }
+                            }}
+                            className="px-6 py-3.5 rounded-full bg-transparent border-2 border-black/80 hover:bg-black/5 text-black text-xs sm:text-sm font-black uppercase tracking-wider transition-all active:scale-95 cursor-pointer inline-flex items-center justify-center"
+                          >
+                            ASISTENCIA FAN SUPPORT
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Right Column: Rounded Image Container with Party/Presentation Photo & Copyright watermark */}
+                      <div className="lg:col-span-6 w-full flex justify-center lg:justify-end">
+                        <div className="relative w-full max-w-[540px] aspect-[4/3.5] rounded-[2.5rem] overflow-hidden shadow-2xl border border-black/10 bg-zinc-950">
+                          <Image
+                            src="/images/now4go-hero-presentation-hd-fullbleed.png"
+                            alt="Vive experiencias 4GO"
+                            fill
+                            className="object-cover brightness-105"
+                            sizes="(max-width: 768px) 100vw, 600px"
+                          />
+                          {/* Overlay copyright text on bottom left */}
+                          <span className="absolute bottom-4 left-5 text-[10px] sm:text-[11px] font-extrabold text-white/90 tracking-wider shadow-md drop-shadow">
+                            © 4GO 2026, all rights reserved
+                          </span>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </section>
@@ -2043,11 +2094,10 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                         key={`cat-icon-${cat.id}`}
                         type="button"
                         onClick={() => setSelectedDay("todos")}
-                        className={`flex flex-col items-center justify-center w-16 h-16 rounded-2xl border transition-all cursor-pointer shrink-0 gap-1 shadow-md ${
-                          selectedDay === cat.id || (cat.id === "todos" && selectedDay === "todos")
+                        className={`flex flex-col items-center justify-center w-16 h-16 rounded-2xl border transition-all cursor-pointer shrink-0 gap-1 shadow-md ${selectedDay === cat.id || (cat.id === "todos" && selectedDay === "todos")
                             ? "bg-white text-black border-white"
                             : "bg-white/5 backdrop-blur-md border-white/10 text-white hover:border-white/30 hover:bg-white/10"
-                        }`}
+                          }`}
                       >
                         <span className="text-lg">{cat.icon}</span>
                         <span className="text-[10px] font-bold tracking-tight">{cat.label}</span>
@@ -2070,7 +2120,7 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                           className="flex items-center gap-2.5 px-5 py-2.5 rounded-full bg-emerald-500 hover:bg-emerald-400 text-black font-black text-xs uppercase tracking-wider transition-all active:scale-95 cursor-pointer shadow-lg"
                         >
                           <svg className="w-4 h-4 fill-black" viewBox="0 0 24 24">
-                            <path d="M12 0C5.376 0 0 5.376 0 12s5.376 12 12 12 12-5.376 12-12S18.624 0 12 0zm5.521 17.341c-.217.357-.682.469-1.039.252-2.846-1.74-6.429-2.133-10.65-1.168-.403.093-.806-.164-.899-.567-.093-.403.164-.806.567-.899 4.629-1.058 8.577-.61 11.769 1.343.357.217.469.682.252 1.039zm1.478-3.284c-.273.444-.856.586-1.3.313-3.257-2.002-8.223-2.584-12.077-1.414-.499.151-1.026-.134-1.177-.633-.151-.499.134-1.026.633-1.177 4.409-1.337 9.878-.696 13.608 1.6 4.44.273.586.856.313 1.3zm.143-3.418c-3.905-2.319-10.347-2.533-14.116-1.389-.607.184-1.246-.162-1.43-.769-.184-.607.162-1.246.769-1.43 4.316-1.31 11.43-1.056 15.93 1.616.547.325.727 1.034.402 1.581-.325.547-1.034.727-1.555.391z"/>
+                            <path d="M12 0C5.376 0 0 5.376 0 12s5.376 12 12 12 12-5.376 12-12S18.624 0 12 0zm5.521 17.341c-.217.357-.682.469-1.039.252-2.846-1.74-6.429-2.133-10.65-1.168-.403.093-.806-.164-.899-.567-.093-.403.164-.806.567-.899 4.629-1.058 8.577-.61 11.769 1.343.357.217.469.682.252 1.039zm1.478-3.284c-.273.444-.856.586-1.3.313-3.257-2.002-8.223-2.584-12.077-1.414-.499.151-1.026-.134-1.177-.633-.151-.499.134-1.026.633-1.177 4.409-1.337 9.878-.696 13.608 1.6 4.44.273.586.856.313 1.3zm.143-3.418c-3.905-2.319-10.347-2.533-14.116-1.389-.607.184-1.246-.162-1.43-.769-.184-.607.162-1.246.769-1.43 4.316-1.31 11.43-1.056 15.93 1.616.547.325.727 1.034.402 1.581-.325.547-1.034.727-1.555.391z" />
                           </svg>
                           <span>SPOTIFY</span>
                         </button>
@@ -2079,7 +2129,7 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                           className="flex items-center gap-2.5 px-5 py-2.5 rounded-full bg-white text-black font-black text-xs uppercase tracking-wider hover:bg-zinc-200 transition-all active:scale-95 cursor-pointer shadow-lg"
                         >
                           <svg className="w-4 h-4 fill-black" viewBox="0 0 24 24">
-                            <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M15.97 6.85c.66-.8 1.11-1.92.99-3.04-.96.04-2.12.64-2.8 1.44-.61.71-1.14 1.86-.99 2.96 1.07.08 2.14-.56 2.8-1.36z"/>
+                            <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M15.97 6.85c.66-.8 1.11-1.92.99-3.04-.96.04-2.12.64-2.8 1.44-.61.71-1.14 1.86-.99 2.96 1.07.08 2.14-.56 2.8-1.36z" />
                           </svg>
                           <span>APPLE MUSIC</span>
                         </button>
@@ -2158,11 +2208,10 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                               aria-label="Guardar favorito"
                             >
                               <Heart
-                                className={`w-3.5 h-3.5 transition-colors ${
-                                  likedEvents[evt.id]
+                                className={`w-3.5 h-3.5 transition-colors ${likedEvents[evt.id]
                                     ? "text-red-500 fill-red-500"
                                     : "text-white hover:text-red-400"
-                                }`}
+                                  }`}
                               />
                             </button>
                           </div>
@@ -2226,16 +2275,15 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
 
       {/* Purchasing Access Modal Dialog */}
       <div
-        className={`fixed inset-0 z-[350] flex items-end md:items-center justify-center transition-all duration-300 ${
-          isTicketModalOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
-        }`}
+        className={`fixed inset-0 z-[350] flex items-end md:items-center justify-center transition-all duration-300 ${isTicketModalOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
+          }`}
         style={{
           backdropFilter: showDetailOverlay ? "none" : "blur(24px)",
           background: showDetailOverlay
             ? "transparent"
             : isTicketModalOpen
-            ? "rgba(0, 0, 0, 0.88)"
-            : "transparent",
+              ? "rgba(0, 0, 0, 0.88)"
+              : "transparent",
         }}
       >
         <motion.div
@@ -2258,11 +2306,10 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
               setCheckoutState("register");
             }
           }}
-          className={`relative w-full h-[96dvh] transition-all duration-500 overflow-hidden flex flex-col rounded-t-[32px] md:rounded-[36px] border border-white/[0.07] bg-gradient-to-b from-zinc-900 via-zinc-950 to-black shadow-[0_-20px_80px_rgba(0,0,0,0.8)] md:shadow-[0_40px_120px_rgba(0,0,0,0.9)] md:mx-4 ${
-            checkoutState === "success" || checkoutState === "verifying"
+          className={`relative w-full h-[96dvh] transition-all duration-500 overflow-hidden flex flex-col rounded-t-[32px] md:rounded-[36px] border border-white/[0.07] bg-gradient-to-b from-zinc-900 via-zinc-950 to-black shadow-[0_-20px_80px_rgba(0,0,0,0.8)] md:shadow-[0_40px_120px_rgba(0,0,0,0.9)] md:mx-4 ${checkoutState === "success" || checkoutState === "verifying"
               ? "md:max-w-[460px] md:h-[580px]"
               : "md:max-w-[860px] md:h-[96vh]"
-          }`}
+            }`}
         >
           {/* Drag handle — mobile only */}
           <div
