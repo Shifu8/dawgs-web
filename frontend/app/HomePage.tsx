@@ -1822,7 +1822,7 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
 
                     <div className="relative w-36 h-36 md:w-44 md:h-44 shrink-0 flex items-center justify-center">
                       <Image
-                        src="/images/4go_alien_hands_logo.png"
+                        src="/images/alien_green_hands_official.png"
                         alt="4GO Official Mascot"
                         width={200}
                         height={200}
