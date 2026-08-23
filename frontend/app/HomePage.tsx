@@ -1161,16 +1161,17 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                 transition={{ duration: 0.35, ease: "easeOut" }}
                 className="relative w-full min-h-[100dvh] flex flex-col lg:flex-row items-stretch select-none -mt-20 sm:-mt-24 -mb-16 lg:-mb-24"
               >
-                {/* ─── 1. LEFT COLUMN (30% WIDTH): EXTENDED VERTICAL PHOTO FLUSH ON FOOTER BORDER LINE ─── */}
+                {/* ─── 1. LEFT COLUMN (30% WIDTH): BACKGROUND VIDEO FROM DOWNLOADS ─── */}
                 <div className="relative w-full lg:w-[30%] min-h-[600px] lg:min-h-[calc(100vh+6rem)] self-stretch bg-zinc-950 overflow-hidden flex-shrink-0">
-                  <Image
-                    src="/images/4go_red_girl_showcase.jpg"
-                    alt="4GO Red Girl Showcase"
-                    fill
-                    priority
-                    className="object-cover brightness-105"
-                    sizes="30vw"
-                  />
+                  <video
+                    autoPlay
+                    loop
+                    muted
+                    playsInline
+                    className="absolute inset-0 w-full h-full object-cover brightness-105"
+                  >
+                    <source src="/videos/subir_evento_left_video.mp4" type="video/mp4" />
+                  </video>
                   <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-transparent to-transparent opacity-90" />
 
                   {/* Bottom Left Copyright Overlay (Exact match to user screenshot) */}
@@ -1303,6 +1304,21 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                       >
                         Get started
                       </button>
+                    </div>
+                    {/* Lower Showcase Photo (Moved Down) */}
+                    <div className="mt-6 w-full max-w-lg mx-auto rounded-2xl overflow-hidden shadow-xl border border-white/30 relative h-36 sm:h-44 group cursor-pointer">
+                      <Image
+                        src="/images/4go_red_girl_showcase.jpg"
+                        alt="4GO Showcase"
+                        fill
+                        className="object-cover group-hover:scale-105 transition-transform duration-500"
+                        sizes="(max-width: 768px) 100vw, 500px"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
+                      <div className="absolute bottom-3 left-4 text-left z-10">
+                        <span className="text-[10px] font-black uppercase text-yellow-400 tracking-widest block">Featured Showcase</span>
+                        <span className="text-xs font-bold text-white tracking-tight">4GO Live Events &amp; VIP Access</span>
+                      </div>
                     </div>
                   </div>
                 </div>
