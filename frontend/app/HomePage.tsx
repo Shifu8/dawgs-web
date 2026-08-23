@@ -97,14 +97,14 @@ export interface SearchProfile {
 }
 
 export const SEARCH_PROFILES: SearchProfile[] = [
-  { id: "cubic", name: "Cubic", type: "Organizador", avatar: "/4go_organizer_artwork_v4.jpg" },
+  { id: "cubic", name: "Cubic", type: "Discoteca / Club Nocturno", avatar: "/4go_organizer_artwork_v4.jpg" },
   { id: "sata-music", name: "Sata Music", type: "Organizador", avatar: "/images/trap_loud_trio_artists.png" },
   { id: "4go", name: "4Go", type: "Organizador", avatar: "/images/now4go-hero-presentation-hd-v3.png" },
-  { id: "lost-beach-club", name: "Lost Beach Club", type: "Discoteca / Club Nocturno" },
-  { id: "soundgarden-club", name: "Soundgarden Club", type: "Discoteca / Club Nocturno" },
-  { id: "the-wall-club", name: "The Wall Club", type: "Discoteca / Club Nocturno" },
-  { id: "kika-club", name: "Kika Club", type: "Discoteca / Club Nocturno" },
-  { id: "puro-perreo-club", name: "Puro Perreo Club", type: "Discoteca / Club Nocturno" },
+  { id: "lost-beach-club", name: "Lost Beach Club", type: "Discoteca / Club Nocturno", avatar: "/images/artist_crowd_fest_v2.png" },
+  { id: "soundgarden-club", name: "Soundgarden Club", type: "Discoteca / Club Nocturno", avatar: "/images/artist_duo_performers_3d.png" },
+  { id: "the-wall-club", name: "The Wall Club", type: "Discoteca / Club Nocturno", avatar: "/images/electronic_producer_v3.png" },
+  { id: "kika-club", name: "Kika Club", type: "Discoteca / Club Nocturno", avatar: "/images/artist_dj_female_pink.png" },
+  { id: "puro-perreo-club", name: "Puro Perreo Club", type: "Discoteca / Club Nocturno", avatar: "/images/reggaeton_star_vibrant_lights_2k.png" },
 ];
 
 type HomeNavId = (typeof HOME_NAV_ITEMS)[number]["id"];
@@ -1152,11 +1152,9 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                         <div
                           key={`search-prof-${prof.id}`}
                           onClick={() => {
-                            if (prof.type === "Organizador") {
-                              setSelectedOrganizerSlug(prof.id);
-                              setShowOrganizerOverlay(true);
-                              setIsHeaderSearchOpen(false);
-                            }
+                            setSelectedOrganizerSlug(prof.id);
+                            setShowOrganizerOverlay(true);
+                            setIsHeaderSearchOpen(false);
                           }}
                           className="flex items-center justify-between gap-3 p-2 rounded-xl hover:bg-zinc-100/80 transition-colors cursor-pointer group"
                         >
