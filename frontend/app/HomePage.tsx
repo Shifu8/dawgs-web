@@ -1027,8 +1027,8 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
               </button>
             </div>
 
-            {/* Right: Avatar & Clean Search Button */}
-            <div className="relative flex items-center gap-2 shrink-0 z-[300]">
+            {/* Right: Avatar & Clean Search Button (Stacked Vertically) */}
+            <div className="relative flex flex-col items-center gap-2 shrink-0 z-[300]">
               <button
                 type="button"
                 onClick={() => setShowUserMenu(!showUserMenu)}
