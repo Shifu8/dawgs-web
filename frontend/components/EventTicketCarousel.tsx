@@ -687,7 +687,7 @@ export default function EventTicketCarousel({
                                   : "bg-zinc-700 text-white border border-zinc-600 hover:bg-zinc-600 hover:border-zinc-500"
                               }`}
                             >
-                              Comprar Entrada
+                              Reservar Entrada
                             </button>
                           ) : (
                             <button

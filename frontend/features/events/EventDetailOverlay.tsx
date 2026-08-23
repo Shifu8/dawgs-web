@@ -358,9 +358,9 @@ export default function EventDetailOverlay({
               <button
                 type="button"
                 onClick={() => onBuy(event)}
-                className="px-9 py-4 rounded-full bg-[#dfff28] hover:bg-[#cbf01a] text-black font-black text-xs uppercase tracking-widest shadow-[0_0_25px_rgba(223,255,40,0.4)] transition-all hover:scale-105 active:scale-95 cursor-pointer shrink-0 text-center"
+                className="px-9 py-4 rounded-full bg-[#dfff28] hover:bg-[#cbf01a] text-black font-black text-xs uppercase tracking-widest transition-all hover:scale-105 active:scale-95 cursor-pointer shrink-0 text-center shadow-md"
               >
-                COMPRAR
+                RESERVAR
               </button>
             </div>
 

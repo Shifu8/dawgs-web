@@ -1882,7 +1882,7 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                               }}
                               className="px-3.5 py-1.5 rounded-full bg-[#dfff28] hover:bg-[#cbf01a] text-black font-black text-[11px] uppercase tracking-wider transition-transform active:scale-95 cursor-pointer shadow"
                             >
-                              COMPRAR
+                              RESERVAR
                             </button>
                           </div>
                         </div>
