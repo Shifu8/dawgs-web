@@ -1479,15 +1479,15 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                     {/* Overlay for legibility */}
                     <div className="absolute inset-0 bg-black/45 backdrop-blur-xl" />
 
-                    {/* Centered Glass Auth / Vertical Dashboard Card */}
+                    {/* Centered Dark Glass Auth / Vertical Dashboard Card */}
                     {!userLoggedIn ? (
-                      <div className="relative z-10 w-full max-w-lg mx-auto bg-white/95 backdrop-blur-xl p-6 sm:p-10 rounded-3xl border border-white/40 shadow-2xl space-y-6">
+                      <div className="relative z-10 w-full max-w-lg mx-auto bg-zinc-950/60 backdrop-blur-2xl p-6 sm:p-10 rounded-3xl border border-white/20 shadow-2xl space-y-6 text-white font-sans">
                         <div className="text-center space-y-2">
-                          <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-black font-sans leading-tight">
+                          <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-white font-sans leading-tight">
                             Sube tu Evento &amp; Administra tu Cuenta 4GO
                           </h1>
-                          <p className="text-xs sm:text-sm text-zinc-500 font-medium max-w-md mx-auto leading-relaxed">
-                            Inicia sesión en 1 clic con tu cuenta de Google o Apple para comenzar a publicar eventos.
+                          <p className="text-xs sm:text-sm text-zinc-300 font-medium max-w-md mx-auto leading-relaxed">
+                            Inicia sesión en 1 clic con tu cuenta de Google para comenzar a publicar eventos.
                           </p>
                         </div>
 
@@ -1496,7 +1496,7 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                           <button
                             type="button"
                             onClick={() => handleQuickSocialLogin("google")}
-                            className="w-full py-3.5 px-6 rounded-full bg-white hover:bg-zinc-100 text-black font-black text-xs sm:text-sm uppercase tracking-wider border border-zinc-200 flex items-center justify-center gap-3 transition-all hover:scale-[1.01] active:scale-95 cursor-pointer shadow-md"
+                            className="w-full py-4 px-6 rounded-full bg-white hover:bg-zinc-100 text-black font-black text-xs sm:text-sm uppercase tracking-wider border border-white/30 flex items-center justify-center gap-3 transition-all hover:scale-[1.01] active:scale-95 cursor-pointer shadow-xl"
                           >
                             <svg className="w-5 h-5 shrink-0" viewBox="0 0 24 24">
                               <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
@@ -1509,17 +1509,17 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                         </div>
                       </div>
                     ) : (
-                      <div className="relative z-10 w-full max-w-lg mx-auto bg-white/95 backdrop-blur-xl p-6 sm:p-8 rounded-3xl border border-white/40 shadow-2xl space-y-5">
-                        {/* Logged in Header Banner */}
-                        <div className="flex items-center justify-between pb-4 border-b border-zinc-200">
+                      <div className="relative z-10 w-full max-w-lg mx-auto space-y-3.5 font-sans">
+                        {/* Logged in Dark Glass Header Banner */}
+                        <div className="bg-zinc-950/70 backdrop-blur-2xl p-4 rounded-2xl border border-white/20 shadow-xl flex items-center justify-between">
                           <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-full bg-zinc-900 text-white font-black text-sm flex items-center justify-center shadow-md uppercase">
+                            <div className="w-10 h-10 rounded-full bg-white text-black font-black text-sm flex items-center justify-center shadow-md uppercase">
                               {userProfile?.name ? userProfile.name.charAt(0) : "U"}
                             </div>
                             <div className="text-left">
-                              <h3 className="text-sm font-black text-zinc-900 tracking-tight">{userProfile?.name || "Organizador 4GO"}</h3>
-                              <p className="text-[11px] font-semibold text-emerald-600 flex items-center gap-1">
-                                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping inline-block" />
+                              <h3 className="text-sm font-black text-white tracking-tight">{userProfile?.name || "Organizador 4GO"}</h3>
+                              <p className="text-[11px] font-semibold text-emerald-400 flex items-center gap-1.5">
+                                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping inline-block" />
                                 <span>Sesión Activa</span>
                               </p>
                             </div>
@@ -1527,20 +1527,20 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                           <button
                             type="button"
                             onClick={handleLogout}
-                            className="text-xs font-extrabold text-zinc-400 hover:text-red-600 transition uppercase tracking-wider cursor-pointer"
+                            className="text-xs font-extrabold text-zinc-400 hover:text-white transition uppercase tracking-wider cursor-pointer"
                           >
                             Cerrar sesión
                           </button>
                         </div>
 
-                        {/* ─── VERTICAL OPTIONS PANEL (SIN MODAL) ─── */}
+                        {/* ─── VERTICAL OPTIONS PANEL (DARK GLASSMOPHISM WITHOUT WHITE CARD) ─── */}
                         {organizerSubView === "menu" && (
-                          <div className="space-y-3 pt-1 text-left">
-                            {/* 1. PUBLICAR EVENTO (Sleek Glassmorphism Animated Button) */}
+                          <div className="space-y-3 text-left">
+                            {/* 1. PUBLICAR EVENTO (Dark Glass Button with Yellow Arrow) */}
                             <button
                               type="button"
                               onClick={() => setOrganizerSubView("create_event")}
-                              className="w-full py-4 px-6 rounded-2xl bg-zinc-950 hover:bg-black text-white font-black text-xs uppercase tracking-widest border border-zinc-700 shadow-xl flex items-center justify-between transition-all hover:scale-[1.01] active:scale-95 cursor-pointer animate-pulse"
+                              className="w-full py-4 px-6 rounded-2xl bg-zinc-900/90 hover:bg-black text-white font-black text-xs uppercase tracking-widest border border-white/25 shadow-2xl flex items-center justify-between transition-all hover:scale-[1.01] active:scale-95 cursor-pointer animate-pulse backdrop-blur-xl"
                             >
                               <span>PUBLICAR EVENTO</span>
                               <span className="text-xs text-yellow-400 font-bold">→</span>
@@ -1550,54 +1550,54 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                             <button
                               type="button"
                               onClick={() => setOrganizerSubView("my_events")}
-                              className="w-full py-3.5 px-5 rounded-2xl bg-zinc-50 hover:bg-zinc-100 text-zinc-900 border border-zinc-200/80 font-extrabold text-xs uppercase tracking-wider flex items-center justify-between transition active:scale-95 cursor-pointer shadow-sm"
+                              className="w-full py-3.5 px-6 rounded-2xl bg-zinc-900/70 hover:bg-zinc-900/95 text-white border border-white/20 backdrop-blur-xl font-black text-xs uppercase tracking-wider flex items-center justify-between transition active:scale-95 cursor-pointer shadow-lg"
                             >
                               <span>MIS EVENTOS</span>
-                              <span className="text-[11px] text-zinc-500 font-bold">({events.length} publicados)</span>
+                              <span className="text-[11px] text-zinc-300 font-extrabold">({events.length} PUBLICADOS)</span>
                             </button>
 
                             {/* 3. MIS FAVORITOS */}
                             <button
                               type="button"
                               onClick={() => setOrganizerSubView("favorites")}
-                              className="w-full py-3.5 px-5 rounded-2xl bg-zinc-50 hover:bg-zinc-100 text-zinc-900 border border-zinc-200/80 font-extrabold text-xs uppercase tracking-wider flex items-center justify-between transition active:scale-95 cursor-pointer shadow-sm"
+                              className="w-full py-3.5 px-6 rounded-2xl bg-zinc-900/70 hover:bg-zinc-900/95 text-white border border-white/20 backdrop-blur-xl font-black text-xs uppercase tracking-wider flex items-center justify-between transition active:scale-95 cursor-pointer shadow-lg"
                             >
                               <span>MIS FAVORITOS</span>
-                              <span className="text-[11px] text-zinc-500 font-bold">Ver guardados</span>
+                              <span className="text-[11px] text-zinc-300 font-extrabold">VER GUARDADOS</span>
                             </button>
 
-                            {/* 4. CREAR / EDITAR PERFIL DE ORGANIZADOR */}
+                            {/* 4. CONFIGURAR PERFIL (DISCOTECA / FESTIVAL) */}
                             <button
                               type="button"
                               onClick={() => setOrganizerSubView("profile")}
-                              className="w-full py-3.5 px-5 rounded-2xl bg-zinc-50 hover:bg-zinc-100 text-zinc-900 border border-zinc-200/80 font-extrabold text-xs uppercase tracking-wider flex items-center justify-between transition active:scale-95 cursor-pointer shadow-sm"
+                              className="w-full py-3.5 px-6 rounded-2xl bg-zinc-900/70 hover:bg-zinc-900/95 text-white border border-white/20 backdrop-blur-xl font-black text-xs uppercase tracking-wider flex items-center justify-between transition active:scale-95 cursor-pointer shadow-lg"
                             >
                               <span>CONFIGURAR PERFIL (DISCOTECA / FESTIVAL)</span>
-                              <span className="text-[11px] text-zinc-500 font-bold">Editar</span>
+                              <span className="text-[11px] text-zinc-300 font-extrabold">EDITAR</span>
                             </button>
                           </div>
                         )}
 
-                        {/* ─── INLINE FORM: CONFIGURAR PERFIL (DISCOTECA / FESTIVAL) ─── */}
+                        {/* ─── INLINE FORM: CONFIGURAR PERFIL (DARK GLASS) ─── */}
                         {organizerSubView === "profile" && (
-                          <div className="space-y-4 pt-1 text-left">
-                            <div className="flex items-center justify-between border-b border-zinc-200 pb-3">
-                              <h4 className="text-sm font-black uppercase text-zinc-900 tracking-tight">Perfil de Organizador</h4>
+                          <div className="bg-zinc-950/80 backdrop-blur-2xl p-6 rounded-3xl border border-white/20 shadow-2xl space-y-4 text-left">
+                            <div className="flex items-center justify-between border-b border-white/15 pb-3">
+                              <h4 className="text-sm font-black uppercase text-white tracking-tight">Perfil de Organizador</h4>
                               <button
                                 type="button"
                                 onClick={() => setOrganizerSubView("menu")}
-                                className="text-xs font-bold text-zinc-500 hover:text-black uppercase cursor-pointer"
+                                className="text-xs font-bold text-zinc-400 hover:text-white uppercase cursor-pointer"
                               >
                                 Volver
                               </button>
                             </div>
 
                             <div className="space-y-1">
-                              <label className="text-xs font-black text-zinc-900 block">Tipo de Organizador</label>
+                              <label className="text-xs font-black text-white block">Tipo de Organizador</label>
                               <select
                                 value={orgType}
                                 onChange={(e) => setOrgType(e.target.value)}
-                                className="w-full px-4 py-2.5 rounded-xl bg-zinc-50 border border-zinc-200 text-xs font-semibold text-zinc-900 focus:outline-none focus:border-black focus:bg-white transition cursor-pointer"
+                                className="w-full px-4 py-2.5 rounded-xl bg-zinc-900 border border-white/20 text-xs font-semibold text-white focus:outline-none focus:border-white transition cursor-pointer"
                               >
                                 <option value="Discoteca / Club">Discoteca / Club Nocturno</option>
                                 <option value="Productora de Festivales">Productora de Festivales</option>
@@ -1607,22 +1607,22 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                             </div>
 
                             <div className="space-y-1">
-                              <label className="text-xs font-black text-zinc-900 block">Nombre de Discoteca o Productora</label>
+                              <label className="text-xs font-black text-white block">Nombre de Discoteca o Productora</label>
                               <input
                                 type="text"
                                 value={orgName}
                                 onChange={(e) => setOrgName(e.target.value)}
                                 placeholder="Ej. Cubic Club / Sata Music"
-                                className="w-full px-4 py-2.5 rounded-xl bg-zinc-50 border border-zinc-200 text-xs font-semibold text-zinc-900 focus:outline-none focus:border-black focus:bg-white transition"
+                                className="w-full px-4 py-2.5 rounded-xl bg-zinc-900 border border-white/20 text-xs font-semibold text-white focus:outline-none focus:border-white transition"
                               />
                             </div>
 
                             <div className="space-y-1">
-                              <label className="text-xs font-black text-zinc-900 block">Ciudad Principal</label>
+                              <label className="text-xs font-black text-white block">Ciudad Principal</label>
                               <select
                                 value={orgCity}
                                 onChange={(e) => setOrgCity(e.target.value)}
-                                className="w-full px-4 py-2.5 rounded-xl bg-zinc-50 border border-zinc-200 text-xs font-semibold text-zinc-900 focus:outline-none focus:border-black focus:bg-white transition cursor-pointer"
+                                className="w-full px-4 py-2.5 rounded-xl bg-zinc-900 border border-white/20 text-xs font-semibold text-white focus:outline-none focus:border-white transition cursor-pointer"
                               >
                                 <option value="Quito">Quito</option>
                                 <option value="Guayaquil">Guayaquil</option>
@@ -1640,45 +1640,45 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                                 localStorage.setItem("organizer_profile", JSON.stringify(updated));
                                 setOrganizerSubView("create_event");
                               }}
-                              className="w-full py-3.5 rounded-xl bg-black text-white font-extrabold text-xs uppercase tracking-wider hover:bg-zinc-800 transition active:scale-[0.99] cursor-pointer shadow-md text-center mt-2"
+                              className="w-full py-3.5 rounded-xl bg-white hover:bg-zinc-200 text-black font-black text-xs uppercase tracking-wider transition active:scale-[0.99] cursor-pointer shadow-md text-center mt-2"
                             >
                               Guardar Perfil &amp; Ir a Crear Evento
                             </button>
                           </div>
                         )}
 
-                        {/* ─── INLINE FORM: PUBLICAR EVENTO ─── */}
+                        {/* ─── INLINE FORM: PUBLICAR EVENTO (DARK GLASS) ─── */}
                         {organizerSubView === "create_event" && (
-                          <div className="space-y-4 pt-1 text-left">
-                            <div className="flex items-center justify-between border-b border-zinc-200 pb-3">
-                              <h4 className="text-sm font-black uppercase text-zinc-900 tracking-tight">Publicar Nuevo Evento</h4>
+                          <div className="bg-zinc-950/80 backdrop-blur-2xl p-6 rounded-3xl border border-white/20 shadow-2xl space-y-4 text-left">
+                            <div className="flex items-center justify-between border-b border-white/15 pb-3">
+                              <h4 className="text-sm font-black uppercase text-white tracking-tight">Publicar Nuevo Evento</h4>
                               <button
                                 type="button"
                                 onClick={() => setOrganizerSubView("menu")}
-                                className="text-xs font-bold text-zinc-500 hover:text-black uppercase cursor-pointer"
+                                className="text-xs font-bold text-zinc-400 hover:text-white uppercase cursor-pointer"
                               >
                                 Volver
                               </button>
                             </div>
 
                             <div className="space-y-1">
-                              <label className="text-xs font-black text-zinc-900 block">Nombre del Evento</label>
+                              <label className="text-xs font-black text-white block">Nombre del Evento</label>
                               <input
                                 type="text"
                                 value={newEventTitle}
                                 onChange={(e) => setNewEventTitle(e.target.value)}
                                 placeholder="Ej. Cubic Saturday Night / Sata Fest 2026"
-                                className="w-full px-4 py-2.5 rounded-xl bg-zinc-50 border border-zinc-200 text-xs font-semibold text-zinc-900 focus:outline-none focus:border-black focus:bg-white transition"
+                                className="w-full px-4 py-2.5 rounded-xl bg-zinc-900 border border-white/20 text-xs font-semibold text-white focus:outline-none focus:border-white transition"
                               />
                             </div>
 
                             <div className="grid grid-cols-2 gap-3">
                               <div className="space-y-1">
-                                <label className="text-xs font-black text-zinc-900 block">Categoría</label>
+                                <label className="text-xs font-black text-white block">Categoría</label>
                                 <select
                                   value={newEventCategory}
                                   onChange={(e) => setNewEventCategory(e.target.value)}
-                                  className="w-full px-4 py-2.5 rounded-xl bg-zinc-50 border border-zinc-200 text-xs font-semibold text-zinc-900 focus:outline-none focus:border-black focus:bg-white transition cursor-pointer"
+                                  className="w-full px-4 py-2.5 rounded-xl bg-zinc-900 border border-white/20 text-xs font-semibold text-white focus:outline-none focus:border-white transition cursor-pointer"
                                 >
                                   <option value="Fiesta">Fiesta / Club</option>
                                   <option value="Concierto">Concierto</option>
@@ -1686,13 +1686,13 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                                 </select>
                               </div>
                               <div className="space-y-1">
-                                <label className="text-xs font-black text-zinc-900 block">Precio Entrada ($)</label>
+                                <label className="text-xs font-black text-white block">Precio Entrada ($)</label>
                                 <input
                                   type="number"
                                   value={newEventPrice}
                                   onChange={(e) => setNewEventPrice(e.target.value)}
                                   placeholder="15"
-                                  className="w-full px-4 py-2.5 rounded-xl bg-zinc-50 border border-zinc-200 text-xs font-semibold text-zinc-900 focus:outline-none focus:border-black focus:bg-white transition"
+                                  className="w-full px-4 py-2.5 rounded-xl bg-zinc-900 border border-white/20 text-xs font-semibold text-white focus:outline-none focus:border-white transition"
                                 />
                               </div>
                             </div>
@@ -1718,65 +1718,65 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                                 setOrganizerSubView("menu");
                                 setActiveStoryScreen(2);
                               }}
-                              className="w-full py-3.5 rounded-xl bg-black text-white font-extrabold text-xs uppercase tracking-wider hover:bg-zinc-800 transition active:scale-[0.99] cursor-pointer shadow-md text-center mt-2"
+                              className="w-full py-3.5 rounded-xl bg-white hover:bg-zinc-200 text-black font-black text-xs uppercase tracking-wider transition active:scale-[0.99] cursor-pointer shadow-md text-center mt-2"
                             >
                               Publicar Evento Ahora
                             </button>
                           </div>
                         )}
 
-                        {/* ─── INLINE VIEW: MIS EVENTOS ─── */}
+                        {/* ─── INLINE VIEW: MIS EVENTOS (DARK GLASS) ─── */}
                         {organizerSubView === "my_events" && (
-                          <div className="space-y-3 pt-1 text-left">
-                            <div className="flex items-center justify-between border-b border-zinc-200 pb-3">
-                              <h4 className="text-sm font-black uppercase text-zinc-900 tracking-tight">Mis Eventos Publicados</h4>
+                          <div className="bg-zinc-950/80 backdrop-blur-2xl p-6 rounded-3xl border border-white/20 shadow-2xl space-y-3 text-left">
+                            <div className="flex items-center justify-between border-b border-white/15 pb-3">
+                              <h4 className="text-sm font-black uppercase text-white tracking-tight">Mis Eventos Publicados</h4>
                               <button
                                 type="button"
                                 onClick={() => setOrganizerSubView("menu")}
-                                className="text-xs font-bold text-zinc-500 hover:text-black uppercase cursor-pointer"
+                                className="text-xs font-bold text-zinc-400 hover:text-white uppercase cursor-pointer"
                               >
                                 Volver
                               </button>
                             </div>
                             <div className="max-h-56 overflow-y-auto space-y-2 pr-1">
                               {events.slice(0, 4).map((evt) => (
-                                <div key={evt.id} className="p-3 rounded-xl bg-zinc-50 border border-zinc-200 flex items-center justify-between">
+                                <div key={evt.id} className="p-3 rounded-xl bg-zinc-900 border border-white/15 flex items-center justify-between">
                                   <div>
-                                    <p className="text-xs font-black text-zinc-900">{evt.title}</p>
-                                    <p className="text-[10px] text-zinc-500 font-semibold">{evt.location} • {evt.price}</p>
+                                    <p className="text-xs font-black text-white">{evt.title}</p>
+                                    <p className="text-[10px] text-zinc-400 font-semibold">{evt.location} • {evt.price}</p>
                                   </div>
-                                  <span className="px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-600 text-[10px] font-extrabold">ACTIVO</span>
+                                  <span className="px-2.5 py-1 rounded-full bg-emerald-500/20 text-emerald-400 text-[10px] font-extrabold border border-emerald-500/30">ACTIVO</span>
                                 </div>
                               ))}
                             </div>
                             <button
                               type="button"
                               onClick={() => setOrganizerSubView("create_event")}
-                              className="w-full py-3 rounded-xl bg-black text-white font-extrabold text-xs uppercase tracking-wider hover:bg-zinc-800 transition active:scale-95 cursor-pointer shadow-md"
+                              className="w-full py-3 rounded-xl bg-white text-black font-black text-xs uppercase tracking-wider hover:bg-zinc-200 transition active:scale-95 cursor-pointer shadow-md"
                             >
                               + Publicar Otro Evento
                             </button>
                           </div>
                         )}
 
-                        {/* ─── INLINE VIEW: MIS FAVORITOS ─── */}
+                        {/* ─── INLINE VIEW: MIS FAVORITOS (DARK GLASS) ─── */}
                         {organizerSubView === "favorites" && (
-                          <div className="space-y-3 pt-1 text-left">
-                            <div className="flex items-center justify-between border-b border-zinc-200 pb-3">
-                              <h4 className="text-sm font-black uppercase text-zinc-900 tracking-tight">Mis Eventos Favoritos</h4>
+                          <div className="bg-zinc-950/80 backdrop-blur-2xl p-6 rounded-3xl border border-white/20 shadow-2xl space-y-3 text-left">
+                            <div className="flex items-center justify-between border-b border-white/15 pb-3">
+                              <h4 className="text-sm font-black uppercase text-white tracking-tight">Mis Eventos Favoritos</h4>
                               <button
                                 type="button"
                                 onClick={() => setOrganizerSubView("menu")}
-                                className="text-xs font-bold text-zinc-500 hover:text-black uppercase cursor-pointer"
+                                className="text-xs font-bold text-zinc-400 hover:text-white uppercase cursor-pointer"
                               >
                                 Volver
                               </button>
                             </div>
-                            <p className="text-xs text-zinc-500 font-semibold">Tus eventos guardados aparecerán aquí.</p>
+                            <p className="text-xs text-zinc-400 font-semibold">Tus eventos guardados aparecerán aquí.</p>
                             <button
                               type="button"
                               onClick={() => setActiveStoryScreen(2)}
-                              className="w-full py-3 rounded-xl bg-black text-white font-extrabold text-xs uppercase tracking-wider hover:bg-zinc-800 transition active:scale-95 cursor-pointer shadow-md"
+                              className="w-full py-3 rounded-xl bg-white text-black font-black text-xs uppercase tracking-wider hover:bg-zinc-200 transition active:scale-95 cursor-pointer shadow-md"
                             >
                               Explorar Cartelera
                             </button>
