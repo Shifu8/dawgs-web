@@ -1657,58 +1657,67 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                 </div>
               </section>
 
-                {/* ─── 3. BLACK FEATURE SECTION ("Weirdly easy ticketing" EXACT MATCHING USER SCREENSHOT) ─── */}
+                {/* ─── 3. BLACK FEATURE SECTION (EN ESPAÑOL) ─── */}
                 <section className="w-full bg-black text-white py-16 sm:py-24 relative z-20 font-sans border-t border-zinc-900">
                   <div className="max-w-[1200px] mx-auto px-6 sm:px-12 text-center space-y-12 sm:space-y-16">
                     {/* Centered Title */}
-                    <h2 className="text-3xl sm:text-5xl font-black text-white tracking-tight font-sans">
-                      Weirdly easy ticketing
+                    <h2 className="text-3xl sm:text-5xl font-black text-white tracking-tight font-sans uppercase">
+                      Comprar entradas nunca fue tan fácil
                     </h2>
 
                     {/* 3 Feature Columns */}
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-10 sm:gap-12 items-start">
                       {/* Column 1 */}
-                      <div className="flex flex-col items-center text-center space-y-4 group">
+                      <div className="flex flex-col items-center text-center space-y-3 group">
                         <div className="relative w-36 h-36 sm:w-44 sm:h-44 transition-transform duration-300">
                           <Image
                             src="/images/4go_alien_hands_tilt_left.png"
-                            alt="Quick Ticketing"
+                            alt="Compra en segundos"
                             fill
                             className="object-contain filter drop-shadow-xl"
                           />
                         </div>
-                        <p className="text-sm sm:text-base font-extrabold text-zinc-100 max-w-xs leading-snug">
-                          Get tickets in less time than it took to read this
+                        <h3 className="text-lg sm:text-xl font-black text-white uppercase tracking-tight">
+                          Compra en segundos
+                        </h3>
+                        <p className="text-xs sm:text-sm font-semibold text-zinc-300 max-w-xs leading-relaxed">
+                          Obtén tus entradas en menos tiempo del que te tomó leer esto.
                         </p>
                       </div>
 
                       {/* Column 2 */}
-                      <div className="flex flex-col items-center text-center space-y-4 group">
+                      <div className="flex flex-col items-center text-center space-y-3 group">
                         <div className="relative w-36 h-36 sm:w-44 sm:h-44 transition-transform duration-300">
                           <Image
                             src="/images/4go_alien_hands_straight.png"
-                            alt="Transparent Pricing"
+                            alt="Precios transparentes"
                             fill
                             className="object-contain filter drop-shadow-xl"
                           />
                         </div>
-                        <p className="text-sm sm:text-base font-extrabold text-zinc-100 max-w-xs leading-snug">
-                          See the full price upfront, with no surprises at checkout
+                        <h3 className="text-lg sm:text-xl font-black text-white uppercase tracking-tight">
+                          Precios transparentes
+                        </h3>
+                        <p className="text-xs sm:text-sm font-semibold text-zinc-300 max-w-xs leading-relaxed">
+                          Mira el precio total desde el inicio, sin cargos ocultos ni sorpresas al pagar.
                         </p>
                       </div>
 
                       {/* Column 3 */}
-                      <div className="flex flex-col items-center text-center space-y-4 group">
+                      <div className="flex flex-col items-center text-center space-y-3 group">
                         <div className="relative w-36 h-36 sm:w-44 sm:h-44 transition-transform duration-300">
                           <Image
                             src="/images/4go_alien_hands_tilt_right.png"
-                            alt="Personalised Recommendations"
+                            alt="Recomendaciones personalizadas"
                             fill
                             className="object-contain filter drop-shadow-xl"
                           />
                         </div>
-                        <p className="text-sm sm:text-base font-extrabold text-zinc-100 max-w-xs leading-snug">
-                          Personalised recommendations on your unique Home feed
+                        <h3 className="text-lg sm:text-xl font-black text-white uppercase tracking-tight">
+                          Recomendaciones personalizadas
+                        </h3>
+                        <p className="text-xs sm:text-sm font-semibold text-zinc-300 max-w-xs leading-relaxed">
+                          Descubre los eventos hechos a tu medida directamente en tu inicio.
                         </p>
                       </div>
                     </div>
