@@ -1208,7 +1208,7 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                               src={evt.poster || "/images/now4go-hero-presentation-hd-v3.png"}
                               alt={evt.title}
                               fill
-                              className="object-cover group-hover:scale-105 transition-transform"
+                              className="object-cover transition-transform"
                             />
                           </div>
                           <div className="flex-1 min-w-0 text-left">
@@ -1487,7 +1487,7 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                         alt="4GO Party Showcase"
                         fill
                         priority
-                        className="object-cover group-hover:scale-105 transition-transform duration-500"
+                        className="object-cover transition-transform duration-500"
                         sizes="(max-width: 1024px) 100vw, 500px"
                       />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-80" />

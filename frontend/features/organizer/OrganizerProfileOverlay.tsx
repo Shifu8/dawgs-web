@@ -297,7 +297,7 @@ export default function OrganizerProfileOverlay({
                   priority
                   quality={100}
                   sizes="(max-width: 768px) 100vw, 380px"
-                  className="object-contain object-center brightness-105 p-6 group-hover:scale-105 transition-transform duration-500"
+                  className="object-contain object-center brightness-105 p-6 transition-transform duration-500"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-40 pointer-events-none" />
 
@@ -420,7 +420,7 @@ export default function OrganizerProfileOverlay({
                           src={evt.poster || org.logo}
                           alt={evt.title}
                           fill
-                          className="object-cover group-hover:scale-105 transition-transform duration-500"
+                          className="object-cover transition-transform duration-500"
                           sizes="(max-width: 768px) 50vw, 33vw"
                         />
                         <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-transparent to-transparent" />
