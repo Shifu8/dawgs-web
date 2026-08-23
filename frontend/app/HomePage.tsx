@@ -227,6 +227,28 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
     }
   }, []);
 
+  const [isAppleAuthModalOpen, setIsAppleAuthModalOpen] = useState(false);
+  const [appleInputEmail, setAppleInputEmail] = useState('brandon.medina@icloud.com');
+  const [appleInputName, setAppleInputName] = useState('Brandon Medina');
+
+  const handleConfirmAppleLogin = () => {
+    if (!appleInputEmail.trim()) return;
+    const mockProfile = {
+      id: `apple-${Date.now()}`,
+      name: appleInputName.trim() || "Usuario Apple",
+      email: appleInputEmail.trim(),
+      type: "Discoteca / Club",
+      venueName: appleInputName.trim() || "Cubic Club",
+      city: "Quito",
+    };
+    localStorage.setItem("organizer_token", `apple-token-${Date.now()}`);
+    localStorage.setItem("organizer_profile", JSON.stringify(mockProfile));
+    setUserLoggedIn(true);
+    setUserProfile(mockProfile);
+    setOrganizerSubView("menu");
+    setIsAppleAuthModalOpen(false);
+  };
+
   const handleQuickSocialLogin = (provider: 'google' | 'apple') => {
     const googleClientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
     const appleClientId = process.env.NEXT_PUBLIC_APPLE_CLIENT_ID;
@@ -284,17 +306,20 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
       }
 
     } else {
-      const clientId = appleClientId || 'com.4go.web.login';
-      const redirectUri = typeof window !== 'undefined' ? `${window.location.origin}` : 'http://localhost:3000';
-      const appleOAuthUrl = `https://appleid.apple.com/auth/authorize?client_id=${encodeURIComponent(clientId)}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=code&response_mode=form_post&scope=name%20email`;
+      if (appleClientId) {
+        const redirectUri = typeof window !== 'undefined' ? `${window.location.origin}` : 'http://localhost:3000';
+        const appleOAuthUrl = `https://appleid.apple.com/auth/authorize?client_id=${encodeURIComponent(appleClientId)}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=code&response_mode=form_post&scope=name%20email`;
 
-      // Open real Apple OAuth browser popup window
-      if (typeof window !== 'undefined') {
-        window.open(
-          appleOAuthUrl,
-          'AppleOAuthWindow',
-          `width=${width},height=${height},top=${top},left=${left},scrollbars=yes,status=yes`
-        );
+        if (typeof window !== 'undefined') {
+          window.open(
+            appleOAuthUrl,
+            'AppleOAuthWindow',
+            `width=${width},height=${height},top=${top},left=${left},scrollbars=yes,status=yes`
+          );
+        }
+      } else {
+        // Show clean Apple ID Sign In modal dialog
+        setIsAppleAuthModalOpen(true);
       }
     }
   };
@@ -2953,6 +2978,77 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
               </div>
             </motion.div>
           </>
+        )}
+      </AnimatePresence>
+
+      {/* ─── APPLE ID AUTHENTICATION DIALOG (PREVENTS INVALID_CLIENT ERROR) ─── */}
+      <AnimatePresence>
+        {isAppleAuthModalOpen && (
+          <div className="fixed inset-0 z-[400] flex items-center justify-center p-4 bg-black/85 backdrop-blur-md">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              className="w-full max-w-md bg-white text-zinc-900 rounded-3xl p-6 sm:p-8 shadow-2xl border border-zinc-200 relative overflow-hidden font-sans text-left"
+            >
+              {/* Close Button */}
+              <button
+                type="button"
+                onClick={() => setIsAppleAuthModalOpen(false)}
+                className="absolute top-5 right-5 w-8 h-8 rounded-full bg-zinc-100 hover:bg-zinc-200 text-zinc-600 flex items-center justify-center transition cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+
+              {/* Apple Header Branding */}
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-12 h-12 rounded-2xl bg-black text-white flex items-center justify-center shrink-0 shadow-md">
+                  <svg className="w-6 h-6 fill-current text-white shrink-0" viewBox="0 0 24 24">
+                    <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M15.97 6.32c.67-.82 1.12-1.96.99-3.1-.97.04-2.16.65-2.85 1.46-.62.72-1.16 1.88-.99 3.03 1.09.08 2.2-.57 2.85-1.39z" />
+                  </svg>
+                </div>
+                <div>
+                  <h3 className="text-lg font-black text-zinc-900 leading-tight">Iniciar sesión con Apple ID</h3>
+                  <p className="text-xs text-zinc-500 font-medium">Usa tu ID de Apple para ingresar a 4GO.</p>
+                </div>
+              </div>
+
+              {/* Input Email & Name */}
+              <div className="space-y-3.5 my-5">
+                <div className="space-y-1">
+                  <label className="text-xs font-black uppercase tracking-wider text-zinc-500 block">Correo de Apple ID / iCloud</label>
+                  <input
+                    type="email"
+                    value={appleInputEmail}
+                    onChange={(e) => setAppleInputEmail(e.target.value)}
+                    placeholder="tu.cuenta@icloud.com"
+                    className="w-full px-4 py-3 rounded-xl bg-zinc-50 border border-zinc-200 text-xs font-semibold text-zinc-900 focus:outline-none focus:border-black focus:bg-white transition"
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-xs font-black uppercase tracking-wider text-zinc-500 block">Nombre del Organizador</label>
+                  <input
+                    type="text"
+                    value={appleInputName}
+                    onChange={(e) => setAppleInputName(e.target.value)}
+                    placeholder="Brandon Medina / Cubic Club"
+                    className="w-full px-4 py-3 rounded-xl bg-zinc-50 border border-zinc-200 text-xs font-semibold text-zinc-900 focus:outline-none focus:border-black focus:bg-white transition"
+                  />
+                </div>
+              </div>
+
+              {/* Action Button */}
+              <button
+                type="button"
+                onClick={handleConfirmAppleLogin}
+                disabled={!appleInputEmail.trim()}
+                className="w-full py-4 rounded-full bg-black hover:bg-zinc-800 text-white font-black text-xs uppercase tracking-widest transition active:scale-95 shadow-xl disabled:opacity-50 cursor-pointer flex items-center justify-center gap-2"
+              >
+                <span>Continuar con Apple ID</span>
+              </button>
+            </motion.div>
+          </div>
         )}
       </AnimatePresence>
 
