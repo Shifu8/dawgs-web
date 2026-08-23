@@ -1830,12 +1830,13 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
 
                         {/* Action Buttons */}
                         <div className="flex flex-wrap items-center gap-3.5 pt-2">
-                          <a
-                            href="/organizer/register"
+                          <button
+                            type="button"
+                            onClick={() => setActiveStoryScreen(0)}
                             className="px-6 py-3.5 rounded-full bg-black text-white hover:bg-zinc-800 text-xs sm:text-sm font-black uppercase tracking-wider transition-all active:scale-95 shadow-xl inline-flex items-center justify-center cursor-pointer"
                           >
                             CREAR CUENTA DE ORGANIZADOR
-                          </a>
+                          </button>
                           <button
                             type="button"
                             onClick={() => setActiveStoryScreen(2)}
