@@ -192,26 +192,7 @@ export default function OrganizerProfileOverlay({
           </div>
         </header>
 
-        {/* ─── DISCREET FLOATING SIDE NAVIGATION PILL ("SUBIR / BAJAR CHIQUITO A UN LADO") ─── */}
-        <div className="fixed right-4 sm:right-8 bottom-10 z-[550] flex flex-col items-center gap-2">
-          <button
-            type="button"
-            onClick={isScrolledDown ? scrollToTop : scrollToEvents}
-            className="flex items-center gap-1.5 px-3.5 py-2 rounded-full bg-black/80 hover:bg-black text-white text-[11px] font-black uppercase tracking-wider border border-white/25 backdrop-blur-xl shadow-2xl transition-all cursor-pointer active:scale-95 group"
-          >
-            {isScrolledDown ? (
-              <>
-                <ArrowUp className="w-3.5 h-3.5 text-yellow-400 group-hover:-translate-y-0.5 transition-transform" />
-                <span>Subir</span>
-              </>
-            ) : (
-              <>
-                <ArrowDown className="w-3.5 h-3.5 text-yellow-400 group-hover:translate-y-0.5 transition-transform" />
-                <span>Bajar</span>
-              </>
-            )}
-          </button>
-        </div>
+
 
         {/* ─── FULL-PAGE MAIN SCROLLABLE CONTAINER ─── */}
         <div

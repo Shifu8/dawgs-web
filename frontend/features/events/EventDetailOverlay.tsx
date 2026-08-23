@@ -188,26 +188,7 @@ export default function EventDetailOverlay({
         </div>
       </header>
 
-      {/* ─── DISCREET FLOATING SIDE NAVIGATION PILL ("SUBIR / BAJAR CHIQUITO A UN LADO") ─── */}
-      <div className="fixed right-4 sm:right-8 bottom-24 z-[350] flex flex-col items-center gap-2">
-        <button
-          type="button"
-          onClick={isScrolledDown ? scrollToTop : scrollToBottomInfo}
-          className="flex items-center gap-1.5 px-3.5 py-2 rounded-full bg-black/80 hover:bg-black text-white text-[11px] font-black uppercase tracking-wider border border-white/25 backdrop-blur-xl shadow-2xl transition-all cursor-pointer active:scale-95 group"
-        >
-          {isScrolledDown ? (
-            <>
-              <ArrowUp className="w-3.5 h-3.5 text-yellow-400 group-hover:-translate-y-0.5 transition-transform" />
-              <span>Subir</span>
-            </>
-          ) : (
-            <>
-              <ArrowDown className="w-3.5 h-3.5 text-yellow-400 group-hover:translate-y-0.5 transition-transform" />
-              <span>Bajar</span>
-            </>
-          )}
-        </button>
-      </div>
+
 
       {/* ─── FULL-PAGE MAIN SCROLLABLE CONTAINER ─── */}
       <div
@@ -545,25 +526,7 @@ export default function EventDetailOverlay({
         </div>
       </div>
 
-      {/* ─── STICKY BOTTOM BUY BAR ─── */}
-      <div className="fixed bottom-0 inset-x-0 z-40 bg-zinc-950/95 border-t border-white/15 backdrop-blur-2xl px-6 py-4 flex items-center justify-between max-w-6xl mx-auto shadow-[0_-15px_40px_rgba(0,0,0,0.9)]">
-        <div className="flex flex-col">
-          <span className="text-[10px] uppercase font-bold text-zinc-400 tracking-wider">
-            {event.title}
-          </span>
-          <span className="text-base sm:text-lg font-black text-white">
-            Desde {displayPrice}
-          </span>
-        </div>
 
-        <button
-          type="button"
-          onClick={() => onBuy(event)}
-          className="px-8 py-3.5 rounded-full bg-[#dfff28] hover:bg-[#cbf01a] text-black font-black text-xs uppercase tracking-widest shadow-[0_0_20px_rgba(223,255,40,0.4)] transition-all hover:scale-105 active:scale-95 cursor-pointer"
-        >
-          COMPRAR
-        </button>
-      </div>
 
       {/* Full Poster Lightbox */}
       <AnimatePresence>
