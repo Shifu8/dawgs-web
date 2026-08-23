@@ -452,13 +452,9 @@ export default function EventDetailOverlay({
                           const instagramLink = (org as any).instagramUrl || "https://instagram.com/cubic.ec";
                           window.open(instagramLink, "_blank", "noopener,noreferrer");
                         }}
-                        className={`px-6 py-2 rounded-full font-black text-xs uppercase tracking-wider transition-all cursor-pointer shadow-md active:scale-95 ${
-                          isFollowing
-                            ? "bg-zinc-800 text-zinc-300 border border-white/20"
-                            : "bg-white hover:bg-zinc-200 text-black"
-                        }`}
+                        className="px-6 py-2 rounded-full bg-white hover:bg-zinc-200 text-black font-black text-xs uppercase tracking-wider transition-all cursor-pointer shadow-md active:scale-95"
                       >
-                        {isFollowing ? "SIGUIENDO" : "SEGUIR"}
+                        SEGUIR
                       </button>
                     </div>
                   );
@@ -510,14 +506,13 @@ export default function EventDetailOverlay({
 
                 <button
                   type="button"
-                  onClick={() => toggleFollow("cubic-venue")}
-                  className={`px-6 py-2.5 rounded-full font-black text-xs uppercase tracking-wider transition-all cursor-pointer shadow-md active:scale-95 ${
-                    followedIds["cubic-venue"]
-                      ? "bg-zinc-800 text-zinc-300 border border-white/20"
-                      : "bg-white hover:bg-zinc-200 text-black"
-                  }`}
+                  onClick={() => {
+                    toggleFollow("cubic-venue");
+                    window.open("https://instagram.com/cubic.ec", "_blank", "noopener,noreferrer");
+                  }}
+                  className="px-6 py-2.5 rounded-full bg-white hover:bg-zinc-200 text-black font-black text-xs uppercase tracking-wider transition-all cursor-pointer shadow-md active:scale-95"
                 >
-                  {followedIds["cubic-venue"] ? "SIGUIENDO" : "SEGUIR"}
+                  SEGUIR
                 </button>
               </div>
 
