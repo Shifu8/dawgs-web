@@ -1815,7 +1815,7 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
 
                   {/* GRID OF 4 COLUMNS ON DESKTOP WITH SOLID BLACK CARDS AND FULL DETAILS */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-                    {(events || []).map((evt) => (
+                    {(events && events.length > 0 ? events : fallbackEvents).map((evt) => (
                       <div
                         key={`cat-4col-${evt.id}`}
                         onClick={() => {
@@ -1825,13 +1825,13 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                         className="group relative flex flex-col bg-zinc-900/90 rounded-3xl border border-white/10 overflow-hidden p-3.5 space-y-3 hover:border-white/30 transition-all duration-300 cursor-pointer shadow-2xl"
                       >
                         {/* Artwork Box */}
-                        <div className="relative w-full aspect-square rounded-2xl overflow-hidden bg-zinc-950 border border-white/10 group-hover:border-yellow-400/60 transition-all duration-300">
+                        <div className="relative w-full h-64 sm:h-72 rounded-2xl overflow-hidden bg-zinc-950 border border-white/10 group-hover:border-yellow-400/60 transition-all duration-300">
                           <Image
                             src={evt.poster || "/images/now4go-hero-presentation-hd-v3.png"}
                             alt={evt.title}
                             fill
                             className="object-cover group-hover:scale-105 transition-transform duration-500 brightness-105"
-                            sizes="320px"
+                            sizes="(max-width: 768px) 100vw, 320px"
                           />
                           <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-80" />
 
