@@ -184,18 +184,18 @@ export default function Footer() {
           </div>
 
           {/* Copyright & Inline Compact DevEc Branding */}
-          <div className="flex flex-col lg:flex-row items-center justify-between gap-4 pt-2">
-            <p className="text-xs sm:text-sm text-zinc-500 text-center lg:text-left font-medium">
+          <div className="flex flex-col lg:flex-row items-center justify-between gap-4 pt-4 border-t border-zinc-200/60 w-full overflow-hidden">
+            <p className="text-xs sm:text-sm text-zinc-500 text-center lg:text-left font-medium max-w-xl">
               4GO y el logo de 4GO son marcas registradas de 4GO Events Ltd. Todos los derechos reservados.
             </p>
 
             {/* Compact DevEc Branding Inline next to Copyright */}
-            <div className="flex items-center gap-2 text-zinc-500 shrink-0 select-none group transition-transform duration-300 hover:scale-105">
-              <span className="text-[10px] font-extrabold uppercase tracking-widest text-zinc-500">
+            <div className="flex flex-wrap items-center justify-center gap-1.5 sm:gap-2 text-zinc-500 shrink-0 select-none group transition-transform duration-300 hover:scale-105 max-w-full px-2">
+              <span className="text-[9px] sm:text-[10px] font-extrabold uppercase tracking-widest text-zinc-500 whitespace-nowrap">
                 DESARROLLADO POR
               </span>
               <svg
-                className="h-6 sm:h-7 w-auto"
+                className="h-5 sm:h-6 w-auto shrink-0"
                 viewBox="0 0 220 50"
                 fill="none"
                 xmlns="http://www.w3.org/2000/svg"
@@ -252,7 +252,7 @@ export default function Footer() {
                   strokeLinecap="round"
                 />
               </svg>
-              <span className="text-[10px] font-black uppercase tracking-widest text-zinc-500">
+              <span className="text-[9px] sm:text-[10px] font-black uppercase tracking-widest text-zinc-500 whitespace-nowrap">
                 SOFTWARE DEVELOPMENT
               </span>
             </div>
