@@ -172,7 +172,7 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
   useEffect(() => {
     const timer = setInterval(() => {
       setMerchSlideIndex((prev) => (prev + 1) % MERCH_SHOWCASE_IMAGES.length);
-    }, 2500);
+    }, 4500);
     return () => clearInterval(timer);
   }, [MERCH_SHOWCASE_IMAGES.length]);
   const [showUserMenu, setShowUserMenu] = useState(false);
@@ -1923,10 +1923,10 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                           <AnimatePresence mode="wait">
                             <motion.div
                               key={`merch-slide-${merchSlideIndex}`}
-                              initial={{ opacity: 0, scale: 0.97 }}
+                              initial={{ opacity: 0, scale: 0.98 }}
                               animate={{ opacity: 1, scale: 1 }}
-                              exit={{ opacity: 0, scale: 1.03 }}
-                              transition={{ duration: 0.45, ease: "easeInOut" }}
+                              exit={{ opacity: 0, scale: 1.02 }}
+                              transition={{ duration: 0.85, ease: "easeInOut" }}
                               className="absolute inset-0 w-full h-full"
                             >
                               <Image
@@ -1939,11 +1939,6 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                             </motion.div>
                           </AnimatePresence>
 
-                          {/* Top Badge Overlay */}
-                          <div className="absolute top-4 left-5 z-20 px-3 py-1 rounded-full bg-black/80 backdrop-blur-md border border-white/20 text-[10px] font-black uppercase tracking-wider text-yellow-400 shadow-md">
-                            MERCH 4GO • {MERCH_SHOWCASE_IMAGES[merchSlideIndex].title}
-                          </div>
-
                           {/* Overlay copyright text on bottom left */}
                           <span className="absolute bottom-4 left-5 z-20 text-[10px] sm:text-[11px] font-extrabold text-white/90 tracking-wider shadow-md drop-shadow">
                             © 4GO 2026, all rights reserved
@@ -1954,31 +1949,27 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                       {/* Right Column: Title, Description & Action Buttons (Text on Right) */}
                       <div className="lg:col-span-6 space-y-6 text-left order-1 lg:order-2">
                         <h2 className="text-3xl sm:text-5xl lg:text-6xl font-black text-black tracking-tight font-sans uppercase leading-[1.05]">
-                          VIVE EXPERIENCIAS ÚNICAS &amp; ACCEDE AL INSTANTE
+                          MERCH 4GO &amp; EDICIONES LIMITADAS
                         </h2>
                         <p className="text-xs sm:text-sm text-zinc-600 font-semibold leading-relaxed max-w-xl">
-                          Acceso QR ultrasónico desde tu teléfono, transferencias de entradas en segundos entre amigos y notificaciones en tiempo real sobre los mejores eventos y clubes de Ecuador.
+                          Descubre la colección oficial de streetwear, ropa exclusiva y accesorios diseñados para la cultura nocturna y los mejores eventos de Ecuador.
                         </p>
 
                         {/* Action Buttons */}
                         <div className="flex flex-wrap items-center gap-3.5 pt-2">
                           <button
                             type="button"
-                            onClick={() => setActiveStoryScreen(2)}
+                            onClick={() => router.push("/merch")}
                             className="px-6 py-3.5 rounded-full bg-black text-white hover:bg-zinc-800 text-xs sm:text-sm font-black uppercase tracking-wider transition-all active:scale-95 shadow-xl inline-flex items-center justify-center cursor-pointer"
                           >
-                            VER EVENTOS DESTACADOS
+                            COMPRAR MERCH 4GO
                           </button>
                           <button
                             type="button"
-                            onClick={() => {
-                              if (typeof window !== "undefined") {
-                                window.dispatchEvent(new CustomEvent("open-ai-chatbot"));
-                              }
-                            }}
+                            onClick={() => router.push("/merch")}
                             className="px-6 py-3.5 rounded-full bg-transparent border-2 border-black/80 hover:bg-black/5 text-black text-xs sm:text-sm font-black uppercase tracking-wider transition-all active:scale-95 cursor-pointer inline-flex items-center justify-center"
                           >
-                            ASISTENCIA FAN SUPPORT
+                            VER COLECCIÓN
                           </button>
                         </div>
                       </div>
