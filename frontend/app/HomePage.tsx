@@ -1218,6 +1218,12 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                       loop
                       muted
                       playsInline
+                      onPlay={(e) => {
+                        e.currentTarget.playbackRate = 0.5;
+                      }}
+                      onLoadedMetadata={(e) => {
+                        e.currentTarget.playbackRate = 0.5;
+                      }}
                       className="absolute inset-0 w-full h-full object-cover brightness-95 blur-2xl scale-110"
                     >
                       <source src="/videos/subir_evento_bg.mp4" type="video/mp4" />
