@@ -48,12 +48,14 @@ const DEFAULT_ORGANIZERS = [
     name: "CUBIC",
     type: "Discoteca",
     img: "/images/cubic-official-logo.png",
+    instagramUrl: "https://instagram.com/cubic.ec",
   },
   {
     id: "sata",
     name: "SATA",
     type: "Organizador de eventos",
     img: "/images/sata-official-logo.jpg",
+    instagramUrl: "https://instagram.com/sata.ec",
   },
 ];
 
@@ -406,10 +408,10 @@ export default function EventDetailOverlay({
               </div>
             </div>
 
-            {/* ─── "Cartel" / Organizers & Artists List (EXACT MATCHING USER SCREENSHOT) ─── */}
+            {/* ─── "PROMOTOR" / Organizers & Promoters List ─── */}
             <div className="space-y-4 pt-6 border-t border-white/10">
               <h2 className="text-2xl font-black text-white tracking-tight">
-                Cartel
+                PROMOTOR
               </h2>
 
               <div className="space-y-3">
@@ -445,7 +447,11 @@ export default function EventDetailOverlay({
 
                       <button
                         type="button"
-                        onClick={() => toggleFollow(org.id)}
+                        onClick={() => {
+                          toggleFollow(org.id);
+                          const instagramLink = (org as any).instagramUrl || "https://instagram.com/cubic.ec";
+                          window.open(instagramLink, "_blank", "noopener,noreferrer");
+                        }}
                         className={`px-6 py-2 rounded-full font-black text-xs uppercase tracking-wider transition-all cursor-pointer shadow-md active:scale-95 ${
                           isFollowing
                             ? "bg-zinc-800 text-zinc-300 border border-white/20"
