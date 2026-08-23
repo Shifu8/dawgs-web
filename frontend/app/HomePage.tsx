@@ -12,6 +12,7 @@ import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   Calendar,
+  ChevronDown,
   ChevronLeft,
   ChevronRight,
   KeyRound,
@@ -1181,11 +1182,27 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                     </video>
                     <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-transparent to-transparent opacity-90" />
 
-                    {/* Bottom Footer: Left Copyright & Right Mute/Unmute Slider Switch */}
+                    {/* Bottom Footer: Left Copyright, Center Scroll Button & Right Mute/Unmute Slider Switch */}
                     <div className="absolute bottom-6 left-5 right-5 z-10 flex items-center justify-between gap-2 pointer-events-auto">
                       <span className="text-[9px] sm:text-[10px] font-semibold text-white/70 tracking-tight drop-shadow-md">
                         © 4GO 2026, all rights reserved
                       </span>
+
+                      {/* Scroll Down to Publica tus eventos Button */}
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const el = document.getElementById("subir-features-section");
+                          if (el) {
+                            el.scrollIntoView({ behavior: "smooth" });
+                          }
+                        }}
+                        className="px-3 py-1.5 rounded-full bg-white/10 hover:bg-white/20 text-white border border-white/25 text-[10px] font-black uppercase tracking-wider backdrop-blur-md transition-all active:scale-95 cursor-pointer flex items-center gap-1 shadow-lg"
+                        title="Ir a publicar tus eventos"
+                      >
+                        <span>Publicar</span>
+                        <ChevronDown className="w-3.5 h-3.5 text-yellow-400 animate-bounce" />
+                      </button>
 
                       {/* Mute/Unmute Audio Pill Slider */}
                       <button
@@ -1270,7 +1287,7 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                             <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
                             <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
                             <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
-                            <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
+                            <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
                           </svg>
                           <span>Continuar con Google</span>
                         </button>
@@ -1317,7 +1334,7 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                           onClick={() => router.push("/organizer/login")}
                           className="w-full py-3.5 rounded-xl bg-black text-white font-extrabold text-xs uppercase tracking-wider hover:bg-zinc-800 transition active:scale-[0.99] cursor-pointer shadow-md text-center mt-2"
                         >
-                          Crear cuenta de usuario & Reservar
+                          Crear cuenta de usuario &amp; Reservar
                         </button>
                       </div>
 
@@ -1336,11 +1353,26 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                         </button>
                       </div>
                     </div>
+
+                    {/* Scroll down indicator to lower feature section */}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const el = document.getElementById("subir-features-section");
+                        if (el) {
+                          el.scrollIntoView({ behavior: "smooth" });
+                        }
+                      }}
+                      className="relative z-10 mt-6 flex items-center justify-center gap-2 px-5 py-2.5 rounded-full bg-black/60 hover:bg-black/90 text-white/90 border border-white/20 text-xs font-black uppercase tracking-wider backdrop-blur-md transition-all active:scale-95 cursor-pointer shadow-xl"
+                    >
+                      <span>Publica tus eventos</span>
+                      <ChevronDown className="w-4 h-4 text-yellow-400 animate-bounce" />
+                    </button>
                   </div>
                 </div>
 
                 {/* ─── LOWER FEATURE SECTION BELOW VIDEO & LOGIN HERO (SCROLLABLE DOWN) ─── */}
-                <div className="w-full bg-zinc-950 text-white py-16 sm:py-24 px-6 sm:px-12 border-t border-zinc-800">
+                <div id="subir-features-section" className="w-full bg-zinc-950 text-white py-16 sm:py-24 px-6 sm:px-12 border-t border-zinc-800">
                   <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
                     {/* Left Side: Marketing & Feature Text */}
                     <div className="lg:col-span-7 space-y-6 text-left">
