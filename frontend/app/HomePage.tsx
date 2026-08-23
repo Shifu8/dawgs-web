@@ -1392,7 +1392,9 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                     </video>
 
                     {/* Overlay for legibility */}
-                                {/* Centered Glass Auth / Vertical Dashboard Card */}
+                    <div className="absolute inset-0 bg-black/45 backdrop-blur-xl" />
+
+                    {/* Centered Glass Auth / Vertical Dashboard Card */}
                     {!userLoggedIn ? (
                       <div className="relative z-10 w-full max-w-lg mx-auto bg-white/95 backdrop-blur-xl p-6 sm:p-10 rounded-3xl border border-white/40 shadow-2xl space-y-6">
                         <div className="text-center space-y-2">
