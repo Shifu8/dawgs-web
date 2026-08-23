@@ -1305,19 +1305,56 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                         Get started
                       </button>
                     </div>
-                    {/* Lower Showcase Photo (Moved Down) */}
-                    <div className="mt-6 w-full max-w-lg mx-auto rounded-2xl overflow-hidden shadow-xl border border-white/30 relative h-36 sm:h-44 group cursor-pointer">
+                  </div>
+                </div>
+
+                {/* ─── 3. LOWER FEATURE SECTION BELOW VIDEO & LOGIN HERO ─── */}
+                <div className="w-full bg-zinc-950 text-white py-16 sm:py-24 px-6 sm:px-12 border-t border-zinc-800">
+                  <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
+                    {/* Left Side: Marketing & Feature Text */}
+                    <div className="lg:col-span-7 space-y-6 text-left">
+                      <span className="px-4 py-1.5 rounded-full bg-white/10 border border-white/20 text-xs font-black uppercase text-yellow-400 tracking-widest inline-block">
+                        EXPERIENCIA 4GO SHOWCASE
+                      </span>
+                      <h2 className="text-3xl sm:text-5xl font-black uppercase tracking-tight leading-tight text-white font-sans">
+                        Publica tus eventos &amp; Conecta con tu audiencia
+                      </h2>
+                      <p className="text-sm sm:text-base text-zinc-300 leading-relaxed font-medium">
+                        Diseñado exclusivamente para productores, creadores y clubes nocturnos. Gestiona preventas en tiempo real, validación QR ultrasónica en puerta y control total de entradas en una sola plataforma.
+                      </p>
+                      <div className="pt-2 flex flex-wrap items-center gap-4">
+                        <button
+                          type="button"
+                          onClick={() => router.push("/organizer/register")}
+                          className="px-8 py-3.5 rounded-full bg-white hover:bg-zinc-200 text-black font-black text-xs uppercase tracking-widest transition-all shadow-xl active:scale-95 cursor-pointer"
+                        >
+                          Crear cuenta de organizador
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setActiveStoryScreen(1)}
+                          className="px-8 py-3.5 rounded-full bg-zinc-900 hover:bg-zinc-800 text-white border border-white/25 font-black text-xs uppercase tracking-widest transition-all shadow-xl active:scale-95 cursor-pointer"
+                        >
+                          Explorar eventos
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Right Side: The Red Girl Showcase Photo */}
+                    <div className="lg:col-span-5 relative w-full h-[400px] sm:h-[500px] rounded-3xl overflow-hidden shadow-2xl border border-white/15 group cursor-pointer">
                       <Image
                         src="/images/4go_red_girl_showcase.jpg"
-                        alt="4GO Showcase"
+                        alt="4GO Red Girl Showcase"
                         fill
+                        priority
                         className="object-cover group-hover:scale-105 transition-transform duration-500"
-                        sizes="(max-width: 768px) 100vw, 500px"
+                        sizes="(max-width: 1024px) 100vw, 500px"
                       />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
-                      <div className="absolute bottom-3 left-4 text-left z-10">
-                        <span className="text-[10px] font-black uppercase text-yellow-400 tracking-widest block">Featured Showcase</span>
-                        <span className="text-xs font-bold text-white tracking-tight">4GO Live Events &amp; VIP Access</span>
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-80" />
+                      <div className="absolute bottom-6 left-6 z-10 text-left">
+                        <span className="text-[11px] font-bold text-white tracking-tight drop-shadow-md block">
+                          © 4GO 2026, all rights reserved
+                        </span>
                       </div>
                     </div>
                   </div>
