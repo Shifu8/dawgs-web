@@ -1699,11 +1699,11 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                   </div>
                 </section>
 
-                {/* ─── 3. WHITE FEATURE SECTION (EN ESPAÑOL) ─── */}
-                <section className="w-full bg-white text-black py-16 sm:py-24 relative z-20 font-sans">
+                {/* ─── 3. BLACK FEATURE SECTION (EN ESPAÑOL) ─── */}
+                <section className="w-full bg-black text-white py-16 sm:py-24 relative z-20 font-sans border-t border-zinc-900">
                   <div className="max-w-[1200px] mx-auto px-6 sm:px-12 text-center space-y-12 sm:space-y-16">
                     {/* Centered Title */}
-                    <h2 className="text-3xl sm:text-5xl font-black text-black tracking-tight font-sans uppercase">
+                    <h2 className="text-3xl sm:text-5xl font-black text-white tracking-tight font-sans uppercase">
                       Reservar entradas nunca fue tan fácil
                     </h2>
 
@@ -1719,10 +1719,10 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                             className="object-contain filter drop-shadow-xl"
                           />
                         </div>
-                        <h3 className="text-lg sm:text-xl font-black text-black uppercase tracking-tight">
+                        <h3 className="text-lg sm:text-xl font-black text-white uppercase tracking-tight">
                           Reserva en segundos
                         </h3>
-                        <p className="text-xs sm:text-sm font-semibold text-zinc-600 max-w-xs leading-relaxed">
+                        <p className="text-xs sm:text-sm font-semibold text-zinc-300 max-w-xs leading-relaxed">
                           Obtén tus entradas en menos tiempo del que te tomó leer esto.
                         </p>
                       </div>
@@ -1737,10 +1737,10 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                             className="object-contain filter drop-shadow-xl"
                           />
                         </div>
-                        <h3 className="text-lg sm:text-xl font-black text-black uppercase tracking-tight">
+                        <h3 className="text-lg sm:text-xl font-black text-white uppercase tracking-tight">
                           Precios transparentes
                         </h3>
-                        <p className="text-xs sm:text-sm font-semibold text-zinc-600 max-w-xs leading-relaxed">
+                        <p className="text-xs sm:text-sm font-semibold text-zinc-300 max-w-xs leading-relaxed">
                           Mira el precio total desde el inicio, sin cargos ocultos ni sorpresas al pagar.
                         </p>
                       </div>
@@ -1755,10 +1755,10 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                             className="object-contain filter drop-shadow-xl"
                           />
                         </div>
-                        <h3 className="text-lg sm:text-xl font-black text-black uppercase tracking-tight">
+                        <h3 className="text-lg sm:text-xl font-black text-white uppercase tracking-tight">
                           Recomendaciones personalizadas
                         </h3>
-                        <p className="text-xs sm:text-sm font-semibold text-zinc-600 max-w-xs leading-relaxed">
+                        <p className="text-xs sm:text-sm font-semibold text-zinc-300 max-w-xs leading-relaxed">
                           Descubre los eventos hechos a tu medida directamente en tu inicio.
                         </p>
                       </div>
@@ -1766,16 +1766,16 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                   </div>
                 </section>
 
-                {/* ─── 4. WHITE ORGANIZER BANNER SECTION (PUBLICA TUS EVENTOS) ─── */}
-                <section id="subir-features-section" className="w-full bg-white text-black py-16 sm:py-24 relative z-20 font-sans">
+                {/* ─── 4. ORGANIZER BANNER SECTION (PUBLICA TUS EVENTOS) ─── */}
+                <section id="subir-features-section" className="w-full bg-black text-white py-16 sm:py-24 relative z-20 font-sans border-t border-zinc-900">
                   <div className="max-w-[1300px] mx-auto px-6 sm:px-12">
                     <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8 items-center">
                       {/* Left Column: Title, Description & Action Buttons */}
                       <div className="lg:col-span-6 space-y-6 text-left">
-                        <h2 className="text-3xl sm:text-5xl lg:text-6xl font-black text-black tracking-tight font-sans uppercase leading-[1.05]">
+                        <h2 className="text-3xl sm:text-5xl lg:text-6xl font-black text-white tracking-tight font-sans uppercase leading-[1.05]">
                           PUBLICA TUS EVENTOS &amp; CONECTA CON TU AUDIENCIA
                         </h2>
-                        <p className="text-xs sm:text-sm text-zinc-600 font-semibold leading-relaxed max-w-xl">
+                        <p className="text-xs sm:text-sm text-zinc-300 font-semibold leading-relaxed max-w-xl">
                           Diseñado exclusivamente para productores, creadores y clubes nocturnos. Gestiona preventas en tiempo real, validación QR ultrasónica en puerta y control total de entradas en una sola plataforma.
                         </p>
 
@@ -1783,14 +1783,14 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                         <div className="flex flex-wrap items-center gap-3.5 pt-2">
                           <a
                             href="/organizer/register"
-                            className="px-6 py-3.5 rounded-full bg-black text-white hover:bg-zinc-800 text-xs sm:text-sm font-black uppercase tracking-wider transition-all active:scale-95 shadow-xl inline-flex items-center justify-center cursor-pointer"
+                            className="px-6 py-3.5 rounded-full bg-white text-black hover:bg-zinc-200 text-xs sm:text-sm font-black uppercase tracking-wider transition-all active:scale-95 shadow-xl inline-flex items-center justify-center cursor-pointer"
                           >
                             CREAR CUENTA DE ORGANIZADOR
                           </a>
                           <button
                             type="button"
                             onClick={() => setActiveStoryScreen(2)}
-                            className="px-6 py-3.5 rounded-full bg-transparent border-2 border-black/80 hover:bg-black/5 text-black text-xs sm:text-sm font-black uppercase tracking-wider transition-all active:scale-95 cursor-pointer inline-flex items-center justify-center"
+                            className="px-6 py-3.5 rounded-full bg-transparent border-2 border-white/80 hover:bg-white/10 text-white text-xs sm:text-sm font-black uppercase tracking-wider transition-all active:scale-95 cursor-pointer inline-flex items-center justify-center"
                           >
                             EXPLORAR EVENTOS
                           </button>
@@ -1799,7 +1799,7 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
 
                       {/* Right Column: Rounded Image Container with Red 4GO Photo & Copyright watermark */}
                       <div className="lg:col-span-6 w-full flex justify-center lg:justify-end">
-                        <div className="relative w-full max-w-[540px] aspect-[4/3.5] rounded-[2.5rem] overflow-hidden shadow-2xl border border-black/10 bg-zinc-950">
+                        <div className="relative w-full max-w-[540px] aspect-[4/3.5] rounded-[2.5rem] overflow-hidden shadow-2xl border border-white/20 bg-zinc-950">
                           <Image
                             src="/images/subir_evento_party_showcase.jpg"
                             alt="Publica tus eventos 4GO"
@@ -1817,13 +1817,13 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                   </div>
                 </section>
 
-                {/* ─── 5. SECOND WHITE BANNER SECTION (IMAGE ON LEFT, TEXT ON RIGHT) ─── */}
-                <section className="w-full bg-white text-black py-16 sm:py-24 relative z-20 font-sans">
+                {/* ─── 5. SECOND BANNER SECTION (IMAGE ON LEFT, TEXT ON RIGHT) ─── */}
+                <section className="w-full bg-black text-white py-16 sm:py-24 relative z-20 font-sans border-t border-zinc-900">
                   <div className="max-w-[1300px] mx-auto px-6 sm:px-12">
                     <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8 items-center">
                       {/* Left Column: Image Container (Image on Left) */}
                       <div className="lg:col-span-6 w-full flex justify-center lg:justify-start order-2 lg:order-1">
-                        <div className="relative w-full max-w-[540px] aspect-[4/3.5] rounded-[2.5rem] overflow-hidden shadow-2xl border border-black/10 bg-zinc-950">
+                        <div className="relative w-full max-w-[540px] aspect-[4/3.5] rounded-[2.5rem] overflow-hidden shadow-2xl border border-white/20 bg-zinc-950">
                           <Image
                             src="/images/now4go-hero-presentation-hd-fullbleed.png"
                             alt="Vive experiencias 4GO"
@@ -1840,10 +1840,10 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
 
                       {/* Right Column: Title, Description & Action Buttons (Text on Right) */}
                       <div className="lg:col-span-6 space-y-6 text-left order-1 lg:order-2">
-                        <h2 className="text-3xl sm:text-5xl lg:text-6xl font-black text-black tracking-tight font-sans uppercase leading-[1.05]">
+                        <h2 className="text-3xl sm:text-5xl lg:text-6xl font-black text-white tracking-tight font-sans uppercase leading-[1.05]">
                           VIVE EXPERIENCIAS ÚNICAS &amp; ACCEDE AL INSTANTE
                         </h2>
-                        <p className="text-xs sm:text-sm text-zinc-600 font-semibold leading-relaxed max-w-xl">
+                        <p className="text-xs sm:text-sm text-zinc-300 font-semibold leading-relaxed max-w-xl">
                           Acceso QR ultrasónico desde tu teléfono, transferencias de entradas en segundos entre amigos y notificaciones en tiempo real sobre los mejores eventos y clubes de Ecuador.
                         </p>
 
@@ -1852,7 +1852,7 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                           <button
                             type="button"
                             onClick={() => setActiveStoryScreen(2)}
-                            className="px-6 py-3.5 rounded-full bg-black text-white hover:bg-zinc-800 text-xs sm:text-sm font-black uppercase tracking-wider transition-all active:scale-95 shadow-xl inline-flex items-center justify-center cursor-pointer"
+                            className="px-6 py-3.5 rounded-full bg-white text-black hover:bg-zinc-200 text-xs sm:text-sm font-black uppercase tracking-wider transition-all active:scale-95 shadow-xl inline-flex items-center justify-center cursor-pointer"
                           >
                             VER EVENTOS DESTACADOS
                           </button>
@@ -1863,7 +1863,7 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                                 window.dispatchEvent(new CustomEvent("open-ai-chatbot"));
                               }
                             }}
-                            className="px-6 py-3.5 rounded-full bg-transparent border-2 border-black/80 hover:bg-black/5 text-black text-xs sm:text-sm font-black uppercase tracking-wider transition-all active:scale-95 cursor-pointer inline-flex items-center justify-center"
+                            className="px-6 py-3.5 rounded-full bg-transparent border-2 border-white/80 hover:bg-white/10 text-white text-xs sm:text-sm font-black uppercase tracking-wider transition-all active:scale-95 cursor-pointer inline-flex items-center justify-center"
                           >
                             ASISTENCIA FAN SUPPORT
                           </button>
