@@ -215,7 +215,7 @@ export default function EventDetailOverlay({
                 priority
                 quality={100}
                 sizes="(max-width: 768px) 100vw, 380px"
-                className="object-cover object-center brightness-105 group-hover:scale-105 transition-transform duration-500"
+                className="object-cover object-center brightness-105"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-60" />
 
@@ -462,10 +462,10 @@ export default function EventDetailOverlay({
               </div>
             </div>
 
-            {/* ─── "Sala" / Venue & Map Section (EXACT MATCHING USER SCREENSHOT) ─── */}
+            {/* ─── "Lugar" / Venue & Map Section ─── */}
             <div className="space-y-3 pt-6 border-t border-white/10">
               <span className="text-xs text-zinc-400 font-bold uppercase tracking-wider block">
-                Sala
+                Lugar
               </span>
               
               <div className="flex items-start justify-between gap-4">
@@ -485,14 +485,9 @@ export default function EventDetailOverlay({
                     </button>
                   </div>
                 </div>
-
-                {/* Venue Badge Graphic */}
-                <div className="px-4 py-2 rounded-xl bg-white/10 border border-white/15 text-white font-black text-sm tracking-widest uppercase">
-                  CUBIC
-                </div>
               </div>
 
-              {/* Action Buttons: ABRIR EN EL MAPA + SEGUIR */}
+              {/* Action Buttons: ABRIR EN EL MAPA */}
               <div className="flex items-center gap-3 pt-2">
                 <a
                   href={mapsUrl}
@@ -503,17 +498,6 @@ export default function EventDetailOverlay({
                   <MapPin className="w-3.5 h-3.5 text-yellow-400" />
                   <span>ABRIR EN EL MAPA</span>
                 </a>
-
-                <button
-                  type="button"
-                  onClick={() => {
-                    toggleFollow("cubic-venue");
-                    window.open("https://instagram.com/cubic.ec", "_blank", "noopener,noreferrer");
-                  }}
-                  className="px-6 py-2.5 rounded-full bg-white hover:bg-zinc-200 text-black font-black text-xs uppercase tracking-wider transition-all cursor-pointer shadow-md active:scale-95"
-                >
-                  SEGUIR
-                </button>
               </div>
 
               {/* Opening Doors Text */}
