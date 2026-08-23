@@ -1159,156 +1159,153 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -30 }}
                 transition={{ duration: 0.35, ease: "easeOut" }}
-                className="relative w-full min-h-[100dvh] flex flex-col lg:flex-row items-stretch select-none -mt-20 sm:-mt-24 -mb-16 lg:-mb-24"
+                className="relative w-full flex flex-col select-none -mt-20 sm:-mt-24 -mb-16 lg:-mb-24"
               >
-                {/* ─── 1. LEFT COLUMN (30% WIDTH): BACKGROUND VIDEO FROM DOWNLOADS ─── */}
-                <div className="relative w-full lg:w-[30%] min-h-[600px] lg:min-h-[calc(100vh+6rem)] self-stretch bg-zinc-950 overflow-hidden flex-shrink-0">
-                  <video
-                    autoPlay
-                    loop
-                    muted
-                    playsInline
-                    className="absolute inset-0 w-full h-full object-cover brightness-105"
-                  >
-                    <source src="/videos/subir_evento_left_video.mp4" type="video/mp4" />
-                  </video>
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-transparent to-transparent opacity-90" />
+                {/* ─── TOP HERO ROW (30% LEFT VIDEO / 70% RIGHT AUTH FORM WITH VIDEO) ─── */}
+                <div className="w-full min-h-[100dvh] flex flex-col lg:flex-row items-stretch">
+                  {/* 1. LEFT COLUMN (30% WIDTH): BACKGROUND VIDEO FROM DOWNLOADS */}
+                  <div className="relative w-full lg:w-[30%] min-h-[500px] lg:min-h-[calc(100vh+6rem)] self-stretch bg-zinc-950 overflow-hidden flex-shrink-0">
+                    <video
+                      autoPlay
+                      loop
+                      muted
+                      playsInline
+                      className="absolute inset-0 w-full h-full object-cover brightness-105"
+                    >
+                      <source src="/videos/subir_evento_left_video.mp4" type="video/mp4" />
+                    </video>
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-transparent to-transparent opacity-90" />
 
-                  {/* Bottom Left Copyright Overlay (Exact match to user screenshot) */}
-                  <div className="absolute bottom-6 left-5 z-10">
-                    <span className="text-[11px] sm:text-xs font-bold text-white tracking-tight drop-shadow-md">
-                      © 4GO 2026, all rights reserved
-                    </span>
+                    {/* Bottom Left Copyright Overlay */}
+                    <div className="absolute bottom-6 left-5 z-10">
+                      <span className="text-[11px] sm:text-xs font-bold text-white tracking-tight drop-shadow-md">
+                        © 4GO 2026, all rights reserved
+                      </span>
+                    </div>
                   </div>
-                </div>
 
-                {/* ─── 2. RIGHT COLUMN (70% WIDTH): CENTERED AUTH FORM WITH BACKGROUND VIDEO ─── */}
-                <div className="relative w-full lg:w-[70%] min-h-screen px-6 sm:px-12 py-16 sm:py-20 flex flex-col items-center justify-center bg-black text-black font-sans overflow-hidden">
-                  {/* Background Video (From Downloads) */}
-                  <video
-                    autoPlay
-                    loop
-                    muted
-                    playsInline
-                    className="absolute inset-0 w-full h-full object-cover brightness-90"
-                  >
-                    <source src="/videos/subir_evento_bg.mp4" type="video/mp4" />
-                  </video>
+                  {/* 2. RIGHT COLUMN (70% WIDTH): CENTERED AUTH FORM WITH BACKGROUND VIDEO */}
+                  <div className="relative w-full lg:w-[70%] min-h-screen px-6 sm:px-12 py-16 sm:py-20 flex flex-col items-center justify-center bg-black text-black font-sans overflow-hidden">
+                    <video
+                      autoPlay
+                      loop
+                      muted
+                      playsInline
+                      className="absolute inset-0 w-full h-full object-cover brightness-90"
+                    >
+                      <source src="/videos/subir_evento_bg.mp4" type="video/mp4" />
+                    </video>
 
-                  {/* Overlay for legibility */}
-                  <div className="absolute inset-0 bg-black/30 backdrop-blur-[2px]" />
+                    <div className="absolute inset-0 bg-black/30 backdrop-blur-[2px]" />
 
-                  {/* Centered Glass Auth Card */}
-                  <div className="relative z-10 w-full max-w-lg mx-auto bg-white/95 backdrop-blur-xl p-6 sm:p-10 rounded-3xl border border-white/40 shadow-2xl space-y-6">
-                    {/* Header: Title & Subtitle (No Logo) */}
-                    <div className="text-center space-y-2">
-                      <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-black font-sans leading-tight">
-                        Inicia sesión o crea tu cuenta 4GO
-                      </h1>
-                      <p className="text-xs sm:text-sm text-zinc-500 font-medium max-w-md mx-auto leading-relaxed">
-                        Create and manage events, sell tickets, and grow your audience.
-                      </p>
-                    </div>
-
-                    {/* Social Logins (Apple & Google) */}
-                    <div className="space-y-3 pt-1">
-                      {/* Continue with Apple */}
-                      <button
-                        type="button"
-                        onClick={() => router.push("/organizer/login")}
-                        className="w-full py-3.5 px-6 rounded-xl bg-black text-white font-extrabold text-sm flex items-center justify-center gap-3 hover:bg-zinc-800 transition active:scale-[0.99] cursor-pointer shadow-md"
-                      >
-                        <svg className="w-5 h-5 fill-white" viewBox="0 0 24 24">
-                          <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M15.97 6.85c.66-.8 1.11-1.92.99-3.04-.96.04-2.12.64-2.8 1.44-.61.71-1.14 1.86-.99 2.96 1.07.08 2.14-.56 2.8-1.36z"/>
-                        </svg>
-                        <span>Continuar con Apple</span>
-                      </button>
-
-                      {/* Divider */}
-                      <div className="relative flex items-center justify-center my-2">
-                        <div className="border-t border-zinc-200 w-full" />
-                        <span className="absolute bg-white px-3 text-xs text-zinc-400 font-semibold">o</span>
+                    {/* Centered Glass Auth Card */}
+                    <div className="relative z-10 w-full max-w-lg mx-auto bg-white/95 backdrop-blur-xl p-6 sm:p-10 rounded-3xl border border-white/40 shadow-2xl space-y-6">
+                      <div className="text-center space-y-2">
+                        <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-black font-sans leading-tight">
+                          Inicia sesión o crea tu cuenta 4GO
+                        </h1>
+                        <p className="text-xs sm:text-sm text-zinc-500 font-medium max-w-md mx-auto leading-relaxed">
+                          Create and manage events, sell tickets, and grow your audience.
+                        </p>
                       </div>
 
-                      {/* Continue with Google */}
-                      <button
-                        type="button"
-                        onClick={() => router.push("/organizer/login")}
-                        className="w-full py-3.5 px-6 rounded-xl bg-white text-zinc-800 font-extrabold text-sm border border-zinc-300 flex items-center justify-center gap-3 hover:bg-zinc-50 transition active:scale-[0.99] cursor-pointer shadow-sm"
-                      >
-                        <svg className="w-5 h-5" viewBox="0 0 24 24">
-                          <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-                          <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-                          <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
-                          <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
-                        </svg>
-                        <span>Continuar con Google</span>
-                      </button>
-                    </div>
-
-                    {/* Input Form Fields */}
-                    <div className="space-y-4 pt-1 text-left">
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-                        <div className="space-y-1">
-                          <label className="text-xs font-black text-zinc-900 block">Nombre completo</label>
-                          <input
-                            type="text"
-                            placeholder="Ej. Alex Rivera"
-                            className="w-full px-4 py-2.5 rounded-xl bg-zinc-50 border border-zinc-200 text-xs font-semibold text-zinc-900 focus:outline-none focus:border-black focus:bg-white transition"
-                          />
-                          <span className="text-[10px] text-zinc-400 font-medium block">Tu nombre para entradas oficiales.</span>
-                        </div>
-                        <div className="space-y-1">
-                          <label className="text-xs font-black text-zinc-900 block">Correo electrónico</label>
-                          <input
-                            type="email"
-                            placeholder="tu@email.com"
-                            className="w-full px-4 py-2.5 rounded-xl bg-zinc-50 border border-zinc-200 text-xs font-semibold text-zinc-900 focus:outline-none focus:border-black focus:bg-white transition"
-                          />
-                          <span className="text-[10px] text-zinc-400 font-medium block">Recibirás tus accesos aquí.</span>
-                        </div>
-                      </div>
-
-                      <div className="space-y-1">
-                        <label className="text-xs font-black text-zinc-900 block">Ciudad</label>
-                        <select
-                          className="w-full px-4 py-2.5 rounded-xl bg-zinc-50 border border-zinc-200 text-xs font-semibold text-zinc-900 focus:outline-none focus:border-black focus:bg-white transition cursor-pointer"
+                      {/* Social Logins */}
+                      <div className="space-y-3 pt-1">
+                        <button
+                          type="button"
+                          onClick={() => router.push("/organizer/login")}
+                          className="w-full py-3.5 px-6 rounded-xl bg-black text-white font-extrabold text-sm flex items-center justify-center gap-3 hover:bg-zinc-800 transition active:scale-[0.99] cursor-pointer shadow-md"
                         >
-                          <option value="quito">Quito</option>
-                          <option value="cuenca">Cuenca</option>
-                          <option value="guayaquil">Guayaquil</option>
-                          <option value="salinas">Salinas</option>
-                          <option value="loja">Loja</option>
-                        </select>
+                          <svg className="w-5 h-5 fill-white" viewBox="0 0 24 24">
+                            <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M15.97 6.85c.66-.8 1.11-1.92.99-3.04-.96.04-2.12.64-2.8 1.44-.61.71-1.14 1.86-.99 2.96 1.07.08 2.14-.56 2.8-1.36z"/>
+                          </svg>
+                          <span>Continuar con Apple</span>
+                        </button>
+
+                        <div className="relative flex items-center justify-center my-2">
+                          <div className="border-t border-zinc-200 w-full" />
+                          <span className="absolute bg-white px-3 text-xs text-zinc-400 font-semibold">o</span>
+                        </div>
+
+                        <button
+                          type="button"
+                          onClick={() => router.push("/organizer/login")}
+                          className="w-full py-3.5 px-6 rounded-xl bg-white text-zinc-800 font-extrabold text-sm border border-zinc-300 flex items-center justify-center gap-3 hover:bg-zinc-50 transition active:scale-[0.99] cursor-pointer shadow-sm"
+                        >
+                          <svg className="w-5 h-5" viewBox="0 0 24 24">
+                            <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                            <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                            <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
+                            <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
+                          </svg>
+                          <span>Continuar con Google</span>
+                        </button>
                       </div>
 
-                      <button
-                        type="button"
-                        onClick={() => router.push("/organizer/login")}
-                        className="w-full py-3.5 rounded-xl bg-black text-white font-extrabold text-xs uppercase tracking-wider hover:bg-zinc-800 transition active:scale-[0.99] cursor-pointer shadow-md text-center mt-2"
-                      >
-                        Crear cuenta de usuario & Reservar
-                      </button>
-                    </div>
+                      {/* Input Form Fields */}
+                      <div className="space-y-4 pt-1 text-left">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                          <div className="space-y-1">
+                            <label className="text-xs font-black text-zinc-900 block">Nombre completo</label>
+                            <input
+                              type="text"
+                              placeholder="Ej. Alex Rivera"
+                              className="w-full px-4 py-2.5 rounded-xl bg-zinc-50 border border-zinc-200 text-xs font-semibold text-zinc-900 focus:outline-none focus:border-black focus:bg-white transition"
+                            />
+                            <span className="text-[10px] text-zinc-400 font-medium block">Tu nombre para entradas oficiales.</span>
+                          </div>
+                          <div className="space-y-1">
+                            <label className="text-xs font-black text-zinc-900 block">Correo electrónico</label>
+                            <input
+                              type="email"
+                              placeholder="tu@email.com"
+                              className="w-full px-4 py-2.5 rounded-xl bg-zinc-50 border border-zinc-200 text-xs font-semibold text-zinc-900 focus:outline-none focus:border-black focus:bg-white transition"
+                            />
+                            <span className="text-[10px] text-zinc-400 font-medium block">Recibirás tus accesos aquí.</span>
+                          </div>
+                        </div>
 
-                    {/* Promoter Account Note (Small Footer inside Card) */}
-                    <div className="pt-5 border-t border-zinc-200 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-center sm:text-left">
-                      <div>
-                        <span className="font-extrabold text-zinc-900 block sm:inline">Ready to go live?</span>{" "}
-                        <span className="text-zinc-500 font-medium">Create a promoter account to get started.</span>
+                        <div className="space-y-1">
+                          <label className="text-xs font-black text-zinc-900 block">Ciudad</label>
+                          <select
+                            className="w-full px-4 py-2.5 rounded-xl bg-zinc-50 border border-zinc-200 text-xs font-semibold text-zinc-900 focus:outline-none focus:border-black focus:bg-white transition cursor-pointer"
+                          >
+                            <option value="quito">Quito</option>
+                            <option value="cuenca">Cuenca</option>
+                            <option value="guayaquil">Guayaquil</option>
+                            <option value="salinas">Salinas</option>
+                            <option value="loja">Loja</option>
+                          </select>
+                        </div>
+
+                        <button
+                          type="button"
+                          onClick={() => router.push("/organizer/login")}
+                          className="w-full py-3.5 rounded-xl bg-black text-white font-extrabold text-xs uppercase tracking-wider hover:bg-zinc-800 transition active:scale-[0.99] cursor-pointer shadow-md text-center mt-2"
+                        >
+                          Crear cuenta de usuario & Reservar
+                        </button>
                       </div>
-                      <button
-                        type="button"
-                        onClick={() => router.push("/organizer/register")}
-                        className="px-4 py-2 rounded-full bg-zinc-900 hover:bg-black text-white font-extrabold text-xs uppercase tracking-wider transition cursor-pointer shrink-0 shadow"
-                      >
-                        Get started
-                      </button>
+
+                      {/* Promoter Account Note */}
+                      <div className="pt-5 border-t border-zinc-200 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-center sm:text-left">
+                        <div>
+                          <span className="font-extrabold text-zinc-900 block sm:inline">Ready to go live?</span>{" "}
+                          <span className="text-zinc-500 font-medium">Create a promoter account to get started.</span>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => router.push("/organizer/register")}
+                          className="px-4 py-2 rounded-full bg-zinc-900 hover:bg-black text-white font-extrabold text-xs uppercase tracking-wider transition cursor-pointer shrink-0 shadow"
+                        >
+                          Get started
+                        </button>
+                      </div>
                     </div>
                   </div>
                 </div>
 
-                {/* ─── 3. LOWER FEATURE SECTION BELOW VIDEO & LOGIN HERO ─── */}
+                {/* ─── LOWER FEATURE SECTION BELOW VIDEO & LOGIN HERO (SCROLLABLE DOWN) ─── */}
                 <div className="w-full bg-zinc-950 text-white py-16 sm:py-24 px-6 sm:px-12 border-t border-zinc-800">
                   <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
                     {/* Left Side: Marketing & Feature Text */}
