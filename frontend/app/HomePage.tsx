@@ -50,6 +50,7 @@ import {
   VolumeX,
   Mic,
   Building2,
+  UserCheck,
 } from "lucide-react";
 import { AnimatePresence, motion, useDragControls } from "framer-motion";
 import Atmosphere from "@/frontend/components/Atmosphere";
@@ -158,6 +159,22 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
   const [activeSection, setActiveSection] = useState<HomeNavId>("home");
   const [activeFilterTab, setActiveFilterTab] = useState<FilterTabId>("inicio");
   const [showHiddenMenu, setShowHiddenMenu] = useState(false);
+  const [merchSlideIndex, setMerchSlideIndex] = useState(0);
+
+  const MERCH_SHOWCASE_IMAGES = [
+    { src: "/images/nenez-studio-fit-front.png", title: "4GO Streetwear Collection 2026" },
+    { src: "/images/nenez-studio-portrait.png", title: "4GO Limited Edition Drops" },
+    { src: "/images/nenez-studio-couch.png", title: "4GO Official Nightwear" },
+    { src: "/images/model_one.png", title: "4GO Apparel & Accessories" },
+    { src: "/images/ariana_merch.png", title: "4GO Merch - NENEZ Wear" },
+  ];
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setMerchSlideIndex((prev) => (prev + 1) % MERCH_SHOWCASE_IMAGES.length);
+    }, 2500);
+    return () => clearInterval(timer);
+  }, [MERCH_SHOWCASE_IMAGES.length]);
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [isStaffModalOpen, setIsStaffModalOpen] = useState(false);
   const [isPosModalOpen, setIsPosModalOpen] = useState(false);
@@ -1594,22 +1611,26 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                                 type="button"
                                 onClick={(e) => {
                                   e.stopPropagation();
-                                  setActiveStoryScreen(0);
+                                  router.push("/organizer/login");
                                 }}
                                 className="px-8 py-3.5 rounded-full bg-zinc-900/80 hover:bg-zinc-800/90 text-white font-black text-xs uppercase tracking-widest backdrop-blur-2xl border border-white/30 shadow-[0_10px_30px_rgba(0,0,0,0.5)] transition-all hover:scale-105 active:scale-95 cursor-pointer flex items-center gap-2"
                               >
-                                <PlusCircle className="w-4 h-4 text-white" />
-                                CREAR EVENTO
+                                <UserCheck className="w-4 h-4 text-white" />
+                                INICIAR SESIÓN
                               </button>
                               <button
                                 type="button"
                                 onClick={(e) => {
                                   e.stopPropagation();
-                                  setActiveStoryScreen(2);
+                                  const el = document.getElementById("merch-4go-section");
+                                  if (el) {
+                                    el.scrollIntoView({ behavior: "smooth" });
+                                  }
                                 }}
-                                className="px-8 py-3.5 rounded-full bg-zinc-900/80 hover:bg-zinc-800/90 text-white font-black text-xs uppercase tracking-widest backdrop-blur-2xl border border-white/30 shadow-[0_10px_30px_rgba(0,0,0,0.5)] transition-all hover:scale-105 active:scale-95 cursor-pointer"
+                                className="px-8 py-3.5 rounded-full bg-zinc-900/80 hover:bg-zinc-800/90 text-white font-black text-xs uppercase tracking-widest backdrop-blur-2xl border border-white/30 shadow-[0_10px_30px_rgba(0,0,0,0.5)] transition-all hover:scale-105 active:scale-95 cursor-pointer flex items-center gap-2"
                               >
-                                CARTELERA
+                                <ShoppingBag className="w-4 h-4 text-yellow-400 animate-pulse" />
+                                MERCH 4GO
                               </button>
                             </div>
                           </div>
@@ -1867,22 +1888,39 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                   </div>
                 </section>
 
-                {/* ─── 5. SECOND WHITE BANNER SECTION (IMAGE ON LEFT, TEXT ON RIGHT) ─── */}
-                <section className="w-full bg-white text-black py-16 sm:py-24 relative z-20 font-sans border-t border-zinc-200">
+                {/* ─── 5. SECOND WHITE BANNER SECTION (MERCH 4GO SHOWCASE SLIDESHOW) ─── */}
+                <section id="merch-4go-section" className="w-full bg-white text-black py-16 sm:py-24 relative z-20 font-sans border-t border-zinc-200">
                   <div className="max-w-[1300px] mx-auto px-6 sm:px-12">
                     <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8 items-center">
-                      {/* Left Column: Image Container (Image on Left) */}
+                      {/* Left Column: Animated Merch 4GO Slideshow Container */}
                       <div className="lg:col-span-6 w-full flex justify-center lg:justify-start order-2 lg:order-1">
-                        <div className="relative w-full max-w-[540px] aspect-[4/3.5] rounded-[2.5rem] overflow-hidden shadow-2xl border border-black/10 bg-zinc-950">
-                          <Image
-                            src="/images/now4go-hero-presentation-hd-fullbleed.png"
-                            alt="Vive experiencias 4GO"
-                            fill
-                            className="object-cover brightness-105"
-                            sizes="(max-width: 768px) 100vw, 600px"
-                          />
+                        <div className="relative w-full max-w-[540px] aspect-[4/3.5] rounded-[2.5rem] overflow-hidden shadow-2xl border border-black/10 bg-zinc-950 group">
+                          <AnimatePresence mode="wait">
+                            <motion.div
+                              key={`merch-slide-${merchSlideIndex}`}
+                              initial={{ opacity: 0, scale: 0.97 }}
+                              animate={{ opacity: 1, scale: 1 }}
+                              exit={{ opacity: 0, scale: 1.03 }}
+                              transition={{ duration: 0.45, ease: "easeInOut" }}
+                              className="absolute inset-0 w-full h-full"
+                            >
+                              <Image
+                                src={MERCH_SHOWCASE_IMAGES[merchSlideIndex].src}
+                                alt={MERCH_SHOWCASE_IMAGES[merchSlideIndex].title}
+                                fill
+                                className="object-cover brightness-105"
+                                sizes="(max-width: 768px) 100vw, 600px"
+                              />
+                            </motion.div>
+                          </AnimatePresence>
+
+                          {/* Top Badge Overlay */}
+                          <div className="absolute top-4 left-5 z-20 px-3 py-1 rounded-full bg-black/80 backdrop-blur-md border border-white/20 text-[10px] font-black uppercase tracking-wider text-yellow-400 shadow-md">
+                            MERCH 4GO • {MERCH_SHOWCASE_IMAGES[merchSlideIndex].title}
+                          </div>
+
                           {/* Overlay copyright text on bottom left */}
-                          <span className="absolute bottom-4 left-5 text-[10px] sm:text-[11px] font-extrabold text-white/90 tracking-wider shadow-md drop-shadow">
+                          <span className="absolute bottom-4 left-5 z-20 text-[10px] sm:text-[11px] font-extrabold text-white/90 tracking-wider shadow-md drop-shadow">
                             © 4GO 2026, all rights reserved
                           </span>
                         </div>
