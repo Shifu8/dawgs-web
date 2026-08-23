@@ -1814,6 +1814,57 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                     </div>
                   </div>
                 </section>
+
+                {/* ─── 4. WHITE ORGANIZER BANNER SECTION (PUBLICA TUS EVENTOS) ─── */}
+                <section id="subir-features-section" className="w-full bg-white text-black py-16 sm:py-24 relative z-20 font-sans border-t border-zinc-200">
+                  <div className="max-w-[1300px] mx-auto px-6 sm:px-12">
+                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8 items-center">
+                      {/* Left Column: Title, Description & Action Buttons */}
+                      <div className="lg:col-span-6 space-y-6 text-left">
+                        <h2 className="text-3xl sm:text-5xl lg:text-6xl font-black text-black tracking-tight font-sans uppercase leading-[1.05]">
+                          PUBLICA TUS EVENTOS &amp; CONECTA CON TU AUDIENCIA
+                        </h2>
+                        <p className="text-xs sm:text-sm text-zinc-600 font-semibold leading-relaxed max-w-xl">
+                          Diseñado exclusivamente para productores, creadores y clubes nocturnos. Gestiona preventas en tiempo real, validación QR ultrasónica en puerta y control total de entradas en una sola plataforma.
+                        </p>
+
+                        {/* Action Buttons */}
+                        <div className="flex flex-wrap items-center gap-3.5 pt-2">
+                          <a
+                            href="/organizer/register"
+                            className="px-6 py-3.5 rounded-full bg-black text-white hover:bg-zinc-800 text-xs sm:text-sm font-black uppercase tracking-wider transition-all active:scale-95 shadow-xl inline-flex items-center justify-center cursor-pointer"
+                          >
+                            CREAR CUENTA DE ORGANIZADOR
+                          </a>
+                          <button
+                            type="button"
+                            onClick={() => setActiveStoryScreen(2)}
+                            className="px-6 py-3.5 rounded-full bg-transparent border-2 border-black/80 hover:bg-black/5 text-black text-xs sm:text-sm font-black uppercase tracking-wider transition-all active:scale-95 cursor-pointer inline-flex items-center justify-center"
+                          >
+                            EXPLORAR EVENTOS
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Right Column: Rounded Image Container with Red 4GO Photo & Copyright watermark */}
+                      <div className="lg:col-span-6 w-full flex justify-center lg:justify-end">
+                        <div className="relative w-full max-w-[540px] aspect-[4/3.5] rounded-[2.5rem] overflow-hidden shadow-2xl border border-black/10 bg-zinc-950">
+                          <Image
+                            src="/images/subir_evento_left_showcase.jpg"
+                            alt="Publica tus eventos 4GO"
+                            fill
+                            className="object-cover brightness-105"
+                            sizes="(max-width: 768px) 100vw, 600px"
+                          />
+                          {/* Overlay copyright text on bottom left */}
+                          <span className="absolute bottom-4 left-5 text-[10px] sm:text-[11px] font-extrabold text-white/90 tracking-wider shadow-md drop-shadow">
+                            © 4GO 2026, all rights reserved
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </section>
               </motion.div>
             )}
 
