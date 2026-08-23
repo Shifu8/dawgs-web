@@ -183,85 +183,80 @@ export default function Footer() {
             </div>
           </div>
 
-          <p className="text-xs sm:text-sm text-zinc-400 text-center lg:text-left font-medium">
-            4GO y el logo de 4GO son marcas registradas de 4GO Events Ltd. Todos los derechos reservados.
-          </p>
-        </div>
+          {/* Copyright & Inline Compact DevEc Branding */}
+          <div className="flex flex-col lg:flex-row items-center justify-between gap-4 pt-2">
+            <p className="text-xs sm:text-sm text-zinc-400 text-center lg:text-left font-medium">
+              4GO y el logo de 4GO son marcas registradas de 4GO Events Ltd. Todos los derechos reservados.
+            </p>
 
-        {/* ─── ABSOLUTE BOTTOM BRANDING: DESARROLLADO POR DevEc SOFTWARE DEVELOPMENT ─── */}
-        <div className="border-t border-white/10 pt-12 pb-4 flex flex-col items-center justify-center space-y-3 select-none">
-          <span className="text-[11px] sm:text-xs font-extrabold uppercase tracking-[0.35em] text-zinc-400">
-            DESARROLLADO POR
-          </span>
-
-          {/* DevEc Logo with Flag Wave (Yellow, Blue, Red) */}
-          <div className="flex flex-col items-center justify-center group cursor-pointer transition-transform duration-300 hover:scale-105">
-            <svg
-              className="h-11 sm:h-14 w-auto filter drop-shadow-[0_0_15px_rgba(255,255,255,0.15)]"
-              viewBox="0 0 220 50"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              {/* Text DevEc */}
-              <text
-                x="10"
-                y="36"
-                fill="#ffffff"
-                fontSize="34"
-                fontWeight="900"
-                fontFamily="system-ui, -apple-system, sans-serif"
-                letterSpacing="-0.03em"
+            {/* Compact DevEc Branding Inline next to Copyright */}
+            <div className="flex items-center gap-2 text-zinc-400 shrink-0 select-none group transition-transform duration-300 hover:scale-105">
+              <span className="text-[10px] font-extrabold uppercase tracking-widest text-zinc-400">
+                DESARROLLADO POR
+              </span>
+              <svg
+                className="h-6 sm:h-7 w-auto filter drop-shadow-[0_0_10px_rgba(255,255,255,0.15)]"
+                viewBox="0 0 220 50"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
               >
-                Dev
-              </text>
-              <text
-                x="76"
-                y="36"
-                fill="#ffffff"
-                fontSize="34"
-                fontWeight="900"
-                fontFamily="system-ui, -apple-system, sans-serif"
-                letterSpacing="-0.03em"
-              >
-                E
-              </text>
-              <text
-                x="98"
-                y="36"
-                fill="#ffffff"
-                fontSize="34"
-                fontWeight="900"
-                fontFamily="system-ui, -apple-system, sans-serif"
-                letterSpacing="-0.03em"
-              >
-                c
-              </text>
-
-              {/* Curved Waving Flag Stripes (Yellow, Blue, Red) */}
-              <path
-                d="M120 20 C135 20, 142 10, 162 10 C182 10, 190 18, 205 15"
-                stroke="#FFDD00"
-                strokeWidth="4"
-                strokeLinecap="round"
-              />
-              <path
-                d="M120 26 C135 26, 142 16, 162 16 C182 16, 190 24, 205 21"
-                stroke="#0033A0"
-                strokeWidth="4"
-                strokeLinecap="round"
-              />
-              <path
-                d="M120 32 C135 32, 142 22, 162 22 C182 22, 190 30, 205 27"
-                stroke="#D52B1E"
-                strokeWidth="4"
-                strokeLinecap="round"
-              />
-            </svg>
+                <text
+                  x="10"
+                  y="36"
+                  fill="#ffffff"
+                  fontSize="34"
+                  fontWeight="900"
+                  fontFamily="system-ui, -apple-system, sans-serif"
+                  letterSpacing="-0.03em"
+                >
+                  Dev
+                </text>
+                <text
+                  x="76"
+                  y="36"
+                  fill="#ffffff"
+                  fontSize="34"
+                  fontWeight="900"
+                  fontFamily="system-ui, -apple-system, sans-serif"
+                  letterSpacing="-0.03em"
+                >
+                  E
+                </text>
+                <text
+                  x="98"
+                  y="36"
+                  fill="#ffffff"
+                  fontSize="34"
+                  fontWeight="900"
+                  fontFamily="system-ui, -apple-system, sans-serif"
+                  letterSpacing="-0.03em"
+                >
+                  c
+                </text>
+                <path
+                  d="M120 20 C135 20, 142 10, 162 10 C182 10, 190 18, 205 15"
+                  stroke="#FFDD00"
+                  strokeWidth="4"
+                  strokeLinecap="round"
+                />
+                <path
+                  d="M120 26 C135 26, 142 16, 162 16 C182 16, 190 24, 205 21"
+                  stroke="#0033A0"
+                  strokeWidth="4"
+                  strokeLinecap="round"
+                />
+                <path
+                  d="M120 32 C135 32, 142 22, 162 22 C182 22, 190 30, 205 27"
+                  stroke="#D52B1E"
+                  strokeWidth="4"
+                  strokeLinecap="round"
+                />
+              </svg>
+              <span className="text-[10px] font-black uppercase tracking-widest text-zinc-400">
+                SOFTWARE DEVELOPMENT
+              </span>
+            </div>
           </div>
-
-          <span className="text-[11px] sm:text-xs font-black uppercase tracking-[0.4em] text-zinc-400">
-            SOFTWARE DEVELOPMENT
-          </span>
         </div>
       </div>
     </footer>
