@@ -1703,28 +1703,28 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: 30 }}
                 transition={{ duration: 0.3, ease: "easeOut" }}
-                className="w-full bg-black text-white min-h-screen pt-24 sm:pt-28 pb-40 px-4 sm:px-8 select-none"
+                className="w-full text-white min-h-screen pt-24 sm:pt-28 pb-40 px-4 sm:px-8 relative z-10"
               >
                 <div className="max-w-[1400px] mx-auto space-y-8">
                   {/* Top Pills Bar (Location, Date, Price) */}
                   <div className="flex flex-wrap items-center gap-3">
                     <button
                       type="button"
-                      className="flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-zinc-900 border border-white/15 text-xs font-bold uppercase tracking-wider text-white hover:bg-zinc-800 transition cursor-pointer shadow-md"
+                      className="flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-white/5 backdrop-blur-md border border-white/15 text-xs font-bold uppercase tracking-wider text-white hover:bg-white/10 transition cursor-pointer shadow-md"
                     >
                       <MapPin className="w-4 h-4 text-yellow-400" />
                       <span>LOJA / ECUADOR</span>
                     </button>
                     <button
                       type="button"
-                      className="flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-zinc-900 border border-white/15 text-xs font-bold uppercase tracking-wider text-white hover:bg-zinc-800 transition cursor-pointer shadow-md"
+                      className="flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-white/5 backdrop-blur-md border border-white/15 text-xs font-bold uppercase tracking-wider text-white hover:bg-white/10 transition cursor-pointer shadow-md"
                     >
                       <Calendar className="w-4 h-4 text-purple-400" />
                       <span>CUALQUIER FECHA</span>
                     </button>
                     <button
                       type="button"
-                      className="flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-zinc-900 border border-white/15 text-xs font-bold uppercase tracking-wider text-white hover:bg-zinc-800 transition cursor-pointer shadow-md"
+                      className="flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-white/5 backdrop-blur-md border border-white/15 text-xs font-bold uppercase tracking-wider text-white hover:bg-white/10 transition cursor-pointer shadow-md"
                     >
                       <CreditCard className="w-4 h-4 text-emerald-400" />
                       <span>TODOS LOS PRECIOS</span>
@@ -1750,7 +1750,7 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                         className={`flex flex-col items-center justify-center w-16 h-16 rounded-2xl border transition-all cursor-pointer shrink-0 gap-1 shadow-md ${
                           selectedDay === cat.id || (cat.id === "todos" && selectedDay === "todos")
                             ? "bg-white text-black border-white"
-                            : "bg-zinc-900 border-white/10 text-white hover:border-white/30 hover:bg-zinc-800"
+                            : "bg-white/5 backdrop-blur-md border-white/10 text-white hover:border-white/30 hover:bg-white/10"
                         }`}
                       >
                         <span className="text-lg">{cat.icon}</span>
@@ -1760,7 +1760,7 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                   </div>
 
                   {/* Spotify / Apple Music Banner Card */}
-                  <div className="relative w-full rounded-3xl bg-zinc-900 border border-white/15 p-6 sm:p-8 overflow-hidden flex flex-col md:flex-row items-start md:items-center justify-between gap-6 shadow-2xl">
+                  <div className="relative w-full rounded-3xl bg-white/5 backdrop-blur-md border border-white/15 p-6 sm:p-8 overflow-hidden flex flex-col md:flex-row items-start md:items-center justify-between gap-6 shadow-2xl">
                     <div className="space-y-4 max-w-xl z-10">
                       <h3 className="text-2xl sm:text-4xl font-black text-white tracking-tight leading-tight font-sans">
                         Encuentra shows de tus artistxs favoritxs
@@ -1822,7 +1822,7 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                           setSelectedCarouselEvent(evt);
                           setShowDetailOverlay(true);
                         }}
-                        className="group relative flex flex-col bg-zinc-900/90 rounded-3xl border border-white/10 overflow-hidden p-3.5 space-y-3 hover:border-white/30 transition-all duration-300 cursor-pointer shadow-2xl"
+                        className="group relative flex flex-col bg-white/5 backdrop-blur-md rounded-3xl border border-white/10 overflow-hidden p-3.5 space-y-3 hover:border-white/30 transition-all duration-300 cursor-pointer shadow-2xl"
                       >
                         {/* Artwork Box */}
                         <div className="relative w-full h-64 sm:h-72 rounded-2xl overflow-hidden bg-zinc-950 border border-white/10 group-hover:border-yellow-400/60 transition-all duration-300">
