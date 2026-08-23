@@ -1727,7 +1727,6 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                       <ChevronDown className="w-4 h-4 text-yellow-400 animate-bounce" />
                     </button>
                   </div>
-                </div>
 
                 {/* ─── LOWER FEATURE SECTION BELOW VIDEO & LOGIN HERO (SCROLLABLE DOWN) ─── */}
                 <div id="subir-features-section" className="w-full bg-zinc-950 text-white pt-16 sm:pt-24 pb-28 sm:pb-36 px-6 sm:px-12 border-t border-zinc-800 font-sans">
