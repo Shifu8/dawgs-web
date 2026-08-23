@@ -217,8 +217,8 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
     const top = typeof window !== 'undefined' ? window.screen.height / 2 - height / 2 : 100;
 
     if (provider === 'google') {
-      const clientId = googleClientId || 'YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com';
-      const redirectUri = typeof window !== 'undefined' ? `${window.location.origin}/auth/callback/google` : 'http://localhost:3000/auth/callback/google';
+      const clientId = googleClientId || '339658076678-5e514em3csugm3um34899jlg1atg8ep4.apps.googleusercontent.com';
+      const redirectUri = typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000';
       const googleOAuthUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${encodeURIComponent(clientId)}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=code&scope=email%20profile&prompt=select_account`;
 
       // Open real Google OAuth browser popup window
