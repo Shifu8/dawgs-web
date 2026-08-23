@@ -45,6 +45,8 @@ import {
   HelpCircle,
   Play,
   Heart,
+  Volume2,
+  VolumeX,
 } from "lucide-react";
 import { AnimatePresence, motion, useDragControls } from "framer-motion";
 import Atmosphere from "@/frontend/components/Atmosphere";
@@ -173,6 +175,8 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
 
   // Story-style screen navigation state (Instagram/TikTok lines)
   const [activeStoryScreen, setActiveStoryScreen] = useState(1);
+  const [isLeftVideoMuted, setIsLeftVideoMuted] = useState(true);
+  const leftVideoRef = useRef<HTMLVideoElement>(null);
 
   // Auto-play 3D Curved Carousel in Eventos screen (moving to the right)
   useEffect(() => {
@@ -1163,12 +1167,13 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
               >
                 {/* ─── TOP HERO ROW (30% LEFT VIDEO / 70% RIGHT AUTH FORM WITH VIDEO) ─── */}
                 <div className="w-full min-h-[100dvh] flex flex-col lg:flex-row items-stretch">
-                  {/* 1. LEFT COLUMN (30% WIDTH): BACKGROUND VIDEO FROM DOWNLOADS */}
+                  {/* 1. LEFT COLUMN (30% WIDTH): BACKGROUND VIDEO FROM DOWNLOADS WITH AUDIO */}
                   <div className="relative w-full lg:w-[30%] min-h-[500px] lg:min-h-[calc(100vh+6rem)] self-stretch bg-zinc-950 overflow-hidden flex-shrink-0">
                     <video
+                      ref={leftVideoRef}
                       autoPlay
                       loop
-                      muted
+                      muted={isLeftVideoMuted}
                       playsInline
                       className="absolute inset-0 w-full h-full object-cover brightness-105"
                     >
@@ -1176,11 +1181,33 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                     </video>
                     <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-transparent to-transparent opacity-90" />
 
-                    {/* Bottom Left Copyright Overlay */}
-                    <div className="absolute bottom-6 left-5 z-10">
-                      <span className="text-[11px] sm:text-xs font-bold text-white tracking-tight drop-shadow-md">
+                    {/* Bottom Footer: Left Copyright & Right Mute/Unmute Slider Switch */}
+                    <div className="absolute bottom-6 left-5 right-5 z-10 flex items-center justify-between gap-2 pointer-events-auto">
+                      <span className="text-[9px] sm:text-[10px] font-semibold text-white/70 tracking-tight drop-shadow-md">
                         © 4GO 2026, all rights reserved
                       </span>
+
+                      {/* Mute/Unmute Audio Pill Slider */}
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (leftVideoRef.current) {
+                            leftVideoRef.current.muted = !isLeftVideoMuted;
+                            setIsLeftVideoMuted(!isLeftVideoMuted);
+                          }
+                        }}
+                        className="px-2.5 py-1 rounded-full bg-zinc-900/90 border border-white/20 text-white flex items-center gap-1.5 hover:bg-black transition active:scale-95 cursor-pointer shadow-lg backdrop-blur-md"
+                        title={isLeftVideoMuted ? "Activar sonido" : "Silenciar"}
+                      >
+                        {isLeftVideoMuted ? (
+                          <VolumeX className="w-3.5 h-3.5 text-zinc-400" />
+                        ) : (
+                          <Volume2 className="w-3.5 h-3.5 text-yellow-400" />
+                        )}
+                        <div className="w-6 h-1 rounded-full bg-white/30 relative overflow-hidden">
+                          <div className={`h-full bg-yellow-400 transition-all duration-300 ${isLeftVideoMuted ? 'w-0' : 'w-full'}`} />
+                        </div>
+                      </button>
                     </div>
                   </div>
 
