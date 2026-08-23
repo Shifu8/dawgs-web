@@ -20,7 +20,7 @@ export default function Footer() {
           <div className="lg:col-span-5 lg:self-center flex items-center gap-5 sm:gap-6 h-full">
             <div className="relative w-24 h-24 sm:w-32 sm:h-32 shrink-0">
               <Image
-                src="/images/alien_green_hands_official.png"
+                src="/images/alien_green_hands_white.jpg"
                 alt="4GO Logo"
                 fill
                 className="object-contain rounded-2xl"
