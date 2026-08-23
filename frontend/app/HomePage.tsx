@@ -1934,7 +1934,7 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                     </div>
                   </div>
 
-                  {/* GRID OF 4 COLUMNS ON DESKTOP WITH SOLID BLACK CARDS AND FULL DETAILS */}
+                  {/* GRID OF 4 COLUMNS ON DESKTOP WITH CLEAN CARDS MATCHING DESIGN SCREENSHOT */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
                     {(events && events.length > 0 ? events : fallbackEvents).map((evt) => (
                       <div
@@ -1943,26 +1943,33 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                           setSelectedCarouselEvent(evt);
                           setShowDetailOverlay(true);
                         }}
-                        className="group relative flex flex-col bg-white/5 backdrop-blur-md rounded-3xl border border-white/10 overflow-hidden p-3.5 space-y-3 hover:border-white/30 transition-all duration-300 cursor-pointer shadow-2xl"
+                        className="group relative flex flex-col space-y-2.5 cursor-pointer text-left"
                       >
-                        {/* Artwork Box */}
-                        <div className="relative w-full h-48 sm:h-72 rounded-2xl overflow-hidden bg-zinc-950 border border-white/10 group-hover:border-yellow-400/60 transition-all duration-300">
+                        {/* Artwork Box: Clean Image without text overlay */}
+                        <div className="relative w-full aspect-square rounded-2xl overflow-hidden bg-zinc-950 border border-white/10 group-hover:border-white/30 transition-all duration-300 shadow-2xl">
                           <Image
                             src={evt.poster || "/images/now4go-hero-presentation-hd-v3.png"}
                             alt={evt.title}
                             fill
-                            className="object-cover brightness-105"
+                            className="object-cover"
                             sizes="(max-width: 768px) 100vw, 320px"
                           />
-                          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-80" />
 
-                          {/* Top Left Badge */}
-                          <span className="absolute top-2.5 left-2.5 px-2.5 py-1 rounded-lg bg-black/80 backdrop-blur-md border border-white/20 text-white text-[9px] font-black uppercase tracking-wider">
-                            ENTRADAS
-                          </span>
+                          {/* Play & Heart Overlay Buttons (Bottom Right) */}
+                          <div className="absolute bottom-2.5 right-2.5 flex items-center gap-1.5 z-10">
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setSelectedCarouselEvent(evt);
+                                setShowDetailOverlay(true);
+                              }}
+                              className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-black/80 backdrop-blur-md border border-white/20 flex items-center justify-center text-white hover:scale-110 active:scale-95 transition-transform shadow-lg cursor-pointer"
+                              aria-label="Ver detalles"
+                            >
+                              <Play className="w-3.5 h-3.5 fill-white text-white ml-0.5" />
+                            </button>
 
-                          {/* Heart Overlay Button */}
-                          <div className="absolute bottom-2.5 right-2.5 flex items-center gap-2 z-10">
                             <button
                               type="button"
                               onClick={(e) => {
@@ -1972,7 +1979,7 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                                   [evt.id]: !prev[evt.id],
                                 }));
                               }}
-                              className="w-8 h-8 rounded-full bg-black/80 backdrop-blur-md border border-white/25 flex items-center justify-center text-white hover:scale-110 active:scale-95 transition-transform shadow-lg cursor-pointer"
+                              className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-black/80 backdrop-blur-md border border-white/20 flex items-center justify-center text-white hover:scale-110 active:scale-95 transition-transform shadow-lg cursor-pointer"
                               aria-label="Guardar favorito"
                             >
                               <Heart
@@ -1986,35 +1993,20 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                           </div>
                         </div>
 
-                        {/* Event Details Text Below Artwork */}
-                        <div className="flex flex-col space-y-1.5 px-1 pt-1 text-left">
-                          <h4 className="text-base font-black text-white tracking-tight leading-tight line-clamp-1 group-hover:text-yellow-400 transition-colors">
+                        {/* Event Details Text Below Artwork (Clean White & Yellow text) */}
+                        <div className="flex flex-col space-y-0.5 px-0.5 text-left">
+                          <h4 className="text-sm sm:text-base font-extrabold text-white tracking-tight leading-snug line-clamp-2 group-hover:text-purple-300 transition-colors">
                             {evt.title}
                           </h4>
-                          <span className="text-xs font-black text-yellow-400 block">
-                            {evt.dateLabel || "sáb, 26 sept, 22:00 GMT-5"}
+                          <span className="text-xs font-bold text-amber-400 block pt-0.5">
+                            {evt.dateLabel || "sáb, 26 sept"}
                           </span>
-                          <div className="flex items-center gap-1.5 text-xs font-semibold text-zinc-400 truncate">
-                            <MapPin className="w-3.5 h-3.5 text-zinc-500 shrink-0" />
-                            <span className="truncate">{evt.venue || "CUBIC"}, {evt.city || "Loja"}</span>
-                          </div>
-
-                          <div className="pt-2 flex items-center justify-between border-t border-white/10 mt-1">
-                            <span className="text-xs font-black text-white">
-                              {evt.price === 0 ? "Gratis" : `Desde $${evt.price} USD`}
-                            </span>
-                            <button
-                              type="button"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setSelectedCarouselEvent(evt);
-                                setShowDetailOverlay(true);
-                              }}
-                              className="px-3.5 py-1.5 rounded-full bg-[#dfff28] hover:bg-[#cbf01a] text-black font-black text-[11px] uppercase tracking-wider transition-transform active:scale-95 cursor-pointer shadow"
-                            >
-                              RESERVAR
-                            </button>
-                          </div>
+                          <span className="text-xs font-semibold text-zinc-300 block truncate">
+                            {evt.venue || "Factory Town"}
+                          </span>
+                          <span className="text-xs font-bold text-white block pt-0.5">
+                            {evt.price === 0 ? "Desde Gratis" : `Desde ${evt.price || "49,99"} $`}
+                          </span>
                         </div>
                       </div>
                     ))}
