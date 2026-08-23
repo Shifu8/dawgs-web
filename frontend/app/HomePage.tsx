@@ -1218,13 +1218,13 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                       loop
                       muted
                       playsInline
-                      className="absolute inset-0 w-full h-full object-cover brightness-90 blur-md scale-105"
+                      className="absolute inset-0 w-full h-full object-cover brightness-95 blur-2xl scale-110"
                     >
                       <source src="/videos/subir_evento_bg.mp4" type="video/mp4" />
                     </video>
 
                     {/* Overlay for legibility */}
-                    <div className="absolute inset-0 bg-black/40 backdrop-blur-md" />
+                    <div className="absolute inset-0 bg-black/45 backdrop-blur-xl" />
 
                     {/* Centered Glass Auth Card */}
                     <div className="relative z-10 w-full max-w-lg mx-auto bg-white/95 backdrop-blur-xl p-6 sm:p-10 rounded-3xl border border-white/40 shadow-2xl space-y-6">
