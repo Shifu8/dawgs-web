@@ -181,6 +181,56 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
   const [isDrinksPosModalOpen, setIsDrinksPosModalOpen] = useState(false);
   const [isTicketModalOpen, setIsTicketModalOpen] = useState(false);
 
+  const [userLoggedIn, setUserLoggedIn] = useState<boolean>(false);
+  const [userProfile, setUserProfile] = useState<{ id: string; name: string; email: string; type?: string; venueName?: string; city?: string } | null>(null);
+  const [organizerSubView, setOrganizerSubView] = useState<'menu' | 'profile' | 'create_event' | 'my_events' | 'favorites'>('menu');
+
+  const [newEventTitle, setNewEventTitle] = useState('');
+  const [newEventCategory, setNewEventCategory] = useState('Fiesta');
+  const [newEventPrice, setNewEventPrice] = useState('15');
+  const [newEventCity, setNewEventCity] = useState('Quito');
+
+  const [orgType, setOrgType] = useState('Discoteca / Club');
+  const [orgName, setOrgName] = useState('');
+  const [orgCity, setOrgCity] = useState('Quito');
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const token = localStorage.getItem("organizer_token");
+      const profile = localStorage.getItem("organizer_profile");
+      if (token) {
+        setUserLoggedIn(true);
+        if (profile) {
+          try { setUserProfile(JSON.parse(profile)); } catch {}
+        }
+      }
+    }
+  }, []);
+
+  const handleQuickSocialLogin = (provider: 'google' | 'apple') => {
+    const mockProfile = {
+      id: `${provider}-${Date.now()}`,
+      name: provider === "google" ? "Usuario Google" : "Usuario Apple",
+      email: provider === "google" ? "usuario@gmail.com" : "usuario@icloud.com",
+      type: "Discoteca / Club",
+      venueName: "Cubic Club",
+      city: "Quito",
+    };
+    localStorage.setItem("organizer_token", `mock-${provider}-token`);
+    localStorage.setItem("organizer_profile", JSON.stringify(mockProfile));
+    setUserLoggedIn(true);
+    setUserProfile(mockProfile);
+    setOrganizerSubView('menu');
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem("organizer_token");
+    localStorage.removeItem("organizer_profile");
+    setUserLoggedIn(false);
+    setUserProfile(null);
+    setOrganizerSubView('menu');
+  };
+
   // Simulated user session (replace with real auth later)
   const [loggedUser] = useState<{ name: string; initials: string; notifications: number } | null>(() => {
     if (typeof window === "undefined") return null;
@@ -1342,112 +1392,323 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                     </video>
 
                     {/* Overlay for legibility */}
-                    <div className="absolute inset-0 bg-black/45 backdrop-blur-xl" />
-
-                    {/* Centered Glass Auth Card */}
-                    <div className="relative z-10 w-full max-w-lg mx-auto bg-white/95 backdrop-blur-xl p-6 sm:p-10 rounded-3xl border border-white/40 shadow-2xl space-y-6">
-                      <div className="text-center space-y-2">
-                        <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-black font-sans leading-tight">
-                          Inicia sesión o crea tu cuenta 4GO
-                        </h1>
-                        <p className="text-xs sm:text-sm text-zinc-500 font-medium max-w-md mx-auto leading-relaxed">
-                          Create and manage events, sell tickets, and grow your audience.
-                        </p>
-                      </div>
-
-                      {/* Social Logins */}
-                      <div className="space-y-3 pt-1">
-                        <button
-                          type="button"
-                          onClick={() => router.push("/organizer/login")}
-                          className="w-full py-3.5 px-6 rounded-xl bg-black text-white font-extrabold text-sm flex items-center justify-center gap-3 hover:bg-zinc-800 transition active:scale-[0.99] cursor-pointer shadow-md"
-                        >
-                          <svg className="w-5 h-5 fill-white" viewBox="0 0 24 24">
-                            <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M15.97 6.85c.66-.8 1.11-1.92.99-3.04-.96.04-2.12.64-2.8 1.44-.61.71-1.14 1.86-.99 2.96 1.07.08 2.14-.56 2.8-1.36z" />
-                          </svg>
-                          <span>Continuar con Apple</span>
-                        </button>
-
-                        <div className="relative flex items-center justify-center my-2">
-                          <div className="border-t border-zinc-200 w-full" />
-                          <span className="absolute bg-white px-3 text-xs text-zinc-400 font-semibold">o</span>
+                                {/* Centered Glass Auth / Vertical Dashboard Card */}
+                    {!userLoggedIn ? (
+                      <div className="relative z-10 w-full max-w-lg mx-auto bg-white/95 backdrop-blur-xl p-6 sm:p-10 rounded-3xl border border-white/40 shadow-2xl space-y-6">
+                        <div className="text-center space-y-2">
+                          <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-black font-sans leading-tight">
+                            Sube tu Evento &amp; Administra tu Cuenta 4GO
+                          </h1>
+                          <p className="text-xs sm:text-sm text-zinc-500 font-medium max-w-md mx-auto leading-relaxed">
+                            Inicia sesión en 1 clic con tu cuenta de Google o Apple para comenzar a publicar eventos.
+                          </p>
                         </div>
 
-                        <button
-                          type="button"
-                          onClick={() => router.push("/organizer/login")}
-                          className="w-full py-3.5 px-6 rounded-xl bg-white text-zinc-800 font-extrabold text-sm border border-zinc-300 flex items-center justify-center gap-3 hover:bg-zinc-50 transition active:scale-[0.99] cursor-pointer shadow-sm"
-                        >
-                          <svg className="w-5 h-5" viewBox="0 0 24 24">
-                            <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
-                            <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
-                            <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z" />
-                            <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z" />
-                          </svg>
-                          <span>Continuar con Google</span>
-                        </button>
-                      </div>
-
-                      {/* Input Form Fields */}
-                      <div className="space-y-4 pt-1 text-left">
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-                          <div className="space-y-1">
-                            <label className="text-xs font-black text-zinc-900 block">Nombre completo</label>
-                            <input
-                              type="text"
-                              placeholder="Ej. Alex Rivera"
-                              className="w-full px-4 py-2.5 rounded-xl bg-zinc-50 border border-zinc-200 text-xs font-semibold text-zinc-900 focus:outline-none focus:border-black focus:bg-white transition"
-                            />
-                            <span className="text-[10px] text-zinc-400 font-medium block">Tu nombre para entradas oficiales.</span>
-                          </div>
-                          <div className="space-y-1">
-                            <label className="text-xs font-black text-zinc-900 block">Correo electrónico</label>
-                            <input
-                              type="email"
-                              placeholder="tu@email.com"
-                              className="w-full px-4 py-2.5 rounded-xl bg-zinc-50 border border-zinc-200 text-xs font-semibold text-zinc-900 focus:outline-none focus:border-black focus:bg-white transition"
-                            />
-                            <span className="text-[10px] text-zinc-400 font-medium block">Recibirás tus accesos aquí.</span>
-                          </div>
-                        </div>
-
-                        <div className="space-y-1">
-                          <label className="text-xs font-black text-zinc-900 block">Ciudad</label>
-                          <select
-                            className="w-full px-4 py-2.5 rounded-xl bg-zinc-50 border border-zinc-200 text-xs font-semibold text-zinc-900 focus:outline-none focus:border-black focus:bg-white transition cursor-pointer"
+                        {/* Social Logins */}
+                        <div className="space-y-3 pt-2">
+                          <button
+                            type="button"
+                            onClick={() => handleQuickSocialLogin("google")}
+                            className="w-full py-3.5 px-6 rounded-full bg-white hover:bg-zinc-100 text-black font-black text-xs sm:text-sm uppercase tracking-wider border border-zinc-200 flex items-center justify-center gap-3 transition-all hover:scale-[1.01] active:scale-95 cursor-pointer shadow-md"
                           >
-                            <option value="quito">Quito</option>
-                            <option value="cuenca">Cuenca</option>
-                            <option value="guayaquil">Guayaquil</option>
-                            <option value="salinas">Salinas</option>
-                            <option value="loja">Loja</option>
-                          </select>
+                            <svg className="w-5 h-5 shrink-0" viewBox="0 0 24 24">
+                              <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
+                              <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
+                              <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z" />
+                              <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z" />
+                            </svg>
+                            <span>ENTRAR CON GOOGLE</span>
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={() => handleQuickSocialLogin("apple")}
+                            className="w-full py-3.5 px-6 rounded-full bg-zinc-900 hover:bg-black text-white font-black text-xs sm:text-sm uppercase tracking-wider border border-white/20 flex items-center justify-center gap-3 transition-all hover:scale-[1.01] active:scale-95 cursor-pointer shadow-md"
+                          >
+                            <svg className="w-5 h-5 fill-current text-white shrink-0" viewBox="0 0 24 24">
+                              <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M15.97 6.32c.67-.82 1.12-1.96.99-3.1-.97.04-2.16.65-2.85 1.46-.62.72-1.16 1.88-.99 3.03 1.09.08 2.2-.57 2.85-1.39z" />
+                            </svg>
+                            <span>ENTRAR CON APPLE</span>
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="relative z-10 w-full max-w-lg mx-auto bg-white/95 backdrop-blur-xl p-6 sm:p-8 rounded-3xl border border-white/40 shadow-2xl space-y-5">
+                        {/* Logged in Header Banner */}
+                        <div className="flex items-center justify-between pb-4 border-b border-zinc-200">
+                          <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-full bg-zinc-900 text-white font-black text-sm flex items-center justify-center shadow-md uppercase">
+                              {userProfile?.name ? userProfile.name.charAt(0) : "U"}
+                            </div>
+                            <div className="text-left">
+                              <h3 className="text-sm font-black text-zinc-900 tracking-tight">{userProfile?.name || "Organizador 4GO"}</h3>
+                              <p className="text-[11px] font-semibold text-emerald-600 flex items-center gap-1">
+                                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping inline-block" />
+                                <span>Sesión Activa</span>
+                              </p>
+                            </div>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={handleLogout}
+                            className="text-xs font-extrabold text-zinc-400 hover:text-red-600 transition uppercase tracking-wider cursor-pointer"
+                          >
+                            Cerrar sesión
+                          </button>
                         </div>
 
-                        <button
-                          type="button"
-                          onClick={() => router.push("/organizer/login")}
-                          className="w-full py-3.5 rounded-xl bg-black text-white font-extrabold text-xs uppercase tracking-wider hover:bg-zinc-800 transition active:scale-[0.99] cursor-pointer shadow-md text-center mt-2"
-                        >
-                          Crear cuenta de usuario &amp; Reservar
-                        </button>
-                      </div>
+                        {/* ─── VERTICAL OPTIONS PANEL (SIN MODAL) ─── */}
+                        {organizerSubView === "menu" && (
+                          <div className="space-y-3 pt-1 text-left">
+                            {/* 1. PUBLICAR EVENTO (Sleek Glassmorphism Animated Button) */}
+                            <button
+                              type="button"
+                              onClick={() => setOrganizerSubView("create_event")}
+                              className="w-full py-4 px-6 rounded-2xl bg-zinc-950 hover:bg-black text-white font-black text-xs uppercase tracking-widest border border-zinc-700 shadow-xl flex items-center justify-between transition-all hover:scale-[1.01] active:scale-95 cursor-pointer animate-pulse"
+                            >
+                              <span>PUBLICAR EVENTO</span>
+                              <span className="text-xs text-yellow-400 font-bold">→</span>
+                            </button>
 
-                      {/* Promoter Account Note */}
-                      <div className="pt-5 border-t border-zinc-200 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-center sm:text-left">
-                        <div>
-                          <span className="font-extrabold text-zinc-900 block sm:inline">Ready to go live?</span>{" "}
-                          <span className="text-zinc-500 font-medium">Create a promoter account to get started.</span>
-                        </div>
-                        <button
-                          type="button"
-                          onClick={() => router.push("/organizer/register")}
-                          className="px-4 py-2 rounded-full bg-zinc-900 hover:bg-black text-white font-extrabold text-xs uppercase tracking-wider transition cursor-pointer shrink-0 shadow"
-                        >
-                          Get started
-                        </button>
+                            {/* 2. MIS EVENTOS */}
+                            <button
+                              type="button"
+                              onClick={() => setOrganizerSubView("my_events")}
+                              className="w-full py-3.5 px-5 rounded-2xl bg-zinc-50 hover:bg-zinc-100 text-zinc-900 border border-zinc-200/80 font-extrabold text-xs uppercase tracking-wider flex items-center justify-between transition active:scale-95 cursor-pointer shadow-sm"
+                            >
+                              <span>MIS EVENTOS</span>
+                              <span className="text-[11px] text-zinc-500 font-bold">({events.length} publicados)</span>
+                            </button>
+
+                            {/* 3. MIS FAVORITOS */}
+                            <button
+                              type="button"
+                              onClick={() => setOrganizerSubView("favorites")}
+                              className="w-full py-3.5 px-5 rounded-2xl bg-zinc-50 hover:bg-zinc-100 text-zinc-900 border border-zinc-200/80 font-extrabold text-xs uppercase tracking-wider flex items-center justify-between transition active:scale-95 cursor-pointer shadow-sm"
+                            >
+                              <span>MIS FAVORITOS</span>
+                              <span className="text-[11px] text-zinc-500 font-bold">Ver guardados</span>
+                            </button>
+
+                            {/* 4. CREAR / EDITAR PERFIL DE ORGANIZADOR */}
+                            <button
+                              type="button"
+                              onClick={() => setOrganizerSubView("profile")}
+                              className="w-full py-3.5 px-5 rounded-2xl bg-zinc-50 hover:bg-zinc-100 text-zinc-900 border border-zinc-200/80 font-extrabold text-xs uppercase tracking-wider flex items-center justify-between transition active:scale-95 cursor-pointer shadow-sm"
+                            >
+                              <span>CONFIGURAR PERFIL (DISCOTECA / FESTIVAL)</span>
+                              <span className="text-[11px] text-zinc-500 font-bold">Editar</span>
+                            </button>
+                          </div>
+                        )}
+
+                        {/* ─── INLINE FORM: CONFIGURAR PERFIL (DISCOTECA / FESTIVAL) ─── */}
+                        {organizerSubView === "profile" && (
+                          <div className="space-y-4 pt-1 text-left">
+                            <div className="flex items-center justify-between border-b border-zinc-200 pb-3">
+                              <h4 className="text-sm font-black uppercase text-zinc-900 tracking-tight">Perfil de Organizador</h4>
+                              <button
+                                type="button"
+                                onClick={() => setOrganizerSubView("menu")}
+                                className="text-xs font-bold text-zinc-500 hover:text-black uppercase cursor-pointer"
+                              >
+                                Volver
+                              </button>
+                            </div>
+
+                            <div className="space-y-1">
+                              <label className="text-xs font-black text-zinc-900 block">Tipo de Organizador</label>
+                              <select
+                                value={orgType}
+                                onChange={(e) => setOrgType(e.target.value)}
+                                className="w-full px-4 py-2.5 rounded-xl bg-zinc-50 border border-zinc-200 text-xs font-semibold text-zinc-900 focus:outline-none focus:border-black focus:bg-white transition cursor-pointer"
+                              >
+                                <option value="Discoteca / Club">Discoteca / Club Nocturno</option>
+                                <option value="Productora de Festivales">Productora de Festivales</option>
+                                <option value="Organizador Independiente">Organizador Independiente</option>
+                                <option value="Marca / Sponsor">Marca / Sponsor</option>
+                              </select>
+                            </div>
+
+                            <div className="space-y-1">
+                              <label className="text-xs font-black text-zinc-900 block">Nombre de Discoteca o Productora</label>
+                              <input
+                                type="text"
+                                value={orgName}
+                                onChange={(e) => setOrgName(e.target.value)}
+                                placeholder="Ej. Cubic Club / Sata Music"
+                                className="w-full px-4 py-2.5 rounded-xl bg-zinc-50 border border-zinc-200 text-xs font-semibold text-zinc-900 focus:outline-none focus:border-black focus:bg-white transition"
+                              />
+                            </div>
+
+                            <div className="space-y-1">
+                              <label className="text-xs font-black text-zinc-900 block">Ciudad Principal</label>
+                              <select
+                                value={orgCity}
+                                onChange={(e) => setOrgCity(e.target.value)}
+                                className="w-full px-4 py-2.5 rounded-xl bg-zinc-50 border border-zinc-200 text-xs font-semibold text-zinc-900 focus:outline-none focus:border-black focus:bg-white transition cursor-pointer"
+                              >
+                                <option value="Quito">Quito</option>
+                                <option value="Guayaquil">Guayaquil</option>
+                                <option value="Cuenca">Cuenca</option>
+                                <option value="Salinas">Salinas</option>
+                                <option value="Loja">Loja</option>
+                              </select>
+                            </div>
+
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const updated = { ...userProfile, type: orgType, venueName: orgName || "Cubic", city: orgCity };
+                                setUserProfile(updated as any);
+                                localStorage.setItem("organizer_profile", JSON.stringify(updated));
+                                setOrganizerSubView("create_event");
+                              }}
+                              className="w-full py-3.5 rounded-xl bg-black text-white font-extrabold text-xs uppercase tracking-wider hover:bg-zinc-800 transition active:scale-[0.99] cursor-pointer shadow-md text-center mt-2"
+                            >
+                              Guardar Perfil &amp; Ir a Crear Evento
+                            </button>
+                          </div>
+                        )}
+
+                        {/* ─── INLINE FORM: PUBLICAR EVENTO ─── */}
+                        {organizerSubView === "create_event" && (
+                          <div className="space-y-4 pt-1 text-left">
+                            <div className="flex items-center justify-between border-b border-zinc-200 pb-3">
+                              <h4 className="text-sm font-black uppercase text-zinc-900 tracking-tight">Publicar Nuevo Evento</h4>
+                              <button
+                                type="button"
+                                onClick={() => setOrganizerSubView("menu")}
+                                className="text-xs font-bold text-zinc-500 hover:text-black uppercase cursor-pointer"
+                              >
+                                Volver
+                              </button>
+                            </div>
+
+                            <div className="space-y-1">
+                              <label className="text-xs font-black text-zinc-900 block">Nombre del Evento</label>
+                              <input
+                                type="text"
+                                value={newEventTitle}
+                                onChange={(e) => setNewEventTitle(e.target.value)}
+                                placeholder="Ej. Cubic Saturday Night / Sata Fest 2026"
+                                className="w-full px-4 py-2.5 rounded-xl bg-zinc-50 border border-zinc-200 text-xs font-semibold text-zinc-900 focus:outline-none focus:border-black focus:bg-white transition"
+                              />
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-3">
+                              <div className="space-y-1">
+                                <label className="text-xs font-black text-zinc-900 block">Categoría</label>
+                                <select
+                                  value={newEventCategory}
+                                  onChange={(e) => setNewEventCategory(e.target.value)}
+                                  className="w-full px-4 py-2.5 rounded-xl bg-zinc-50 border border-zinc-200 text-xs font-semibold text-zinc-900 focus:outline-none focus:border-black focus:bg-white transition cursor-pointer"
+                                >
+                                  <option value="Fiesta">Fiesta / Club</option>
+                                  <option value="Concierto">Concierto</option>
+                                  <option value="Festival">Festival</option>
+                                </select>
+                              </div>
+                              <div className="space-y-1">
+                                <label className="text-xs font-black text-zinc-900 block">Precio Entrada ($)</label>
+                                <input
+                                  type="number"
+                                  value={newEventPrice}
+                                  onChange={(e) => setNewEventPrice(e.target.value)}
+                                  placeholder="15"
+                                  className="w-full px-4 py-2.5 rounded-xl bg-zinc-50 border border-zinc-200 text-xs font-semibold text-zinc-900 focus:outline-none focus:border-black focus:bg-white transition"
+                                />
+                              </div>
+                            </div>
+
+                            <button
+                              type="button"
+                              onClick={() => {
+                                if (!newEventTitle.trim()) return;
+                                const newEvt: Event = {
+                                  id: `evt-${Date.now()}`,
+                                  title: newEventTitle,
+                                  category: newEventCategory,
+                                  city: newEventCity,
+                                  price: `$${newEventPrice}`,
+                                  date: "Este Fin de Semana",
+                                  location: userProfile?.venueName || "Cubic Club",
+                                  poster: "/images/4go_red_girl_showcase.jpg",
+                                  description: `Evento oficial por ${userProfile?.venueName || "4GO Organizer"}. Entradas con acceso instantáneo.`,
+                                  lineup: ["DJ Residente", "Artista Invitado"],
+                                };
+                                setEvents((prev) => [newEvt, ...prev]);
+                                setNewEventTitle("");
+                                setOrganizerSubView("menu");
+                                setActiveStoryScreen(2);
+                              }}
+                              className="w-full py-3.5 rounded-xl bg-black text-white font-extrabold text-xs uppercase tracking-wider hover:bg-zinc-800 transition active:scale-[0.99] cursor-pointer shadow-md text-center mt-2"
+                            >
+                              Publicar Evento Ahora
+                            </button>
+                          </div>
+                        )}
+
+                        {/* ─── INLINE VIEW: MIS EVENTOS ─── */}
+                        {organizerSubView === "my_events" && (
+                          <div className="space-y-3 pt-1 text-left">
+                            <div className="flex items-center justify-between border-b border-zinc-200 pb-3">
+                              <h4 className="text-sm font-black uppercase text-zinc-900 tracking-tight">Mis Eventos Publicados</h4>
+                              <button
+                                type="button"
+                                onClick={() => setOrganizerSubView("menu")}
+                                className="text-xs font-bold text-zinc-500 hover:text-black uppercase cursor-pointer"
+                              >
+                                Volver
+                              </button>
+                            </div>
+                            <div className="max-h-56 overflow-y-auto space-y-2 pr-1">
+                              {events.slice(0, 4).map((evt) => (
+                                <div key={evt.id} className="p-3 rounded-xl bg-zinc-50 border border-zinc-200 flex items-center justify-between">
+                                  <div>
+                                    <p className="text-xs font-black text-zinc-900">{evt.title}</p>
+                                    <p className="text-[10px] text-zinc-500 font-semibold">{evt.location} • {evt.price}</p>
+                                  </div>
+                                  <span className="px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-600 text-[10px] font-extrabold">ACTIVO</span>
+                                </div>
+                              ))}
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => setOrganizerSubView("create_event")}
+                              className="w-full py-3 rounded-xl bg-black text-white font-extrabold text-xs uppercase tracking-wider hover:bg-zinc-800 transition active:scale-95 cursor-pointer shadow-md"
+                            >
+                              + Publicar Otro Evento
+                            </button>
+                          </div>
+                        )}
+
+                        {/* ─── INLINE VIEW: MIS FAVORITOS ─── */}
+                        {organizerSubView === "favorites" && (
+                          <div className="space-y-3 pt-1 text-left">
+                            <div className="flex items-center justify-between border-b border-zinc-200 pb-3">
+                              <h4 className="text-sm font-black uppercase text-zinc-900 tracking-tight">Mis Eventos Favoritos</h4>
+                              <button
+                                type="button"
+                                onClick={() => setOrganizerSubView("menu")}
+                                className="text-xs font-bold text-zinc-500 hover:text-black uppercase cursor-pointer"
+                              >
+                                Volver
+                              </button>
+                            </div>
+                            <p className="text-xs text-zinc-500 font-semibold">Tus eventos guardados aparecerán aquí.</p>
+                            <button
+                              type="button"
+                              onClick={() => setActiveStoryScreen(2)}
+                              className="w-full py-3 rounded-xl bg-black text-white font-extrabold text-xs uppercase tracking-wider hover:bg-zinc-800 transition active:scale-95 cursor-pointer shadow-md"
+                            >
+                              Explorar Cartelera
+                            </button>
+                          </div>
+                        )}
                       </div>
-                    </div>
+                    )}
+                  </div>
 
                     {/* Scroll down indicator to lower feature section */}
                     <button
@@ -1605,69 +1866,67 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                               </p>
                             </div>
                             <div className="mt-5 flex flex-col items-center gap-3">
-                              {/* GOOGLE & APPLE SOCIAL LOGIN BUTTONS */}
-                              <div className="flex flex-wrap items-center justify-center gap-2.5 sm:gap-3">
-                                {/* Google Login */}
-                                <button
-                                  type="button"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    const mockProfile = {
-                                      id: `google-${Date.now()}`,
-                                      name: "Usuario Google",
-                                      email: "usuario@gmail.com",
-                                      type: "Organizador",
-                                    };
-                                    localStorage.setItem("organizer_token", "mock-google-token");
-                                    localStorage.setItem("organizer_profile", JSON.stringify(mockProfile));
-                                    router.push("/organizer/dashboard");
-                                  }}
-                                  className="px-6 py-3 rounded-full bg-white hover:bg-zinc-200 text-black font-black text-xs uppercase tracking-wider shadow-xl transition-all hover:scale-105 active:scale-95 cursor-pointer flex items-center gap-2"
-                                >
-                                  <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24">
-                                    <path
-                                      fill="#4285F4"
-                                      d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
-                                    />
-                                    <path
-                                      fill="#34A853"
-                                      d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
-                                    />
-                                    <path
-                                      fill="#FBBC05"
-                                      d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"
-                                    />
-                                    <path
-                                      fill="#EA4335"
-                                      d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"
-                                    />
-                                  </svg>
-                                  <span>ENTRAR CON GOOGLE</span>
-                                </button>
+                              {!userLoggedIn ? (
+                                /* GOOGLE & APPLE SOCIAL LOGIN BUTTONS */
+                                <div className="flex flex-wrap items-center justify-center gap-2.5 sm:gap-3">
+                                  {/* Google Login */}
+                                  <button
+                                    type="button"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleQuickSocialLogin("google");
+                                    }}
+                                    className="px-6 py-3 rounded-full bg-white hover:bg-zinc-200 text-black font-black text-xs uppercase tracking-wider shadow-xl transition-all hover:scale-105 active:scale-95 cursor-pointer flex items-center gap-2"
+                                  >
+                                    <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24">
+                                      <path
+                                        fill="#4285F4"
+                                        d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+                                      />
+                                      <path
+                                        fill="#34A853"
+                                        d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+                                      />
+                                      <path
+                                        fill="#FBBC05"
+                                        d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"
+                                      />
+                                      <path
+                                        fill="#EA4335"
+                                        d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"
+                                      />
+                                    </svg>
+                                    <span>ENTRAR CON GOOGLE</span>
+                                  </button>
 
-                                {/* Apple Login */}
+                                  {/* Apple Login */}
+                                  <button
+                                    type="button"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleQuickSocialLogin("apple");
+                                    }}
+                                    className="px-6 py-3 rounded-full bg-zinc-900/90 hover:bg-zinc-800/90 text-white font-black text-xs uppercase tracking-wider backdrop-blur-2xl border border-white/30 shadow-xl transition-all hover:scale-105 active:scale-95 cursor-pointer flex items-center gap-2"
+                                  >
+                                    <svg className="w-4 h-4 fill-current text-white shrink-0" viewBox="0 0 24 24">
+                                      <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M15.97 6.32c.67-.82 1.12-1.96.99-3.1-.97.04-2.16.65-2.85 1.46-.62.72-1.16 1.88-.99 3.03 1.09.08 2.2-.57 2.85-1.39z" />
+                                    </svg>
+                                    <span>ENTRAR CON APPLE</span>
+                                  </button>
+                                </div>
+                              ) : (
+                                /* LOGGED IN: PUBLICAR EVENTO (Sleek Glassmorphism Animated Button) */
                                 <button
                                   type="button"
                                   onClick={(e) => {
                                     e.stopPropagation();
-                                    const mockProfile = {
-                                      id: `apple-${Date.now()}`,
-                                      name: "Usuario Apple",
-                                      email: "usuario@icloud.com",
-                                      type: "Organizador",
-                                    };
-                                    localStorage.setItem("organizer_token", "mock-apple-token");
-                                    localStorage.setItem("organizer_profile", JSON.stringify(mockProfile));
-                                    router.push("/organizer/dashboard");
+                                    setActiveStoryScreen(0);
                                   }}
-                                  className="px-6 py-3 rounded-full bg-zinc-900/90 hover:bg-zinc-800/90 text-white font-black text-xs uppercase tracking-wider backdrop-blur-2xl border border-white/30 shadow-xl transition-all hover:scale-105 active:scale-95 cursor-pointer flex items-center gap-2"
+                                  className="px-8 py-3.5 rounded-full bg-white/20 backdrop-blur-xl border border-white/40 text-white font-black text-xs uppercase tracking-widest hover:bg-white/30 shadow-[0_10px_30px_rgba(0,0,0,0.5)] transition-all hover:scale-105 active:scale-95 cursor-pointer animate-pulse"
                                 >
-                                  <svg className="w-4 h-4 fill-current text-white shrink-0" viewBox="0 0 24 24">
-                                    <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M15.97 6.32c.67-.82 1.12-1.96.99-3.1-.97.04-2.16.65-2.85 1.46-.62.72-1.16 1.88-.99 3.03 1.09.08 2.2-.57 2.85-1.39z" />
-                                  </svg>
-                                  <span>ENTRAR CON APPLE</span>
+                                  PUBLICAR EVENTO
                                 </button>
-                              </div>
+                              )}
                             </div>
                           </div>
                         </div>
