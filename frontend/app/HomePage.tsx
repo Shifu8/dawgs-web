@@ -1428,27 +1428,11 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                     </video>
                     <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-transparent to-transparent opacity-90" />
 
-                    {/* Bottom Footer: Left Copyright, Center Scroll Button & Right Mute/Unmute Slider Switch */}
+                    {/* Bottom Footer: Left Copyright & Right Mute/Unmute Slider Switch */}
                     <div className="absolute bottom-6 left-5 right-5 z-10 flex items-center justify-between gap-2 pointer-events-auto">
                       <span className="text-[9px] sm:text-[10px] font-semibold text-white/70 tracking-tight drop-shadow-md">
                         © 4GO 2026, all rights reserved
                       </span>
-
-                      {/* Scroll Down to Publica tus eventos Button */}
-                      <button
-                        type="button"
-                        onClick={() => {
-                          const el = document.getElementById("subir-features-section");
-                          if (el) {
-                            el.scrollIntoView({ behavior: "smooth" });
-                          }
-                        }}
-                        className="px-3 py-1.5 rounded-full bg-white/10 hover:bg-white/20 text-white border border-white/25 text-[10px] font-black uppercase tracking-wider backdrop-blur-md transition-all active:scale-95 cursor-pointer flex items-center gap-1 shadow-lg"
-                        title="Ir a publicar tus eventos"
-                      >
-                        <span>Publicar</span>
-                        <ChevronDown className="w-3.5 h-3.5 text-yellow-400 animate-bounce" />
-                      </button>
 
                       {/* Mute/Unmute Audio Pill Slider */}
                       <button
@@ -1802,20 +1786,6 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                     )}
                   </div>
 
-                    {/* Scroll down indicator to lower feature section */}
-                    <button
-                      type="button"
-                      onClick={() => {
-                        const el = document.getElementById("subir-features-section");
-                        if (el) {
-                          el.scrollIntoView({ behavior: "smooth" });
-                        }
-                      }}
-                      className="relative z-10 mt-6 flex items-center justify-center gap-2 px-5 py-2.5 rounded-full bg-black/60 hover:bg-black/90 text-white/90 border border-white/20 text-xs font-black uppercase tracking-wider backdrop-blur-md transition-all active:scale-95 cursor-pointer shadow-xl"
-                    >
-                      <span>Publica tus eventos</span>
-                      <ChevronDown className="w-4 h-4 text-yellow-400 animate-bounce" />
-                    </button>
                   </div>
 
                 {/* ─── LOWER FEATURE SECTION BELOW VIDEO & LOGIN HERO (SCROLLABLE DOWN) ─── */}
