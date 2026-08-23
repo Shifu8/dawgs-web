@@ -1669,9 +1669,9 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-10 sm:gap-12 items-start">
                       {/* Column 1 */}
                       <div className="flex flex-col items-center text-center space-y-4 group">
-                        <div className="relative w-36 h-36 sm:w-44 sm:h-44 transition-transform duration-300 group-hover:scale-105">
+                        <div className="relative w-36 h-36 sm:w-44 sm:h-44 transition-transform duration-300">
                           <Image
-                            src="/green_star_logo.png"
+                            src="/images/4go_alien_hands_tilt_left.png"
                             alt="Quick Ticketing"
                             fill
                             className="object-contain filter drop-shadow-xl"
@@ -1684,12 +1684,12 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
 
                       {/* Column 2 */}
                       <div className="flex flex-col items-center text-center space-y-4 group">
-                        <div className="relative w-36 h-36 sm:w-44 sm:h-44 transition-transform duration-300 group-hover:scale-105">
+                        <div className="relative w-36 h-36 sm:w-44 sm:h-44 transition-transform duration-300">
                           <Image
-                            src="/images/4go_alien_hands_logo.png"
+                            src="/images/4go_alien_hands_straight.png"
                             alt="Transparent Pricing"
                             fill
-                            className="object-contain filter drop-shadow-xl rounded-xl"
+                            className="object-contain filter drop-shadow-xl"
                           />
                         </div>
                         <p className="text-sm sm:text-base font-extrabold text-zinc-100 max-w-xs leading-snug">
@@ -1699,9 +1699,9 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
 
                       {/* Column 3 */}
                       <div className="flex flex-col items-center text-center space-y-4 group">
-                        <div className="relative w-36 h-36 sm:w-44 sm:h-44 transition-transform duration-300 group-hover:scale-105">
+                        <div className="relative w-36 h-36 sm:w-44 sm:h-44 transition-transform duration-300">
                           <Image
-                            src="/alien_avatar.png"
+                            src="/images/4go_alien_hands_tilt_right.png"
                             alt="Personalised Recommendations"
                             fill
                             className="object-contain filter drop-shadow-xl"
