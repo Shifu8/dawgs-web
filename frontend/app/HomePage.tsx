@@ -1450,6 +1450,55 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                     </button>
                   </div>
                 </div>
+
+                {/* ─── LOWER FEATURE SECTION BELOW VIDEO & LOGIN HERO (SCROLLABLE DOWN) ─── */}
+                <div id="subir-features-section" className="w-full bg-zinc-950 text-white py-16 sm:py-24 px-6 sm:px-12 border-t border-zinc-800">
+                  <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
+                    {/* Left Side: Marketing & Feature Text */}
+                    <div className="lg:col-span-7 space-y-6 text-left">
+                      <h2 className="text-3xl sm:text-5xl font-black uppercase tracking-tight leading-tight text-white font-sans">
+                        Publica tus eventos &amp; Conecta con tu audiencia
+                      </h2>
+                      <p className="text-sm sm:text-base text-zinc-300 leading-relaxed font-medium">
+                        Diseñado exclusivamente para productores, creadores y clubes nocturnos. Gestiona preventas en tiempo real, validación QR ultrasónica en puerta y control total de entradas en una sola plataforma.
+                      </p>
+                      <div className="pt-2 flex flex-wrap items-center gap-4">
+                        <button
+                          type="button"
+                          onClick={() => router.push("/organizer/register")}
+                          className="px-8 py-3.5 rounded-full bg-white hover:bg-zinc-200 text-black font-black text-xs uppercase tracking-widest transition-all shadow-xl active:scale-95 cursor-pointer"
+                        >
+                          Crear cuenta de organizador
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setActiveStoryScreen(1)}
+                          className="px-8 py-3.5 rounded-full bg-zinc-900 hover:bg-zinc-800 text-white border border-white/25 font-black text-xs uppercase tracking-widest transition-all shadow-xl active:scale-95 cursor-pointer"
+                        >
+                          Explorar eventos
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Right Side: The Red Girl Showcase Photo */}
+                    <div className="lg:col-span-5 relative w-full h-[400px] sm:h-[500px] rounded-3xl overflow-hidden shadow-2xl border border-white/15 group cursor-pointer">
+                      <Image
+                        src="/images/4go_red_girl_showcase.jpg"
+                        alt="4GO Red Girl Showcase"
+                        fill
+                        priority
+                        className="object-cover group-hover:scale-105 transition-transform duration-500"
+                        sizes="(max-width: 1024px) 100vw, 500px"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-80" />
+                      <div className="absolute bottom-6 left-6 z-10 text-left">
+                        <span className="text-[11px] font-bold text-white tracking-tight drop-shadow-md block">
+                          © 4GO 2026, all rights reserved
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </motion.div>
             )}
 
@@ -1766,16 +1815,16 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                   </div>
                 </section>
 
-                {/* ─── 4. ORGANIZER BANNER SECTION (PUBLICA TUS EVENTOS) ─── */}
-                <section id="subir-features-section" className="w-full bg-black text-white py-16 sm:py-24 relative z-20 font-sans border-t border-zinc-900">
+                {/* ─── 4. WHITE ORGANIZER BANNER SECTION (PUBLICA TUS EVENTOS) ─── */}
+                <section id="subir-features-section" className="w-full bg-white text-black py-16 sm:py-24 relative z-20 font-sans border-t border-zinc-200">
                   <div className="max-w-[1300px] mx-auto px-6 sm:px-12">
                     <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8 items-center">
                       {/* Left Column: Title, Description & Action Buttons */}
                       <div className="lg:col-span-6 space-y-6 text-left">
-                        <h2 className="text-3xl sm:text-5xl lg:text-6xl font-black text-white tracking-tight font-sans uppercase leading-[1.05]">
+                        <h2 className="text-3xl sm:text-5xl lg:text-6xl font-black text-black tracking-tight font-sans uppercase leading-[1.05]">
                           PUBLICA TUS EVENTOS &amp; CONECTA CON TU AUDIENCIA
                         </h2>
-                        <p className="text-xs sm:text-sm text-zinc-300 font-semibold leading-relaxed max-w-xl">
+                        <p className="text-xs sm:text-sm text-zinc-600 font-semibold leading-relaxed max-w-xl">
                           Diseñado exclusivamente para productores, creadores y clubes nocturnos. Gestiona preventas en tiempo real, validación QR ultrasónica en puerta y control total de entradas en una sola plataforma.
                         </p>
 
@@ -1783,14 +1832,14 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                         <div className="flex flex-wrap items-center gap-3.5 pt-2">
                           <a
                             href="/organizer/register"
-                            className="px-6 py-3.5 rounded-full bg-white text-black hover:bg-zinc-200 text-xs sm:text-sm font-black uppercase tracking-wider transition-all active:scale-95 shadow-xl inline-flex items-center justify-center cursor-pointer"
+                            className="px-6 py-3.5 rounded-full bg-black text-white hover:bg-zinc-800 text-xs sm:text-sm font-black uppercase tracking-wider transition-all active:scale-95 shadow-xl inline-flex items-center justify-center cursor-pointer"
                           >
                             CREAR CUENTA DE ORGANIZADOR
                           </a>
                           <button
                             type="button"
                             onClick={() => setActiveStoryScreen(2)}
-                            className="px-6 py-3.5 rounded-full bg-transparent border-2 border-white/80 hover:bg-white/10 text-white text-xs sm:text-sm font-black uppercase tracking-wider transition-all active:scale-95 cursor-pointer inline-flex items-center justify-center"
+                            className="px-6 py-3.5 rounded-full bg-transparent border-2 border-black/80 hover:bg-black/5 text-black text-xs sm:text-sm font-black uppercase tracking-wider transition-all active:scale-95 cursor-pointer inline-flex items-center justify-center"
                           >
                             EXPLORAR EVENTOS
                           </button>
@@ -1799,7 +1848,7 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
 
                       {/* Right Column: Rounded Image Container with Red 4GO Photo & Copyright watermark */}
                       <div className="lg:col-span-6 w-full flex justify-center lg:justify-end">
-                        <div className="relative w-full max-w-[540px] aspect-[4/3.5] rounded-[2.5rem] overflow-hidden shadow-2xl border border-white/20 bg-zinc-950">
+                        <div className="relative w-full max-w-[540px] aspect-[4/3.5] rounded-[2.5rem] overflow-hidden shadow-2xl border border-black/10 bg-zinc-950">
                           <Image
                             src="/images/subir_evento_party_showcase.jpg"
                             alt="Publica tus eventos 4GO"
@@ -1817,13 +1866,13 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                   </div>
                 </section>
 
-                {/* ─── 5. SECOND BANNER SECTION (IMAGE ON LEFT, TEXT ON RIGHT) ─── */}
-                <section className="w-full bg-black text-white py-16 sm:py-24 relative z-20 font-sans border-t border-zinc-900">
+                {/* ─── 5. SECOND WHITE BANNER SECTION (IMAGE ON LEFT, TEXT ON RIGHT) ─── */}
+                <section className="w-full bg-white text-black py-16 sm:py-24 relative z-20 font-sans border-t border-zinc-200">
                   <div className="max-w-[1300px] mx-auto px-6 sm:px-12">
                     <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8 items-center">
                       {/* Left Column: Image Container (Image on Left) */}
                       <div className="lg:col-span-6 w-full flex justify-center lg:justify-start order-2 lg:order-1">
-                        <div className="relative w-full max-w-[540px] aspect-[4/3.5] rounded-[2.5rem] overflow-hidden shadow-2xl border border-white/20 bg-zinc-950">
+                        <div className="relative w-full max-w-[540px] aspect-[4/3.5] rounded-[2.5rem] overflow-hidden shadow-2xl border border-black/10 bg-zinc-950">
                           <Image
                             src="/images/now4go-hero-presentation-hd-fullbleed.png"
                             alt="Vive experiencias 4GO"
@@ -1840,10 +1889,10 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
 
                       {/* Right Column: Title, Description & Action Buttons (Text on Right) */}
                       <div className="lg:col-span-6 space-y-6 text-left order-1 lg:order-2">
-                        <h2 className="text-3xl sm:text-5xl lg:text-6xl font-black text-white tracking-tight font-sans uppercase leading-[1.05]">
+                        <h2 className="text-3xl sm:text-5xl lg:text-6xl font-black text-black tracking-tight font-sans uppercase leading-[1.05]">
                           VIVE EXPERIENCIAS ÚNICAS &amp; ACCEDE AL INSTANTE
                         </h2>
-                        <p className="text-xs sm:text-sm text-zinc-300 font-semibold leading-relaxed max-w-xl">
+                        <p className="text-xs sm:text-sm text-zinc-600 font-semibold leading-relaxed max-w-xl">
                           Acceso QR ultrasónico desde tu teléfono, transferencias de entradas en segundos entre amigos y notificaciones en tiempo real sobre los mejores eventos y clubes de Ecuador.
                         </p>
 
@@ -1852,7 +1901,7 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                           <button
                             type="button"
                             onClick={() => setActiveStoryScreen(2)}
-                            className="px-6 py-3.5 rounded-full bg-white text-black hover:bg-zinc-200 text-xs sm:text-sm font-black uppercase tracking-wider transition-all active:scale-95 shadow-xl inline-flex items-center justify-center cursor-pointer"
+                            className="px-6 py-3.5 rounded-full bg-black text-white hover:bg-zinc-800 text-xs sm:text-sm font-black uppercase tracking-wider transition-all active:scale-95 shadow-xl inline-flex items-center justify-center cursor-pointer"
                           >
                             VER EVENTOS DESTACADOS
                           </button>
@@ -1863,7 +1912,7 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                                 window.dispatchEvent(new CustomEvent("open-ai-chatbot"));
                               }
                             }}
-                            className="px-6 py-3.5 rounded-full bg-transparent border-2 border-white/80 hover:bg-white/10 text-white text-xs sm:text-sm font-black uppercase tracking-wider transition-all active:scale-95 cursor-pointer inline-flex items-center justify-center"
+                            className="px-6 py-3.5 rounded-full bg-transparent border-2 border-black/80 hover:bg-black/5 text-black text-xs sm:text-sm font-black uppercase tracking-wider transition-all active:scale-95 cursor-pointer inline-flex items-center justify-center"
                           >
                             ASISTENCIA FAN SUPPORT
                           </button>
