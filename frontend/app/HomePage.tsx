@@ -1480,11 +1480,11 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                       </div>
                     </div>
 
-                    {/* Right Side: The Red Girl Showcase Photo */}
+                    {/* Right Side: The Party Showcase Photo */}
                     <div className="lg:col-span-5 relative w-full h-[400px] sm:h-[500px] rounded-3xl overflow-hidden shadow-2xl border border-white/15 group cursor-pointer bg-zinc-950">
                       <Image
-                        src="/images/4go_red_girl_showcase.jpg"
-                        alt="4GO Red Girl Showcase"
+                        src="/images/subir_evento_party_showcase.jpg"
+                        alt="4GO Party Showcase"
                         fill
                         priority
                         className="object-cover group-hover:scale-105 transition-transform duration-500"
@@ -1846,11 +1846,11 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                         </div>
                       </div>
 
-                      {/* Right Column: Rounded Image Container with Red 4GO Photo & Copyright watermark */}
+                      {/* Right Column: Rounded Image Container with Red Girl Photo & Copyright watermark */}
                       <div className="lg:col-span-6 w-full flex justify-center lg:justify-end">
                         <div className="relative w-full max-w-[540px] aspect-[4/3.5] rounded-[2.5rem] overflow-hidden shadow-2xl border border-black/10 bg-zinc-950">
                           <Image
-                            src="/images/subir_evento_party_showcase.jpg"
+                            src="/images/4go_red_girl_showcase.jpg"
                             alt="Publica tus eventos 4GO"
                             fill
                             className="object-cover brightness-105"
