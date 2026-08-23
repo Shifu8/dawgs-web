@@ -1208,7 +1208,7 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                               src={evt.poster || "/images/now4go-hero-presentation-hd-v3.png"}
                               alt={evt.title}
                               fill
-                              className="object-cover transition-transform"
+                              className="object-cover group-hover:scale-105 transition-transform"
                             />
                           </div>
                           <div className="flex-1 min-w-0 text-left">
@@ -1453,71 +1453,41 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
 
                 {/* ─── LOWER FEATURE SECTION BELOW VIDEO & LOGIN HERO (SCROLLABLE DOWN) ─── */}
                 <div id="subir-features-section" className="w-full bg-zinc-950 text-white pt-16 sm:pt-24 pb-28 sm:pb-36 px-6 sm:px-12 border-t border-zinc-800 font-sans">
-                  <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12 items-center">
-                    {/* Left Side: Real Organizer Benefits for Nightclubs & Producers */}
+                  <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
+                    {/* Left Side: Marketing & Feature Text */}
                     <div className="lg:col-span-7 space-y-6 text-left">
-                      <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-yellow-400/10 border border-yellow-400/30 text-yellow-400 text-xs font-black uppercase tracking-wider">
-                        <span>Sistema Operativo para Discotecas &amp; Festivales</span>
-                      </div>
                       <h2 className="text-3xl sm:text-5xl font-black uppercase tracking-tight leading-tight text-white font-sans">
-                        Herramientas reales para el control de tu noche
+                        Publica tus eventos &amp; Conecta con tu audiencia
                       </h2>
                       <p className="text-sm sm:text-base text-zinc-300 leading-relaxed font-medium">
-                        Solucionamos la logística crítica en puerta, barra y relaciones públicas para discotecas como Cubic y productores como Sata Music.
+                        Diseñado exclusivamente para productores, creadores y clubes nocturnos. Gestiona preventas en tiempo real, validación QR ultrasónica en puerta y control total de entradas en una sola plataforma.
                       </p>
-
-                      {/* 2x2 Grid of Key Operational Benefits (NO BUTTONS) */}
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
-                        {/* Benefit 1 */}
-                        <div className="p-4 rounded-2xl bg-zinc-900/90 border border-white/10 space-y-2">
-                          <div className="flex items-center gap-2 text-yellow-400 font-black text-sm uppercase">
-                            <span>⚡ Control de RRPPs &amp; QRs</span>
-                          </div>
-                          <p className="text-xs text-zinc-300 font-medium leading-relaxed">
-                            Links y códigos QR únicos por promotor. Medición automática de ventas y comisiones sin listas manuales.
-                          </p>
-                        </div>
-
-                        {/* Benefit 2 */}
-                        <div className="p-4 rounded-2xl bg-zinc-900/90 border border-white/10 space-y-2">
-                          <div className="flex items-center gap-2 text-purple-400 font-black text-sm uppercase">
-                            <span>📲 Instagram Stories Sync</span>
-                          </div>
-                          <p className="text-xs text-zinc-300 font-medium leading-relaxed">
-                            Sincroniza tus Historias de Instagram en 4GO y elimina contenido caducado en ambas plataformas con 1 clic.
-                          </p>
-                        </div>
-
-                        {/* Benefit 3 */}
-                        <div className="p-4 rounded-2xl bg-zinc-900/90 border border-white/10 space-y-2">
-                          <div className="flex items-center gap-2 text-cyan-400 font-black text-sm uppercase">
-                            <span>🍸 Scanner Offline &amp; Barra POS</span>
-                          </div>
-                          <p className="text-xs text-zinc-300 font-medium leading-relaxed">
-                            Validación QR a 0.3s sin señal de internet y redención directa de bebidas en barra con control de stock.
-                          </p>
-                        </div>
-
-                        {/* Benefit 4 */}
-                        <div className="p-4 rounded-2xl bg-zinc-900/90 border border-white/10 space-y-2">
-                          <div className="flex items-center gap-2 text-emerald-400 font-black text-sm uppercase">
-                            <span>🎂 CRM VIP &amp; Cumpleaños</span>
-                          </div>
-                          <p className="text-xs text-zinc-300 font-medium leading-relaxed">
-                            Premia a tus mejores clientes, automatiza promos de cumpleaños y gestiona reservas VIP sin cancelaciones.
-                          </p>
-                        </div>
+                      <div className="pt-2 flex flex-wrap items-center gap-4">
+                        <button
+                          type="button"
+                          onClick={() => router.push("/organizer/register")}
+                          className="px-8 py-3.5 rounded-full bg-white hover:bg-zinc-200 text-black font-black text-xs uppercase tracking-widest transition-all shadow-xl active:scale-95 cursor-pointer"
+                        >
+                          Crear cuenta de organizador
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setActiveStoryScreen(1)}
+                          className="px-8 py-3.5 rounded-full bg-zinc-900 hover:bg-zinc-800 text-white border border-white/25 font-black text-xs uppercase tracking-widest transition-all shadow-xl active:scale-95 cursor-pointer"
+                        >
+                          Explorar eventos
+                        </button>
                       </div>
                     </div>
 
-                    {/* Right Side: The Red Girl Showcase Photo */}
-                    <div className="lg:col-span-5 relative w-full h-[450px] sm:h-[540px] rounded-3xl overflow-hidden shadow-2xl border border-white/15 group cursor-pointer bg-zinc-950">
+                    {/* Right Side: The Party Showcase Photo */}
+                    <div className="lg:col-span-5 relative w-full h-[400px] sm:h-[500px] rounded-3xl overflow-hidden shadow-2xl border border-white/15 group cursor-pointer bg-zinc-950">
                       <Image
-                        src="/images/4go_red_girl_showcase.jpg"
-                        alt="4GO Red Girl Showcase"
+                        src="/images/subir_evento_party_showcase.jpg"
+                        alt="4GO Party Showcase"
                         fill
                         priority
-                        className="object-cover transition-transform duration-500"
+                        className="object-cover group-hover:scale-105 transition-transform duration-500"
                         sizes="(max-width: 1024px) 100vw, 500px"
                       />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-80" />
