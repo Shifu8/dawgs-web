@@ -1115,19 +1115,24 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
 
               {/* 2. White Card Results Dropdown Box */}
               <div className="mt-2.5 w-full rounded-2xl bg-white border border-zinc-200 shadow-2xl p-4 text-zinc-900 max-h-[68vh] overflow-y-auto no-scrollbar space-y-2">
-                <h3 className="text-sm font-extrabold text-zinc-900 tracking-tight px-1 mb-2">
-                  Resultados de la búsqueda
-                </h3>
-
                 {(() => {
                   const query = headerSearchQuery.toLowerCase().trim();
-                  const matchingProfiles = SEARCH_PROFILES.filter((p) =>
-                    query === ""
-                      ? true
-                      : p.name.toLowerCase().includes(query) || p.type.toLowerCase().includes(query)
+
+                  if (query === "") {
+                    return (
+                      <div className="py-7 px-4 text-center flex flex-col items-center justify-center space-y-2 select-none">
+                        <Search className="w-7 h-7 text-zinc-300 stroke-[1.75]" />
+                        <p className="text-xs font-semibold text-zinc-400 max-w-xs leading-relaxed">
+                          Escribe para buscar eventos, artistas o perfiles...
+                        </p>
+                      </div>
+                    );
+                  }
+
+                  const matchingProfiles = SEARCH_PROFILES.filter(
+                    (p) => p.name.toLowerCase().includes(query) || p.type.toLowerCase().includes(query)
                   );
                   const matchingEvents = events.filter((e) => {
-                    if (query === "") return true;
                     const titleMatch = (e.title || "").toLowerCase().includes(query);
                     const orgMatch =
                       (e.organizer || "").toLowerCase().includes(query) ||
@@ -1149,6 +1154,9 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
 
                   return (
                     <div className="space-y-1">
+                      <h3 className="text-sm font-extrabold text-zinc-900 tracking-tight px-1 mb-2">
+                        Resultados de la búsqueda
+                      </h3>
                       {/* Profiles List */}
                       {matchingProfiles.map((prof) => (
                         <div
