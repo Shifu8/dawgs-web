@@ -1684,21 +1684,21 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                     <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-zinc-200 pb-4">
                       <div className="max-w-2xl">
                         <h2 className="text-2xl sm:text-3xl font-black text-black tracking-tight font-sans drop-shadow-sm">
-                          Trending on 4GO
+                          Tendencias en 4GO
                         </h2>
                         <p className="text-xs sm:text-sm text-zinc-600 font-medium mt-1 leading-relaxed">
-                          Check out some of the most popular events coming up in your city, from club nights and gigs to artist signings and comedy shows.
+                          Descubre algunos de los eventos más populares en tu ciudad, desde noches de fiesta y conciertos hasta festivales y espectáculos en vivo.
                         </p>
                       </div>
                       
-                      {/* BROWSE EVENTS Pill Button */}
+                      {/* VER EVENTOS Pill Button */}
                       <div className="flex items-center gap-3 shrink-0">
                         <button
                           type="button"
                           onClick={() => setActiveStoryScreen(2)}
                           className="px-6 py-2.5 rounded-full bg-black text-white font-black text-xs uppercase tracking-wider hover:bg-zinc-800 transition-all hover:scale-105 active:scale-95 cursor-pointer shadow-md"
                         >
-                          BROWSE EVENTS
+                          VER EVENTOS
                         </button>
                       </div>
                     </div>
