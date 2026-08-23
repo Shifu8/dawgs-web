@@ -1850,7 +1850,7 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                       <div className="lg:col-span-6 w-full flex justify-center lg:justify-end">
                         <div className="relative w-full max-w-[540px] aspect-[4/3.5] rounded-[2.5rem] overflow-hidden shadow-2xl border border-black/10 bg-zinc-950">
                           <Image
-                            src="/images/subir_evento_left_showcase.jpg"
+                            src="/images/subir_evento_party_showcase.jpg"
                             alt="Publica tus eventos 4GO"
                             fill
                             className="object-cover brightness-105"
