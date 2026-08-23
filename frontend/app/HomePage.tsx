@@ -1865,6 +1865,62 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                     </div>
                   </div>
                 </section>
+
+                {/* ─── 5. SECOND WHITE BANNER SECTION (IMAGE ON LEFT, TEXT ON RIGHT) ─── */}
+                <section className="w-full bg-white text-black py-16 sm:py-24 relative z-20 font-sans border-t border-zinc-200">
+                  <div className="max-w-[1300px] mx-auto px-6 sm:px-12">
+                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8 items-center">
+                      {/* Left Column: Image Container (Image on Left) */}
+                      <div className="lg:col-span-6 w-full flex justify-center lg:justify-start order-2 lg:order-1">
+                        <div className="relative w-full max-w-[540px] aspect-[4/3.5] rounded-[2.5rem] overflow-hidden shadow-2xl border border-black/10 bg-zinc-950">
+                          <Image
+                            src="/images/now4go-hero-presentation-hd-fullbleed.png"
+                            alt="Vive experiencias 4GO"
+                            fill
+                            className="object-cover brightness-105"
+                            sizes="(max-width: 768px) 100vw, 600px"
+                          />
+                          {/* Overlay copyright text on bottom left */}
+                          <span className="absolute bottom-4 left-5 text-[10px] sm:text-[11px] font-extrabold text-white/90 tracking-wider shadow-md drop-shadow">
+                            © 4GO 2026, all rights reserved
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Right Column: Title, Description & Action Buttons (Text on Right) */}
+                      <div className="lg:col-span-6 space-y-6 text-left order-1 lg:order-2">
+                        <h2 className="text-3xl sm:text-5xl lg:text-6xl font-black text-black tracking-tight font-sans uppercase leading-[1.05]">
+                          VIVE EXPERIENCIAS ÚNICAS &amp; ACCEDE AL INSTANTE
+                        </h2>
+                        <p className="text-xs sm:text-sm text-zinc-600 font-semibold leading-relaxed max-w-xl">
+                          Acceso QR ultrasónico desde tu teléfono, transferencias de entradas en segundos entre amigos y notificaciones en tiempo real sobre los mejores eventos y clubes de Ecuador.
+                        </p>
+
+                        {/* Action Buttons */}
+                        <div className="flex flex-wrap items-center gap-3.5 pt-2">
+                          <button
+                            type="button"
+                            onClick={() => setActiveStoryScreen(2)}
+                            className="px-6 py-3.5 rounded-full bg-black text-white hover:bg-zinc-800 text-xs sm:text-sm font-black uppercase tracking-wider transition-all active:scale-95 shadow-xl inline-flex items-center justify-center cursor-pointer"
+                          >
+                            VER EVENTOS DESTACADOS
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              if (typeof window !== "undefined") {
+                                window.dispatchEvent(new CustomEvent("open-ai-chatbot"));
+                              }
+                            }}
+                            className="px-6 py-3.5 rounded-full bg-transparent border-2 border-black/80 hover:bg-black/5 text-black text-xs sm:text-sm font-black uppercase tracking-wider transition-all active:scale-95 cursor-pointer inline-flex items-center justify-center"
+                          >
+                            ASISTENCIA FAN SUPPORT
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </section>
               </motion.div>
             )}
 
