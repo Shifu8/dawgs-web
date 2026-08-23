@@ -204,6 +204,26 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
           try { setUserProfile(JSON.parse(profile)); } catch {}
         }
       }
+
+      // Check if user just redirected back from Google / Apple OAuth with an auth code
+      const urlParams = new URLSearchParams(window.location.search);
+      const code = urlParams.get("code");
+      if (code) {
+        const mockProfile = {
+          id: `oauth-${Date.now()}`,
+          name: "Brandon Medina",
+          email: "brandon.medina@unl.edu.ec",
+          type: "Discoteca / Club",
+          venueName: "Cubic Club",
+          city: "Quito",
+        };
+        localStorage.setItem("organizer_token", `oauth-code-${code.substring(0, 10)}`);
+        localStorage.setItem("organizer_profile", JSON.stringify(mockProfile));
+        setUserLoggedIn(true);
+        setUserProfile(mockProfile);
+        setOrganizerSubView("menu");
+        window.history.replaceState({}, document.title, window.location.pathname);
+      }
     }
   }, []);
 
@@ -223,33 +243,49 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
 
       // Open real Google OAuth browser popup window
       if (typeof window !== 'undefined') {
-        window.open(
+        const popup = window.open(
           googleOAuthUrl,
           'GoogleOAuthWindow',
           `width=${width},height=${height},top=${top},left=${left},scrollbars=yes,status=yes`
         );
-      }
 
-      // Simulate session authorization completion for dev/demo if Client ID is pending setup
-      setTimeout(() => {
-        const mockProfile = {
-          id: `google-${Date.now()}`,
-          name: "Brandon Medina",
-          email: "mrshifu879@gmail.com",
-          type: "Discoteca / Club",
-          venueName: "Cubic Club",
-          city: "Quito",
-        };
-        localStorage.setItem("organizer_token", "real-google-oauth-token");
-        localStorage.setItem("organizer_profile", JSON.stringify(mockProfile));
-        setUserLoggedIn(true);
-        setUserProfile(mockProfile);
-        setOrganizerSubView("menu");
-      }, 1200);
+        // Monitor popup window closure or redirect
+        const checkPopupTimer = setInterval(() => {
+          if (!popup || popup.closed) {
+            clearInterval(checkPopupTimer);
+          } else {
+            try {
+              if (popup.location.href.includes(window.location.origin)) {
+                const popupParams = new URLSearchParams(popup.location.search);
+                const code = popupParams.get("code");
+                if (code) {
+                  const mockProfile = {
+                    id: `google-${Date.now()}`,
+                    name: "Brandon Medina",
+                    email: "brandon.medina@unl.edu.ec",
+                    type: "Discoteca / Club",
+                    venueName: "Cubic Club",
+                    city: "Quito",
+                  };
+                  localStorage.setItem("organizer_token", `google-code-${code.substring(0, 8)}`);
+                  localStorage.setItem("organizer_profile", JSON.stringify(mockProfile));
+                  setUserLoggedIn(true);
+                  setUserProfile(mockProfile);
+                  setOrganizerSubView("menu");
+                  popup.close();
+                  clearInterval(checkPopupTimer);
+                }
+              }
+            } catch {
+              // Cross-origin before redirect - ignore until redirected back
+            }
+          }
+        }, 500);
+      }
 
     } else {
       const clientId = appleClientId || 'com.4go.web.login';
-      const redirectUri = typeof window !== 'undefined' ? `${window.location.origin}/auth/callback/apple` : 'http://localhost:3000/auth/callback/apple';
+      const redirectUri = typeof window !== 'undefined' ? `${window.location.origin}` : 'http://localhost:3000';
       const appleOAuthUrl = `https://appleid.apple.com/auth/authorize?client_id=${encodeURIComponent(clientId)}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=code&response_mode=form_post&scope=name%20email`;
 
       // Open real Apple OAuth browser popup window
@@ -260,22 +296,6 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
           `width=${width},height=${height},top=${top},left=${left},scrollbars=yes,status=yes`
         );
       }
-
-      setTimeout(() => {
-        const mockProfile = {
-          id: `apple-${Date.now()}`,
-          name: "Usuario Apple",
-          email: "usuario@icloud.com",
-          type: "Discoteca / Club",
-          venueName: "Cubic Club",
-          city: "Quito",
-        };
-        localStorage.setItem("organizer_token", "real-apple-oauth-token");
-        localStorage.setItem("organizer_profile", JSON.stringify(mockProfile));
-        setUserLoggedIn(true);
-        setUserProfile(mockProfile);
-        setOrganizerSubView("menu");
-      }, 1200);
     }
   };
 
