@@ -1509,7 +1509,7 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -30 }}
                 transition={{ duration: 0.3, ease: "easeOut" }}
-                className="space-y-8 bg-white text-black min-h-screen pt-4 pb-16 font-sans"
+                className="bg-white text-black min-h-screen pt-4 pb-0 font-sans"
               >
                 {/* ─── 1. FULL-BLEED HERO SHOWCASE ─── */}
                 <section className="relative w-full overflow-hidden">
