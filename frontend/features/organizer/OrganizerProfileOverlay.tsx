@@ -30,10 +30,11 @@ type OrganizerProfileOverlayProps = {
   onBuyEvent?: (event: Event) => void;
 };
 
-const ORGANIZER_DATA: Record<string, {
+export type OrganizerProfile = {
+  id: string;
   name: string;
   title: string;
-  type: string;
+  type: "Organizador" | "Discoteca / Club Nocturno";
   logo: string;
   instagramUrl: string;
   instagramHandle: string;
@@ -41,9 +42,12 @@ const ORGANIZER_DATA: Record<string, {
   schedule: string;
   description: string;
   followersCount: string;
-}> = {
+};
+
+export const ORGANIZER_DATA: Record<string, OrganizerProfile> = {
   cubic: {
-    name: "CUBIC",
+    id: "cubic",
+    name: "Cubic",
     title: "CUBIC LOJA",
     type: "Discoteca / Club Nocturno",
     logo: "/images/cubic-official-logo.png",
@@ -55,9 +59,10 @@ const ORGANIZER_DATA: Record<string, {
     followersCount: "14.2K",
   },
   sata: {
-    name: "SATA",
-    title: "SATA PRODUCER",
-    type: "Organizador de Eventos",
+    id: "sata",
+    name: "Sata Music",
+    title: "SATA MUSIC",
+    type: "Organizador",
     logo: "/images/sata-official-logo.jpg",
     instagramUrl: "https://www.instagram.com/sata_events/",
     instagramHandle: "@sata_events",
@@ -65,6 +70,84 @@ const ORGANIZER_DATA: Record<string, {
     schedule: "Eventos Especiales & Conciertos",
     description: "Productora oficial de eventos underground, conciertos y fiestas exclusivas en Ecuador.",
     followersCount: "8.9K",
+  },
+  "4go": {
+    id: "4go",
+    name: "4Go",
+    title: "4GO EVENTS",
+    type: "Organizador",
+    logo: "/images/now4go-hero-presentation-hd-v3.png",
+    instagramUrl: "https://instagram.com/4go",
+    instagramHandle: "@4go",
+    location: "Ecuador",
+    schedule: "Experiencias Oficiales 4GO",
+    description: "Plataforma oficial de eventos y experiencias nocturnas en Ecuador.",
+    followersCount: "25.4K",
+  },
+  "lost-beach-club": {
+    id: "lost-beach-club",
+    name: "Lost Beach Club",
+    title: "LOST BEACH CLUB",
+    type: "Discoteca / Club Nocturno",
+    logo: "/images/artist_crowd_fest_v2.png",
+    instagramUrl: "https://instagram.com/lostbeachclub",
+    instagramHandle: "@lostbeachclub",
+    location: "Montañita, Ecuador",
+    schedule: "Viernes y Sábado",
+    description: "Icono de la música electrónica frente al mar en Montañita.",
+    followersCount: "32.1K",
+  },
+  "soundgarden-club": {
+    id: "soundgarden-club",
+    name: "Soundgarden Club",
+    title: "SOUNDGARDEN CLUB",
+    type: "Discoteca / Club Nocturno",
+    logo: "/images/artist_duo_performers_3d.png",
+    instagramUrl: "https://instagram.com/soundgarden",
+    instagramHandle: "@soundgarden",
+    location: "Cuenca, Ecuador",
+    schedule: "Jueves a Sábado",
+    description: "Atmósfera y sonido de alta fidelidad en Cuenca.",
+    followersCount: "12.5K",
+  },
+  "the-wall-club": {
+    id: "the-wall-club",
+    name: "The Wall Club",
+    title: "THE WALL CLUB",
+    type: "Discoteca / Club Nocturno",
+    logo: "/images/electronic_producer_v3.png",
+    instagramUrl: "https://instagram.com/thewallclub",
+    instagramHandle: "@thewallclub",
+    location: "Quito, Ecuador",
+    schedule: "Viernes y Sábado",
+    description: "Club nocturno underground y eventos de música electrónica en Quito.",
+    followersCount: "18.3K",
+  },
+  "kika-club": {
+    id: "kika-club",
+    name: "Kika Club",
+    title: "KIKA CLUB",
+    type: "Discoteca / Club Nocturno",
+    logo: "/images/artist_dj_female_pink.png",
+    instagramUrl: "https://instagram.com/kikaclub",
+    instagramHandle: "@kikaclub",
+    location: "Quito, Ecuador",
+    schedule: "Jueves a Sábado",
+    description: "Cultura nocturna, tendencias y los mejores DJs en Quito.",
+    followersCount: "19.8K",
+  },
+  "puro-perreo-club": {
+    id: "puro-perreo-club",
+    name: "Puro Perreo Club",
+    title: "PURO PERREO CLUB",
+    type: "Discoteca / Club Nocturno",
+    logo: "/images/reggaeton_star_vibrant_lights_2k.png",
+    instagramUrl: "https://instagram.com/puroperreoclub",
+    instagramHandle: "@puroperreoclub",
+    location: "Guayaquil, Ecuador",
+    schedule: "Viernes y Sábado",
+    description: "La fiesta urbana más grande de Guayaquil.",
+    followersCount: "21.0K",
   },
 };
 

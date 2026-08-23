@@ -69,7 +69,7 @@ import EventDetailOverlay from "@/frontend/features/events/EventDetailOverlay";
 import InstallApp from "@/frontend/components/InstallApp";
 import MobileDock from "@/frontend/components/MobileDock";
 import Footer from "@/components/Footer";
-import OrganizerProfileOverlay from "@/frontend/features/organizer/OrganizerProfileOverlay";
+import OrganizerProfileOverlay, { ORGANIZER_DATA } from "@/frontend/features/organizer/OrganizerProfileOverlay";
 import { QuickPreviewModal } from "@/frontend/components/QuickPreviewModal";
 import { gsap, useGSAP } from "@/frontend/animations/gsapSetup";
 import DrinksMenuModal from "@/frontend/components/DrinksMenuModal";
@@ -96,16 +96,12 @@ export interface SearchProfile {
   avatar?: string;
 }
 
-export const SEARCH_PROFILES: SearchProfile[] = [
-  { id: "cubic", name: "Cubic", type: "Discoteca / Club Nocturno", avatar: "/4go_organizer_artwork_v4.jpg" },
-  { id: "sata-music", name: "Sata Music", type: "Organizador", avatar: "/images/trap_loud_trio_artists.png" },
-  { id: "4go", name: "4Go", type: "Organizador", avatar: "/images/now4go-hero-presentation-hd-v3.png" },
-  { id: "lost-beach-club", name: "Lost Beach Club", type: "Discoteca / Club Nocturno", avatar: "/images/artist_crowd_fest_v2.png" },
-  { id: "soundgarden-club", name: "Soundgarden Club", type: "Discoteca / Club Nocturno", avatar: "/images/artist_duo_performers_3d.png" },
-  { id: "the-wall-club", name: "The Wall Club", type: "Discoteca / Club Nocturno", avatar: "/images/electronic_producer_v3.png" },
-  { id: "kika-club", name: "Kika Club", type: "Discoteca / Club Nocturno", avatar: "/images/artist_dj_female_pink.png" },
-  { id: "puro-perreo-club", name: "Puro Perreo Club", type: "Discoteca / Club Nocturno", avatar: "/images/reggaeton_star_vibrant_lights_2k.png" },
-];
+export const SEARCH_PROFILES: SearchProfile[] = Object.values(ORGANIZER_DATA).map((item) => ({
+  id: item.id,
+  name: item.name,
+  type: item.type,
+  avatar: item.logo,
+}));
 
 type HomeNavId = (typeof HOME_NAV_ITEMS)[number]["id"];
 
