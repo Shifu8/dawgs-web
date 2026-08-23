@@ -1654,7 +1654,7 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                                   }}
                                   className="px-8 py-3.5 rounded-full bg-zinc-900/80 hover:bg-zinc-800/90 text-white font-black text-xs uppercase tracking-widest backdrop-blur-2xl border border-white/30 shadow-[0_10px_30px_rgba(0,0,0,0.5)] transition-all hover:scale-105 active:scale-95 cursor-pointer"
                                 >
-                                  MERCH 4GO
+                                  MERCH
                                 </button>
                               </div>
                             </div>
