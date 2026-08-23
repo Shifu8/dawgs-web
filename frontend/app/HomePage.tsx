@@ -306,7 +306,7 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
       }
 
     } else {
-      if (appleClientId) {
+      if (appleClientId && appleClientId.trim() !== '' && appleClientId !== 'com.4go.web.login') {
         const redirectUri = typeof window !== 'undefined' ? `${window.location.origin}` : 'http://localhost:3000';
         const appleOAuthUrl = `https://appleid.apple.com/auth/authorize?client_id=${encodeURIComponent(appleClientId)}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=code&response_mode=form_post&scope=name%20email`;
 
