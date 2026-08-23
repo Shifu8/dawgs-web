@@ -1703,38 +1703,38 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: 30 }}
                 transition={{ duration: 0.3, ease: "easeOut" }}
-                className="px-4 sm:px-8 max-w-[1400px] mx-auto pt-28 sm:pt-32 space-y-8 bg-black text-white min-h-screen"
+                className="w-full bg-black text-white min-h-screen pt-24 sm:pt-28 pb-40 px-4 sm:px-8 select-none"
               >
-                {/* ─── 2. EVENTOS EN GRID DE 4 COLUMNAS (EXACT MATCHING SCREENSHOT) ─── */}
-                <div className="space-y-8 pt-2">
+                <div className="max-w-[1400px] mx-auto space-y-8">
                   {/* Top Pills Bar (Location, Date, Price) */}
                   <div className="flex flex-wrap items-center gap-3">
                     <button
                       type="button"
-                      className="flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-zinc-900/90 border border-white/15 text-xs font-bold uppercase tracking-wider text-white hover:bg-zinc-800 transition cursor-pointer shadow-md"
+                      className="flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-zinc-900 border border-white/15 text-xs font-bold uppercase tracking-wider text-white hover:bg-zinc-800 transition cursor-pointer shadow-md"
                     >
-                      <MapPin className="w-4 h-4 text-zinc-400" />
-                      <span>ECUADOR</span>
+                      <MapPin className="w-4 h-4 text-yellow-400" />
+                      <span>LOJA / ECUADOR</span>
                     </button>
                     <button
                       type="button"
-                      className="flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-zinc-900/90 border border-white/15 text-xs font-bold uppercase tracking-wider text-white hover:bg-zinc-800 transition cursor-pointer shadow-md"
+                      className="flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-zinc-900 border border-white/15 text-xs font-bold uppercase tracking-wider text-white hover:bg-zinc-800 transition cursor-pointer shadow-md"
                     >
-                      <Calendar className="w-4 h-4 text-zinc-400" />
-                      <span>FECHA</span>
+                      <Calendar className="w-4 h-4 text-purple-400" />
+                      <span>CUALQUIER FECHA</span>
                     </button>
                     <button
                       type="button"
-                      className="flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-zinc-900/90 border border-white/15 text-xs font-bold uppercase tracking-wider text-white hover:bg-zinc-800 transition cursor-pointer shadow-md"
+                      className="flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-zinc-900 border border-white/15 text-xs font-bold uppercase tracking-wider text-white hover:bg-zinc-800 transition cursor-pointer shadow-md"
                     >
-                      <CreditCard className="w-4 h-4 text-zinc-400" />
-                      <span>PRECIO</span>
+                      <CreditCard className="w-4 h-4 text-emerald-400" />
+                      <span>TODOS LOS PRECIOS</span>
                     </button>
                   </div>
 
                   {/* Category Square Icons Row */}
                   <div className="flex items-center gap-3 overflow-x-auto no-scrollbar py-1">
                     {[
+                      { id: "todos", label: "Todos", icon: "🔥" },
                       { id: "dj", label: "DJ", icon: "🎧" },
                       { id: "party", label: "Party", icon: "🌐" },
                       { id: "comedy", label: "Comedy", icon: "😄" },
@@ -1746,37 +1746,41 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                       <button
                         key={`cat-icon-${cat.id}`}
                         type="button"
-                        onClick={() => setSelectedDay(cat.id === "dj" ? "todos" : cat.id)}
-                        className="flex flex-col items-center justify-center w-16 h-16 rounded-2xl bg-zinc-900/90 border border-white/10 hover:border-white/30 hover:bg-zinc-800 text-white transition-all cursor-pointer shrink-0 gap-1 shadow-md"
+                        onClick={() => setSelectedDay("todos")}
+                        className={`flex flex-col items-center justify-center w-16 h-16 rounded-2xl border transition-all cursor-pointer shrink-0 gap-1 shadow-md ${
+                          selectedDay === cat.id || (cat.id === "todos" && selectedDay === "todos")
+                            ? "bg-white text-black border-white"
+                            : "bg-zinc-900 border-white/10 text-white hover:border-white/30 hover:bg-zinc-800"
+                        }`}
                       >
                         <span className="text-lg">{cat.icon}</span>
-                        <span className="text-[10px] font-bold tracking-tight text-zinc-300">{cat.label}</span>
+                        <span className="text-[10px] font-bold tracking-tight">{cat.label}</span>
                       </button>
                     ))}
                   </div>
 
                   {/* Spotify / Apple Music Banner Card */}
-                  <div className="relative w-full rounded-3xl bg-zinc-900/90 border border-white/10 p-6 sm:p-8 overflow-hidden flex flex-col md:flex-row items-start md:items-center justify-between gap-6 shadow-2xl">
+                  <div className="relative w-full rounded-3xl bg-zinc-900 border border-white/15 p-6 sm:p-8 overflow-hidden flex flex-col md:flex-row items-start md:items-center justify-between gap-6 shadow-2xl">
                     <div className="space-y-4 max-w-xl z-10">
-                      <h3 className="text-2xl sm:text-4xl font-extrabold text-white tracking-tight leading-tight">
+                      <h3 className="text-2xl sm:text-4xl font-black text-white tracking-tight leading-tight font-sans">
                         Encuentra shows de tus artistxs favoritxs
                       </h3>
                       <p className="text-xs sm:text-sm text-zinc-300 font-medium">
-                        Conecta tu Spotify o Apple Music
+                        Conecta tu Spotify o Apple Music para descubrir los mejores eventos cerca de ti.
                       </p>
                       <div className="flex flex-wrap items-center gap-3 pt-2">
                         <button
                           type="button"
-                          className="flex items-center gap-2.5 px-5 py-2.5 rounded-full bg-white text-black font-black text-xs uppercase tracking-wider hover:bg-zinc-200 transition-transform active:scale-95 cursor-pointer shadow-md"
+                          className="flex items-center gap-2.5 px-5 py-2.5 rounded-full bg-emerald-500 hover:bg-emerald-400 text-black font-black text-xs uppercase tracking-wider transition-all active:scale-95 cursor-pointer shadow-lg"
                         >
-                          <svg className="w-4 h-4 fill-emerald-600" viewBox="0 0 24 24">
+                          <svg className="w-4 h-4 fill-black" viewBox="0 0 24 24">
                             <path d="M12 0C5.376 0 0 5.376 0 12s5.376 12 12 12 12-5.376 12-12S18.624 0 12 0zm5.521 17.341c-.217.357-.682.469-1.039.252-2.846-1.74-6.429-2.133-10.65-1.168-.403.093-.806-.164-.899-.567-.093-.403.164-.806.567-.899 4.629-1.058 8.577-.61 11.769 1.343.357.217.469.682.252 1.039zm1.478-3.284c-.273.444-.856.586-1.3.313-3.257-2.002-8.223-2.584-12.077-1.414-.499.151-1.026-.134-1.177-.633-.151-.499.134-1.026.633-1.177 4.409-1.337 9.878-.696 13.608 1.6 4.44.273.586.856.313 1.3zm.143-3.418c-3.905-2.319-10.347-2.533-14.116-1.389-.607.184-1.246-.162-1.43-.769-.184-.607.162-1.246.769-1.43 4.316-1.31 11.43-1.056 15.93 1.616.547.325.727 1.034.402 1.581-.325.547-1.034.727-1.555.391z"/>
                           </svg>
                           <span>SPOTIFY</span>
                         </button>
                         <button
                           type="button"
-                          className="flex items-center gap-2.5 px-5 py-2.5 rounded-full bg-white text-black font-black text-xs uppercase tracking-wider hover:bg-zinc-200 transition-transform active:scale-95 cursor-pointer shadow-md"
+                          className="flex items-center gap-2.5 px-5 py-2.5 rounded-full bg-white text-black font-black text-xs uppercase tracking-wider hover:bg-zinc-200 transition-all active:scale-95 cursor-pointer shadow-lg"
                         >
                           <svg className="w-4 h-4 fill-black" viewBox="0 0 24 24">
                             <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M15.97 6.85c.66-.8 1.11-1.92.99-3.04-.96.04-2.12.64-2.8 1.44-.61.71-1.14 1.86-.99 2.96 1.07.08 2.14-.56 2.8-1.36z"/>
@@ -1786,38 +1790,42 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                       </div>
                     </div>
 
-                    {/* DJ Mascot Character Illustration */}
-                    <div className="relative w-40 h-40 md:w-52 md:h-52 shrink-0 flex items-center justify-center">
+                    <div className="relative w-36 h-36 md:w-44 md:h-44 shrink-0 flex items-center justify-center">
                       <Image
                         src="/favicon_circular.png"
                         alt="DJ Mascot"
-                        width={220}
-                        height={220}
+                        width={200}
+                        height={200}
                         className="w-full h-full object-contain filter drop-shadow-[0_0_30px_rgba(34,197,94,0.3)]"
                       />
                     </div>
                   </div>
 
                   {/* Section Title */}
-                  <div className="pt-2">
-                    <h2 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">
-                      Eventos populares <span className="text-zinc-500 font-normal">en Ecuador</span>
-                    </h2>
+                  <div className="pt-4 flex items-center justify-between">
+                    <div>
+                      <h2 className="text-2xl sm:text-4xl font-black text-white tracking-tight font-sans">
+                        Eventos populares <span className="text-yellow-400 font-black">en Ecuador</span>
+                      </h2>
+                      <p className="text-xs sm:text-sm text-zinc-400 font-medium pt-1">
+                        Disfruta de las mejores fiestas y festivales con entradas oficiales
+                      </p>
+                    </div>
                   </div>
 
-                  {/* ─── GRID OF 4 COLUMNS ON DESKTOP (EXACT USER DIRECTIVE) ─── */}
+                  {/* GRID OF 4 COLUMNS ON DESKTOP WITH SOLID BLACK CARDS AND FULL DETAILS */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-                    {filteredCatalogEvents.map((evt) => (
+                    {(events || []).map((evt) => (
                       <div
                         key={`cat-4col-${evt.id}`}
                         onClick={() => {
                           setSelectedCarouselEvent(evt);
                           setShowDetailOverlay(true);
                         }}
-                        className="group relative flex flex-col space-y-2 cursor-pointer"
+                        className="group relative flex flex-col bg-zinc-900/90 rounded-3xl border border-white/10 overflow-hidden p-3.5 space-y-3 hover:border-white/30 transition-all duration-300 cursor-pointer shadow-2xl"
                       >
-                        {/* Artwork Box with Rounded Corners & Overlay Play/Heart Buttons */}
-                        <div className="relative w-full aspect-square rounded-2xl overflow-hidden bg-zinc-900 shadow-2xl border border-white/10 group-hover:border-purple-500/60 transition-all duration-300">
+                        {/* Artwork Box */}
+                        <div className="relative w-full aspect-square rounded-2xl overflow-hidden bg-zinc-950 border border-white/10 group-hover:border-yellow-400/60 transition-all duration-300">
                           <Image
                             src={evt.poster || "/images/now4go-hero-presentation-hd-v3.png"}
                             alt={evt.title}
@@ -1827,13 +1835,13 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                           />
                           <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-80" />
 
-                          {/* Top Left HD Badge */}
-                          <span className="absolute top-2.5 left-2.5 px-2 py-0.5 rounded-lg bg-black/60 backdrop-blur-md border border-white/15 text-white text-[9px] font-black uppercase tracking-wider">
-                            HD
+                          {/* Top Left Badge */}
+                          <span className="absolute top-2.5 left-2.5 px-2.5 py-1 rounded-lg bg-black/80 backdrop-blur-md border border-white/20 text-white text-[9px] font-black uppercase tracking-wider">
+                            ENTRADAS
                           </span>
 
-                          {/* Action Overlay Buttons (Play & Heart) in Bottom Right */}
-                          <div className="absolute bottom-2.5 right-2.5 flex items-center gap-1.5 z-10">
+                          {/* Play & Heart Overlay Buttons */}
+                          <div className="absolute bottom-2.5 right-2.5 flex items-center gap-2 z-10">
                             <button
                               type="button"
                               onClick={(e) => {
@@ -1841,36 +1849,42 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                                 setSelectedCarouselEvent(evt);
                                 setShowDetailOverlay(true);
                               }}
-                              className="w-7 h-7 rounded-full bg-black/75 backdrop-blur-md border border-white/20 flex items-center justify-center text-white hover:scale-110 active:scale-95 transition-transform shadow-lg cursor-pointer"
+                              className="w-8 h-8 rounded-full bg-black/80 backdrop-blur-md border border-white/25 flex items-center justify-center text-white hover:scale-110 active:scale-95 transition-transform shadow-lg cursor-pointer"
                             >
-                              <Play className="w-3 h-3 text-white fill-white ml-0.5" />
-                            </button>
-                            <button
-                              type="button"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                              }}
-                              className="w-7 h-7 rounded-full bg-black/75 backdrop-blur-md border border-white/20 flex items-center justify-center text-white hover:scale-110 active:scale-95 transition-transform shadow-lg cursor-pointer"
-                            >
-                              <Heart className="w-3 h-3 text-white hover:text-red-400 transition-colors" />
+                              <Play className="w-3.5 h-3.5 text-white fill-white ml-0.5" />
                             </button>
                           </div>
                         </div>
 
-                        {/* Event Details Text Below Artwork (Clean & Exact Match to Screenshot) */}
-                        <div className="flex flex-col space-y-0.5 px-0.5 pt-1">
-                          <h4 className="text-sm font-extrabold text-white tracking-tight leading-tight line-clamp-1 group-hover:text-purple-300 transition-colors">
+                        {/* Event Details Text Below Artwork */}
+                        <div className="flex flex-col space-y-1.5 px-1 pt-1 text-left">
+                          <h4 className="text-base font-black text-white tracking-tight leading-tight line-clamp-1 group-hover:text-yellow-400 transition-colors">
                             {evt.title}
                           </h4>
-                          <span className="text-xs font-bold text-yellow-400">
-                            {evt.dateLabel || "sáb, 26 sept"}
+                          <span className="text-xs font-black text-yellow-400 block">
+                            {evt.dateLabel || "sáb, 26 sept, 22:00 GMT-5"}
                           </span>
-                          <span className="text-xs font-medium text-zinc-400 truncate">
-                            {evt.venue || "Factory Town"}
-                          </span>
-                          <span className="text-xs font-black text-white pt-0.5">
-                            {evt.price === 0 ? "Desde Gratis" : `Desde ${evt.price || "52,74"} $`}
-                          </span>
+                          <div className="flex items-center gap-1.5 text-xs font-semibold text-zinc-400 truncate">
+                            <MapPin className="w-3.5 h-3.5 text-zinc-500 shrink-0" />
+                            <span className="truncate">{evt.venue || "CUBIC"}, {evt.city || "Loja"}</span>
+                          </div>
+
+                          <div className="pt-2 flex items-center justify-between border-t border-white/10 mt-1">
+                            <span className="text-xs font-black text-white">
+                              {evt.price === 0 ? "Gratis" : `Desde $${evt.price} USD`}
+                            </span>
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setSelectedCarouselEvent(evt);
+                                setShowDetailOverlay(true);
+                              }}
+                              className="px-3.5 py-1.5 rounded-full bg-[#dfff28] hover:bg-[#cbf01a] text-black font-black text-[11px] uppercase tracking-wider transition-transform active:scale-95 cursor-pointer shadow"
+                            >
+                              COMPRAR
+                            </button>
+                          </div>
                         </div>
                       </div>
                     ))}
