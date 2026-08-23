@@ -1699,11 +1699,11 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                   </div>
                 </section>
 
-                {/* ─── 3. BLACK FEATURE SECTION (EN ESPAÑOL) ─── */}
-                <section className="w-full bg-black text-white py-16 sm:py-24 relative z-20 font-sans border-t border-zinc-900">
+                {/* ─── 3. WHITE FEATURE SECTION (EN ESPAÑOL) ─── */}
+                <section className="w-full bg-white text-black py-16 sm:py-24 relative z-20 font-sans">
                   <div className="max-w-[1200px] mx-auto px-6 sm:px-12 text-center space-y-12 sm:space-y-16">
                     {/* Centered Title */}
-                    <h2 className="text-3xl sm:text-5xl font-black text-white tracking-tight font-sans uppercase">
+                    <h2 className="text-3xl sm:text-5xl font-black text-black tracking-tight font-sans uppercase">
                       Reservar entradas nunca fue tan fácil
                     </h2>
 
@@ -1719,10 +1719,10 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                             className="object-contain filter drop-shadow-xl"
                           />
                         </div>
-                        <h3 className="text-lg sm:text-xl font-black text-white uppercase tracking-tight">
+                        <h3 className="text-lg sm:text-xl font-black text-black uppercase tracking-tight">
                           Reserva en segundos
                         </h3>
-                        <p className="text-xs sm:text-sm font-semibold text-zinc-300 max-w-xs leading-relaxed">
+                        <p className="text-xs sm:text-sm font-semibold text-zinc-600 max-w-xs leading-relaxed">
                           Obtén tus entradas en menos tiempo del que te tomó leer esto.
                         </p>
                       </div>
@@ -1737,10 +1737,10 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                             className="object-contain filter drop-shadow-xl"
                           />
                         </div>
-                        <h3 className="text-lg sm:text-xl font-black text-white uppercase tracking-tight">
+                        <h3 className="text-lg sm:text-xl font-black text-black uppercase tracking-tight">
                           Precios transparentes
                         </h3>
-                        <p className="text-xs sm:text-sm font-semibold text-zinc-300 max-w-xs leading-relaxed">
+                        <p className="text-xs sm:text-sm font-semibold text-zinc-600 max-w-xs leading-relaxed">
                           Mira el precio total desde el inicio, sin cargos ocultos ni sorpresas al pagar.
                         </p>
                       </div>
@@ -1755,10 +1755,10 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                             className="object-contain filter drop-shadow-xl"
                           />
                         </div>
-                        <h3 className="text-lg sm:text-xl font-black text-white uppercase tracking-tight">
+                        <h3 className="text-lg sm:text-xl font-black text-black uppercase tracking-tight">
                           Recomendaciones personalizadas
                         </h3>
-                        <p className="text-xs sm:text-sm font-semibold text-zinc-300 max-w-xs leading-relaxed">
+                        <p className="text-xs sm:text-sm font-semibold text-zinc-600 max-w-xs leading-relaxed">
                           Descubre los eventos hechos a tu medida directamente en tu inicio.
                         </p>
                       </div>
