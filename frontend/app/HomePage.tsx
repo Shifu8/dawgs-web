@@ -1983,6 +1983,8 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                           </button>
                         </div>
                       </div>
+                    </div>
+                  </div>
                 </section>
 
                 {/* ─── 6. THIRD WHITE BANNER SECTION (VIVE EXPERIENCIAS ÚNICAS & FAN SUPPORT) ─── */}
