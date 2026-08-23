@@ -1662,7 +1662,7 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                   <div className="max-w-[1200px] mx-auto px-6 sm:px-12 text-center space-y-12 sm:space-y-16">
                     {/* Centered Title */}
                     <h2 className="text-3xl sm:text-5xl font-black text-white tracking-tight font-sans uppercase">
-                      Comprar entradas nunca fue tan fácil
+                      Reservar entradas nunca fue tan fácil
                     </h2>
 
                     {/* 3 Feature Columns */}
@@ -1672,13 +1672,13 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                         <div className="relative w-36 h-36 sm:w-44 sm:h-44 transition-transform duration-300">
                           <Image
                             src="/images/4go_alien_hands_tilt_left.png"
-                            alt="Compra en segundos"
+                            alt="Reserva en segundos"
                             fill
                             className="object-contain filter drop-shadow-xl"
                           />
                         </div>
                         <h3 className="text-lg sm:text-xl font-black text-white uppercase tracking-tight">
-                          Compra en segundos
+                          Reserva en segundos
                         </h3>
                         <p className="text-xs sm:text-sm font-semibold text-zinc-300 max-w-xs leading-relaxed">
                           Obtén tus entradas en menos tiempo del que te tomó leer esto.
