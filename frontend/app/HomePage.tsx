@@ -329,6 +329,7 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
   const [heroIndex, setHeroIndex] = useState(0);
   const homeCarouselRef = useRef<HTMLDivElement>(null);
   const [isCarouselHovered, setIsCarouselHovered] = useState(false);
+  const [likedEvents, setLikedEvents] = useState<Record<string, boolean>>({});
 
   // Smooth 60fps continuous slow auto-scroll to the right (no jumps, lentito)
   useEffect(() => {
@@ -1595,7 +1596,7 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                             setSelectedCarouselEvent(evt);
                             setShowDetailOverlay(true);
                           }}
-                          className="w-48 sm:w-60 shrink-0 flex flex-col space-y-2 cursor-pointer group"
+                          className="w-36 sm:w-56 shrink-0 flex flex-col space-y-2 cursor-pointer group"
                         >
                           {/* Square Artwork Container with Rounded Corners (No Zoom) */}
                           <div className="relative w-full aspect-square rounded-2xl overflow-hidden bg-zinc-900 shadow-xl border border-zinc-200 group-hover:border-purple-500/60 transition-colors duration-300">
@@ -1604,60 +1605,48 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                               alt={evt.title}
                               fill
                               className="object-cover brightness-105"
-                              sizes="240px"
+                              sizes="(max-width: 640px) 150px, 240px"
                             />
-                            {/* Gradient Overlay for text contrast */}
-                            <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent" />
+                            {/* Subtle Gradient Overlay */}
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
 
-                            {/* Text Superimposed at Card Bottom Left */}
-                            <div className="absolute bottom-2.5 left-2.5 right-16 z-10 flex flex-col justify-end">
-                              <h4 className="text-xs sm:text-sm font-black uppercase text-white tracking-tight leading-tight line-clamp-1 drop-shadow-md">
-                                {evt.title}
-                              </h4>
-                              <span className="text-[10px] font-bold text-zinc-300 drop-shadow line-clamp-1">
-                                {evt.subtitle || evt.dateLabel}
-                              </span>
-                            </div>
-
-                            {/* Action Overlay Buttons (Play & Heart) in Bottom Right */}
-                            <div className="absolute bottom-2.5 right-2.5 flex items-center gap-1.5 z-10">
+                            {/* Only Heart Overlay Button on Poster Image */}
+                            <div className="absolute bottom-2.5 right-2.5 z-10">
                               <button
                                 type="button"
                                 onClick={(e) => {
                                   e.stopPropagation();
-                                  setSelectedCarouselEvent(evt);
-                                  setShowDetailOverlay(true);
+                                  setLikedEvents((prev) => ({
+                                    ...prev,
+                                    [evt.id]: !prev[evt.id],
+                                  }));
                                 }}
-                                className="w-7 h-7 rounded-full bg-black/75 backdrop-blur-md border border-white/20 flex items-center justify-center text-white hover:scale-110 active:scale-95 transition-transform shadow-lg cursor-pointer"
-                                aria-label="Ver preview"
-                              >
-                                <Play className="w-3 h-3 text-white fill-white ml-0.5" />
-                              </button>
-                              <button
-                                type="button"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                }}
-                                className="w-7 h-7 rounded-full bg-black/75 backdrop-blur-md border border-white/20 flex items-center justify-center text-white hover:scale-110 active:scale-95 transition-transform shadow-lg cursor-pointer"
+                                className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-black/75 backdrop-blur-md border border-white/20 flex items-center justify-center text-white hover:scale-110 active:scale-95 transition-transform shadow-lg cursor-pointer"
                                 aria-label="Guardar favorito"
                               >
-                                <Heart className="w-3 h-3 text-white hover:text-red-400 transition-colors" />
+                                <Heart
+                                  className={`w-3.5 h-3.5 transition-colors ${
+                                    likedEvents[evt.id]
+                                      ? "text-red-500 fill-red-500"
+                                      : "text-white hover:text-red-400"
+                                  }`}
+                                />
                               </button>
                             </div>
                           </div>
 
                           {/* Event Details Text Below Artwork */}
                           <div className="flex flex-col space-y-0.5 px-0.5 pt-1 text-black">
-                            <h4 className="text-sm font-extrabold text-black tracking-tight leading-tight line-clamp-1 group-hover:text-purple-600 transition-colors">
+                            <h4 className="text-xs sm:text-sm font-extrabold text-black tracking-tight leading-tight line-clamp-1 group-hover:text-purple-600 transition-colors">
                               {evt.title}
                             </h4>
-                            <span className="text-xs font-bold text-zinc-800">
+                            <span className="text-[11px] sm:text-xs font-bold text-zinc-800">
                               {evt.dateLabel || "sáb, 26 sept"}
                             </span>
-                            <span className="text-xs font-semibold text-zinc-600 truncate">
+                            <span className="text-[11px] sm:text-xs font-semibold text-zinc-600 truncate">
                               {evt.venue || "Factory Town"}
                             </span>
-                            <span className="text-xs font-black text-black pt-0.5">
+                            <span className="text-[11px] sm:text-xs font-black text-black pt-0.5">
                               {evt.price === 0 ? "Desde Gratis" : `Desde ${evt.price || "52,74"} $`}
                             </span>
                           </div>
@@ -1857,7 +1846,7 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                         className="group relative flex flex-col bg-white/5 backdrop-blur-md rounded-3xl border border-white/10 overflow-hidden p-3.5 space-y-3 hover:border-white/30 transition-all duration-300 cursor-pointer shadow-2xl"
                       >
                         {/* Artwork Box */}
-                        <div className="relative w-full h-64 sm:h-72 rounded-2xl overflow-hidden bg-zinc-950 border border-white/10 group-hover:border-yellow-400/60 transition-all duration-300">
+                        <div className="relative w-full h-48 sm:h-72 rounded-2xl overflow-hidden bg-zinc-950 border border-white/10 group-hover:border-yellow-400/60 transition-all duration-300">
                           <Image
                             src={evt.poster || "/images/now4go-hero-presentation-hd-v3.png"}
                             alt={evt.title}
@@ -1872,18 +1861,27 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                             ENTRADAS
                           </span>
 
-                          {/* Play & Heart Overlay Buttons */}
+                          {/* Heart Overlay Button */}
                           <div className="absolute bottom-2.5 right-2.5 flex items-center gap-2 z-10">
                             <button
                               type="button"
                               onClick={(e) => {
                                 e.stopPropagation();
-                                setSelectedCarouselEvent(evt);
-                                setShowDetailOverlay(true);
+                                setLikedEvents((prev) => ({
+                                  ...prev,
+                                  [evt.id]: !prev[evt.id],
+                                }));
                               }}
                               className="w-8 h-8 rounded-full bg-black/80 backdrop-blur-md border border-white/25 flex items-center justify-center text-white hover:scale-110 active:scale-95 transition-transform shadow-lg cursor-pointer"
+                              aria-label="Guardar favorito"
                             >
-                              <Play className="w-3.5 h-3.5 text-white fill-white ml-0.5" />
+                              <Heart
+                                className={`w-3.5 h-3.5 transition-colors ${
+                                  likedEvents[evt.id]
+                                    ? "text-red-500 fill-red-500"
+                                    : "text-white hover:text-red-400"
+                                }`}
+                              />
                             </button>
                           </div>
                         </div>
