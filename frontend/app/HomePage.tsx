@@ -1407,7 +1407,7 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                         id: "4go-chef-intro",
                         poster: "/images/4go_dj_green_alien_hero.png",
                         title: "",
-                        line1: "Los mejores shots y la previa... ¿estás listo?",
+                        line1: "You ready?",
                         line2: "Explora y vive la fiesta con 4GO",
                         event: events[0] || fallbackEvents[0],
                       },
