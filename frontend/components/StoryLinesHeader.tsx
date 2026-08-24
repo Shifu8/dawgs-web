@@ -34,10 +34,10 @@ export default function StoryLinesHeader({
               type="button"
               onClick={() => onSelectScreen(idx)}
               aria-label={`Ir a pantalla ${screen.label}`}
-              className="flex-1 py-1.5 group cursor-pointer focus:outline-none"
+              className="flex-1 py-1.5 group cursor-pointer focus:outline-none border-none outline-none"
             >
-              {/* Line Bar Container with Drop Shadow */}
-              <div className="relative h-1.5 w-full rounded-full bg-white/20 backdrop-blur-md overflow-hidden transition-all duration-300 group-hover:bg-white/35 shadow-[0_2px_8px_rgba(0,0,0,0.5)]">
+              {/* Line Bar Container */}
+              <div className="relative h-1.5 w-full rounded-full bg-white/25 overflow-hidden transition-colors duration-300 group-hover:bg-white/40">
                 <motion.div
                   initial={false}
                   animate={{
@@ -45,7 +45,7 @@ export default function StoryLinesHeader({
                     opacity: isActive ? 1 : 0,
                   }}
                   transition={{ duration: 0.35, ease: "easeOut" }}
-                  className="h-full rounded-full bg-white shadow-[0_0_12px_rgba(255,255,255,1)]"
+                  className="h-full rounded-full bg-white shadow-[0_0_10px_rgba(255,255,255,0.8)]"
                 />
               </div>
             </button>
