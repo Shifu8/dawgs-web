@@ -1103,8 +1103,8 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
         {isLoading && (
           <motion.div
             key="loader"
-            exit={{ opacity: 0, y: "-100%", filter: "blur(12px)" }}
-            transition={{ duration: 0.8, ease: [0.76, 0, 0.24, 1] }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.5, ease: "easeInOut" }}
             className="fixed inset-0 z-[999] flex flex-col items-center justify-center bg-[#8b5cf6] text-black select-none"
           >
             <motion.div
@@ -1179,7 +1179,7 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
       <Atmosphere />
 
       {/* ─── APPLE ARCADE FULL-BLEED TRANSPARENT TOP HEADER WITH STORIES LINES OVERLAY ─── */}
-      <header className={`absolute inset-x-0 top-0 ${isHeaderSearchOpen ? "z-[300]" : "z-50"} bg-gradient-to-b from-black/90 via-black/30 to-transparent px-4 sm:px-8 pt-3 pb-6 transition-all duration-300 pointer-events-none border-none outline-none`}>
+      <header className={`absolute inset-x-0 top-0 ${isHeaderSearchOpen ? "z-[300]" : "z-50"} bg-gradient-to-b from-black/90 via-black/30 to-transparent px-4 sm:px-8 pt-3 pb-6 transition-all duration-300 pointer-events-none`}>
         <div className="mx-auto flex w-full max-w-[1400px] flex-col gap-3 pointer-events-auto">
           {/* 1. TOP STORY SEGMENT LINES (Permanently mounted, never jumps when search toggles) */}
           <div className="w-full max-w-xl mx-auto">
@@ -1431,10 +1431,10 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
             {activeStoryScreen === 0 && (
               <motion.div
                 key="screen-0-create-event"
-                initial={{ opacity: 0, x: -30 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -30 }}
-                transition={{ duration: 0.35, ease: "easeOut" }}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.25, ease: "easeOut" }}
                 className="relative w-full flex flex-col select-none -mt-20 sm:-mt-24 -mb-16 lg:-mb-24"
               >
                 {/* ─── TOP HERO ROW (30% LEFT VIDEO / 70% RIGHT AUTH FORM WITH VIDEO) ─── */}
@@ -1869,11 +1869,11 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
             {activeStoryScreen === 1 && (
               <motion.div
                 key="screen-1-home"
-                initial={{ opacity: 0, x: -30 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -30 }}
-                transition={{ duration: 0.3, ease: "easeOut" }}
-                className="bg-white text-black min-h-screen pt-4 pb-0 font-sans"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.25, ease: "easeOut" }}
+                className="bg-black text-white min-h-screen pt-0 pb-0 font-sans"
               >
                 {/* ─── 1. FULL-BLEED HERO SHOWCASE ─── */}
                 <section className="relative w-full overflow-hidden">

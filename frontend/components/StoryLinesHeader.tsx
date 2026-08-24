@@ -1,7 +1,6 @@
 "use client";
 
 import React from "react";
-import { motion } from "framer-motion";
 
 export interface StoryScreen {
   id: string;
@@ -26,7 +25,6 @@ export default function StoryLinesHeader({
       <div className="w-full flex items-center justify-between gap-1.5 py-0.5">
         {screens.map((screen, idx) => {
           const isActive = idx === activeScreen;
-          const isPassed = idx < activeScreen;
 
           return (
             <button
@@ -38,14 +36,12 @@ export default function StoryLinesHeader({
             >
               {/* Line Bar Container */}
               <div className="relative h-1.5 w-full rounded-full bg-white/25 overflow-hidden transition-colors duration-300 group-hover:bg-white/40">
-                <motion.div
-                  initial={false}
-                  animate={{
+                <div
+                  style={{
                     width: isActive ? "100%" : "0%",
                     opacity: isActive ? 1 : 0,
                   }}
-                  transition={{ duration: 0.35, ease: "easeOut" }}
-                  className="h-full rounded-full bg-white shadow-[0_0_10px_rgba(255,255,255,0.8)]"
+                  className="h-full rounded-full bg-white shadow-[0_0_10px_rgba(255,255,255,0.8)] transition-[width,opacity] duration-300 ease-out"
                 />
               </div>
             </button>
