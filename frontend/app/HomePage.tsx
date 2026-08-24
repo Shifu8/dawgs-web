@@ -2244,7 +2244,7 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                 </section>
 
                 {/* ─── 5. MERCH 4GO SECTION WITH CLEAN MINIMAL OVERLAY ─── */}
-                <section id="merch-4go-section" className="w-full relative z-20 font-sans py-28 sm:py-36 overflow-hidden border-t border-white/10 text-white min-h-[500px] flex items-end justify-center pb-16 sm:pb-20">
+                <section id="merch-4go-section" className="w-full relative z-20 font-sans py-36 sm:py-48 lg:py-56 overflow-hidden border-t border-white/10 text-white min-h-[550px] sm:min-h-[680px] lg:min-h-[820px] flex items-end justify-center pb-16 sm:pb-24 lg:pb-28">
                   {/* Full-bleed Vivid Hero Image as Section Background */}
                   <div className="absolute inset-0 z-0 overflow-hidden">
                     <Image
