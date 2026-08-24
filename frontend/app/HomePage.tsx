@@ -11,6 +11,7 @@ import type { CSSProperties } from "react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
+  BadgeCheck,
   Calendar,
   ChevronDown,
   ChevronLeft,
@@ -558,6 +559,15 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
       return matchesCategory && matchesSearch;
     });
   }, [events, selectedDay, carteleraSearchQuery]);
+
+  // Matching promoter / club profiles for Cartelera search query
+  const matchingCarteleraProfiles = useMemo(() => {
+    const query = carteleraSearchQuery.toLowerCase().trim();
+    if (!query) return [];
+    return SEARCH_PROFILES.filter(
+      (p) => p.name.toLowerCase().includes(query) || p.type.toLowerCase().includes(query)
+    );
+  }, [carteleraSearchQuery]);
 
   // Smooth 60fps continuous slow auto-scroll to the right (no jumps, lentito)
   useEffect(() => {
@@ -1394,7 +1404,7 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                                 src={evt.poster || "/images/now4go-hero-presentation-hd-v3.png"}
                                 alt={evt.title}
                                 fill
-                                className="object-cover group-hover:scale-105 transition-transform"
+                                className="object-cover"
                               />
                             </div>
                             <div className="flex-1 min-w-0 text-left">
@@ -2411,7 +2421,7 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                         type="text"
                         value={carteleraSearchQuery}
                         onChange={(e) => setCarteleraSearchQuery(e.target.value)}
-                        placeholder="Buscar evento, artista o lugar en Loja..."
+                        placeholder="Buscar evento, promotor o club..."
                         className="w-full pl-10 pr-9 py-2 rounded-full bg-black/40 border border-white/15 text-xs font-semibold text-white placeholder:text-white/50 focus:outline-none focus:border-[#dfff28] focus:bg-black/60 transition-all"
                       />
                       {carteleraSearchQuery && (
@@ -2453,8 +2463,37 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                     </div>
                   </div>
 
-                  {/* MAIN CONTENT AREA: 2-COLUMN EVENTS GRID */}
-                  <div className="w-full pt-2">
+                  {/* MAIN CONTENT AREA: PROFILES & 2-COLUMN EVENTS GRID */}
+                  <div className="w-full pt-2 space-y-6">
+                    {/* Matching Organizer / Club Profile Badges ("Bolitas") */}
+                    {matchingCarteleraProfiles.length > 0 && (
+                      <div className="w-full flex items-center justify-center gap-2.5 overflow-x-auto no-scrollbar py-1 text-center max-w-4xl mx-auto">
+                        {matchingCarteleraProfiles.map((prof) => (
+                          <button
+                            key={`cartelera-prof-pill-${prof.id}`}
+                            type="button"
+                            onClick={() => {
+                              setSelectedOrganizerSlug(prof.id);
+                              setShowOrganizerOverlay(true);
+                            }}
+                            className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/10 border border-white/20 backdrop-blur-xl hover:bg-white/20 hover:border-white/30 text-white transition-all cursor-pointer shadow-xl shrink-0 group active:scale-95"
+                          >
+                            <div className="relative w-7 h-7 rounded-full bg-zinc-800 border border-white/30 overflow-hidden flex items-center justify-center shrink-0 shadow-md">
+                              {prof.avatar ? (
+                                <Image src={prof.avatar} alt={prof.name} fill className="object-cover" />
+                              ) : (
+                                <Building2 className="w-3.5 h-3.5 text-white" />
+                              )}
+                            </div>
+                            <span className="text-xs font-black text-white group-hover:text-[#dfff28] transition-colors truncate">
+                              {prof.name}
+                            </span>
+                            <BadgeCheck className="w-4 h-4 text-sky-400 fill-sky-400/20 shrink-0" />
+                          </button>
+                        ))}
+                      </div>
+                    )}
+
                     <div className="w-full">
                       {filteredCarteleraEvents.length > 0 ? (
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 sm:gap-8 max-w-4xl mx-auto">
@@ -2473,7 +2512,7 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                                   src={evt.poster || "/images/now4go-hero-presentation-hd-v3.png"}
                                   alt={evt.title}
                                   fill
-                                  className="object-cover transition-transform duration-500 group-hover:scale-105"
+                                  className="object-cover"
                                   sizes="(max-width: 768px) 100vw, 360px"
                                 />
 
