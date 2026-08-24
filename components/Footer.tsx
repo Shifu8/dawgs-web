@@ -27,7 +27,7 @@ export default function Footer() {
               />
             </div>
             <p className="text-sm sm:text-base text-zinc-600 font-medium max-w-md leading-relaxed">
-              Descubre los mejores eventos, conciertos y experiencias en Ecuador. Entradas oficiales y acceso instantáneo desde tu dispositivo.
+              Descubre los mejores eventos, conciertos y experiencias en Loja. Entradas oficiales y acceso instantáneo desde tu dispositivo.
             </p>
           </div>
 

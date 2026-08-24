@@ -68,7 +68,6 @@ export default function EventDetailOverlay({
   const [isFavorite, setIsFavorite] = useState(false);
   const [isExpandedDescription, setIsExpandedDescription] = useState(false);
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
-  const [isPlayingAudio, setIsPlayingAudio] = useState(false);
   const [showPromoCodeInput, setShowPromoCodeInput] = useState(false);
   const [promoCodeText, setPromoCodeText] = useState("");
   const [isScrolledDown, setIsScrolledDown] = useState(false);
@@ -236,25 +235,12 @@ export default function EventDetailOverlay({
                 >
                   <Heart className={`w-4 h-4 ${isFavorite ? "fill-red-400 text-red-400" : ""}`} />
                 </button>
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    if (navigator.share) {
-                      navigator.share({ title: event.title, url: window.location.href });
-                    }
-                  }}
-                  className="w-9 h-9 rounded-full bg-black/70 border border-white/20 text-white flex items-center justify-center backdrop-blur-md hover:bg-black/90 transition-transform active:scale-95"
-                  aria-label="Compartir"
-                >
-                  <Share2 className="w-4 h-4" />
-                </button>
               </div>
             </div>
 
-            {/* "Tema más popular" (Music Preview Box) */}
+            {/* "Tema más popular" (Box without play icon) */}
             <div className="bg-white/5 border border-white/10 rounded-2xl p-4 flex items-center justify-between shadow-lg backdrop-blur-md">
-              <div className="flex flex-col space-y-0.5 max-w-[240px]">
+              <div className="flex flex-col space-y-0.5">
                 <span className="text-xs font-black text-white tracking-wide">
                   Tema más popular
                 </span>
@@ -262,15 +248,6 @@ export default function EventDetailOverlay({
                   {(event as any).artistTrack || `${event.title} - Forever Young`}
                 </span>
               </div>
-
-              <button
-                type="button"
-                onClick={() => setIsPlayingAudio(!isPlayingAudio)}
-                className="w-10 h-10 rounded-full bg-white/10 border border-white/20 flex items-center justify-center text-white hover:bg-white hover:text-black transition-all cursor-pointer shrink-0 shadow-md active:scale-95"
-                aria-label="Reproducir tema"
-              >
-                <Play className={`w-4 h-4 ml-0.5 ${isPlayingAudio ? "fill-white" : ""}`} />
-              </button>
             </div>
 
             {/* 4GO Anti-Scalping Protection Badge */}
@@ -520,17 +497,18 @@ export default function EventDetailOverlay({
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[500] bg-black/95 backdrop-blur-2xl flex items-center justify-center p-4"
+            className="fixed inset-0 z-[500] bg-black/95 backdrop-blur-2xl flex items-center justify-center p-4 sm:p-8 cursor-pointer select-none"
             onClick={() => setIsLightboxOpen(false)}
           >
             <button
               type="button"
               onClick={() => setIsLightboxOpen(false)}
               className="absolute top-6 right-6 h-11 w-11 rounded-full bg-white/10 border border-white/20 text-white flex items-center justify-center hover:bg-white hover:text-black transition-all cursor-pointer z-[510]"
+              aria-label="Cerrar vista completa"
             >
               <X className="h-5 w-5" />
             </button>
-            <div className="relative max-w-4xl max-h-[85vh] w-full h-full flex items-center justify-center" onClick={(e) => e.stopPropagation()}>
+            <div className="relative max-w-5xl max-h-[90vh] flex items-center justify-center">
               <Image
                 src={getHdImageSrc(event.poster || DEFAULT_HD_EVENT_POSTER)}
                 alt={event.title}
@@ -538,8 +516,9 @@ export default function EventDetailOverlay({
                 height={1600}
                 quality={100}
                 sizes="(max-width: 768px) 100vw, 85vw"
-                className="max-w-full max-h-[85vh] w-auto h-auto object-contain rounded-3xl shadow-2xl border border-white/15 select-none"
+                className="max-w-full max-h-[88vh] w-auto h-auto object-contain rounded-3xl shadow-2xl border border-white/15 cursor-default"
                 priority
+                onClick={(e) => e.stopPropagation()}
               />
             </div>
           </motion.div>
