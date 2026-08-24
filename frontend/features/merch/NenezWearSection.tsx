@@ -13,9 +13,9 @@ const wearCollection = [
     id: "outfit-1",
     name: "NENEZ Signature Hoodie (Burgundy & Rose)",
     price: "75",
-    image: "/images/kristina_merch.png",
-    modelName: "Kristina (@kris_handle)",
-    instagramUrl: "https://instagram.com/kris_handle",
+    image: "/images/nenez_merch_official_couch_hero.png",
+    modelName: "4GO x NENEZ Lookbook",
+    instagramUrl: "https://www.instagram.com/4gooooooooo",
     description: "Heavyweight 450gsm luxury cotton blend.",
     category: "Streetwear Lookbook",
   },
@@ -23,51 +23,11 @@ const wearCollection = [
     id: "outfit-2",
     name: "NENEZ Classic Tracksuit (Deep Cherry)",
     price: "110",
-    image: "/images/ariana_merch.png",
-    modelName: "Ariana (@ariana_handle)",
-    instagramUrl: "https://instagram.com/ariana_handle",
+    image: "/images/nenez_merch_official_couch_hero.png",
+    modelName: "4GO x NENEZ Lookbook",
+    instagramUrl: "https://www.instagram.com/4gooooooooo",
     description: "Complete luxury streetwear tracksuit set.",
     category: "Tracksuit & Loungewear",
-  },
-  {
-    id: "outfit-3",
-    name: "NENEZ Heavyweight Hoodie (Crimson)",
-    price: "75",
-    image: "/images/johanel_merch.png",
-    modelName: "Johanel (@johanel_handle)",
-    instagramUrl: "https://instagram.com/johanel_handle",
-    description: "Oversized drop-shoulder silhouette in rich mineral-washed crimson.",
-    category: "Exclusive Drops",
-  },
-  {
-    id: "outfit-4",
-    name: "NENEZ Tactical Signal Parka (Matte Black)",
-    price: "135",
-    image: "/images/model_one.png",
-    modelName: "Leo (@leo_wear)",
-    instagramUrl: "https://instagram.com/leo_wear",
-    description: "Waterproof technical outer-shell with modular utility belts.",
-    category: "Cyberpunk Tech-Wear",
-  },
-  {
-    id: "outfit-5",
-    name: "NENEZ Tech-wear Cyber-vest (Graphite)",
-    price: "95",
-    image: "/images/model_two.png",
-    modelName: "Dante (@dante_raw)",
-    instagramUrl: "https://instagram.com/dante_raw",
-    description: "Reinforced tactical vest with graphite nylon layers.",
-    category: "Cyberpunk Tech-Wear",
-  },
-  {
-    id: "outfit-6",
-    name: "NENEZ Industrial Utility Jacket (Olive Drab)",
-    price: "120",
-    image: "/images/model_three.png",
-    modelName: "Kael (@kael_ops)",
-    instagramUrl: "https://instagram.com/kael_ops",
-    description: "Distressed denim and duck canvas jacket with industrial wash finish.",
-    category: "Industrial Workwear",
   },
 ];
 
@@ -78,10 +38,7 @@ export default function NenezWearSection() {
   const [showCatalogModal, setShowCatalogModal] = useState(false);
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentModel((prev) => (prev + 1) % wearCollection.length);
-    }, 3500);
-    return () => clearInterval(interval);
+    // Fixed single static image - no photo rotation
   }, []);
 
   useEffect(() => {
@@ -122,7 +79,7 @@ export default function NenezWearSection() {
                 transition={{ duration: 0.6 }}
                 className="absolute inset-0"
               >
-                <Image src={model.image} alt={model.modelName} fill className="object-cover object-top" />
+                <Image src={model.image} alt={model.modelName} fill className="object-cover object-center" />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/10" />
               </motion.div>
             </AnimatePresence>

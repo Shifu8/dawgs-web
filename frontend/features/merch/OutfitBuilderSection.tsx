@@ -3,8 +3,8 @@
 import Image from "next/image";
 import { Sparkles, ShoppingBag } from "lucide-react";
 
-const STUDIO_HERO_IMAGE = "/images/nenez-studio-couch.png";
-const STUDIO_PORTRAIT_IMAGE = "/images/nenez-studio-portrait.png";
+const STUDIO_HERO_IMAGE = "/images/nenez_merch_official_couch_hero.png";
+const STUDIO_PORTRAIT_IMAGE = "/images/nenez_merch_official_couch_hero.png";
 
 export default function OutfitBuilderSection() {
   return (

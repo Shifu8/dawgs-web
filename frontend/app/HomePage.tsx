@@ -164,19 +164,12 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
   const [merchSlideIndex, setMerchSlideIndex] = useState(0);
 
   const MERCH_SHOWCASE_IMAGES = [
-    { src: "/images/nenez-studio-fit-front.png", title: "4GO Streetwear Collection 2026" },
-    { src: "/images/nenez-studio-portrait.png", title: "4GO Limited Edition Drops" },
-    { src: "/images/nenez-studio-couch.png", title: "4GO Official Nightwear" },
-    { src: "/images/model_one.png", title: "4GO Apparel & Accessories" },
-    { src: "/images/ariana_merch.png", title: "4GO Merch - NENEZ Wear" },
+    { src: "/images/nenez_merch_official_couch_hero.png", title: "4GO x NENEZ Official Merch" },
   ];
 
   useEffect(() => {
-    const timer = setInterval(() => {
-      setMerchSlideIndex((prev) => (prev + 1) % MERCH_SHOWCASE_IMAGES.length);
-    }, 4500);
-    return () => clearInterval(timer);
-  }, [MERCH_SHOWCASE_IMAGES.length]);
+    // Static photo - no slide rotation
+  }, []);
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [isFilterPanelOpen, setIsFilterPanelOpen] = useState(false);
   const [isStaffModalOpen, setIsStaffModalOpen] = useState(false);
@@ -2250,67 +2243,39 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                   </div>
                 </section>
 
-                {/* ─── 5. SECOND WHITE BANNER SECTION (MERCH 4GO SHOWCASE SLIDESHOW) ─── */}
-                <section id="merch-4go-section" className="w-full bg-white text-black py-16 sm:py-24 relative z-20 font-sans border-t border-zinc-200">
-                  <div className="max-w-[1300px] mx-auto px-6 sm:px-12">
-                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8 items-center">
-                      {/* Left Column: Animated Merch 4GO Slideshow Container */}
-                      <div className="lg:col-span-6 w-full flex justify-center lg:justify-start order-2 lg:order-1">
-                        <div className="relative w-full max-w-[540px] aspect-[4/3.5] rounded-[2.5rem] overflow-hidden shadow-2xl border border-black/10 bg-zinc-950 group">
-                          <AnimatePresence mode="wait">
-                            <motion.div
-                              key={`merch-slide-${merchSlideIndex}`}
-                              initial={{ opacity: 0, scale: 0.98 }}
-                              animate={{ opacity: 1, scale: 1 }}
-                              exit={{ opacity: 0, scale: 1.02 }}
-                              transition={{ duration: 0.85, ease: "easeInOut" }}
-                              className="absolute inset-0 w-full h-full"
-                            >
-                              <Image
-                                src={MERCH_SHOWCASE_IMAGES[merchSlideIndex].src}
-                                alt={MERCH_SHOWCASE_IMAGES[merchSlideIndex].title}
-                                fill
-                                className="object-cover brightness-105"
-                                sizes="(max-width: 768px) 100vw, 600px"
-                              />
-                            </motion.div>
-                          </AnimatePresence>
+                {/* ─── 5. MERCH 4GO SECTION WITH CLEAN MINIMAL OVERLAY ─── */}
+                <section id="merch-4go-section" className="w-full relative z-20 font-sans py-28 sm:py-36 overflow-hidden border-t border-white/10 text-white min-h-[500px] flex items-end justify-center pb-16 sm:pb-20">
+                  {/* Full-bleed Vivid Hero Image as Section Background */}
+                  <div className="absolute inset-0 z-0 overflow-hidden">
+                    <Image
+                      src="/images/nenez_merch_official_couch_hero.png"
+                      alt="NENEZ Merch Official Couch"
+                      fill
+                      priority
+                      quality={100}
+                      className="object-cover object-center"
+                      sizes="100vw"
+                    />
+                    {/* Soft vignette gradient overlay for bottom text readability */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-black/40" />
+                  </div>
 
-                          {/* Overlay copyright text on bottom left */}
-                          <span className="absolute bottom-4 left-5 z-20 text-[10px] sm:text-[11px] font-extrabold text-white/90 tracking-wider shadow-md drop-shadow">
-                            © 4GO 2026, all rights reserved
-                          </span>
-                        </div>
-                      </div>
+                  {/* Clean Minimal Overlay: Title + Subtitle + White Pill Button */}
+                  <div className="max-w-md mx-auto px-6 relative z-10 text-center flex flex-col items-center">
+                    <h3 className="text-xl sm:text-2xl font-black text-white tracking-tight leading-tight drop-shadow-lg font-sans uppercase">
+                      Edición Limitada
+                    </h3>
+                    <p className="text-xs sm:text-sm font-bold text-white/90 tracking-normal mt-1 drop-shadow-md">
+                      4GO también tiene su propia merch oficial
+                    </p>
 
-                      {/* Right Column: Title, Description & Action Buttons (Text on Right) */}
-                      <div className="lg:col-span-6 space-y-6 text-left order-1 lg:order-2">
-                        <h2 className="text-3xl sm:text-5xl lg:text-6xl font-black text-black tracking-tight font-sans uppercase leading-[1.05]">
-                          MERCH 4GO &amp; EDICIONES LIMITADAS
-                        </h2>
-                        <p className="text-xs sm:text-sm text-zinc-600 font-semibold leading-relaxed max-w-xl">
-                          Descubre la colección oficial de streetwear, ropa exclusiva y accesorios diseñados para la cultura nocturna y los mejores eventos de Ecuador.
-                        </p>
-
-                        {/* Action Buttons */}
-                        <div className="flex flex-wrap items-center gap-3.5 pt-2">
-                          <button
-                            type="button"
-                            onClick={() => router.push("/merch")}
-                            className="px-6 py-3.5 rounded-full bg-black text-white hover:bg-zinc-800 text-xs sm:text-sm font-black uppercase tracking-wider transition-all active:scale-95 shadow-xl inline-flex items-center justify-center cursor-pointer"
-                          >
-                            COMPRAR MERCH 4GO
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => router.push("/merch")}
-                            className="px-6 py-3.5 rounded-full bg-transparent border-2 border-black/80 hover:bg-black/5 text-black text-xs sm:text-sm font-black uppercase tracking-wider transition-all active:scale-95 cursor-pointer inline-flex items-center justify-center"
-                          >
-                            VER COLECCIÓN
-                          </button>
-                        </div>
-                      </div>
-                    </div>
+                    <button
+                      type="button"
+                      onClick={() => router.push("/merch")}
+                      className="mt-5 px-8 py-3.5 rounded-full bg-white text-black font-black uppercase text-xs sm:text-sm tracking-wider hover:bg-zinc-100 active:scale-95 transition-all shadow-[0_10px_30px_rgba(0,0,0,0.5)] cursor-pointer"
+                    >
+                      COMPRAR
+                    </button>
                   </div>
                 </section>
 
