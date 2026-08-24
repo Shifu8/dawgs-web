@@ -2365,14 +2365,17 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
             {activeStoryScreen === 2 && (
               <motion.div
                 key="screen-2-cartelera"
-                initial={{ opacity: 0, x: 30 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: 30 }}
-                transition={{ duration: 0.3, ease: "easeOut" }}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.25, ease: "easeOut" }}
                 className="w-full text-white min-h-screen pt-28 sm:pt-32 pb-40 px-4 sm:px-8 relative z-10 bg-[#0c0714] overflow-hidden"
               >
-                {/* ─── KASKADE: ORIGIN // EXACT AMBIENT POSTER BLUR BACKDROP (FIXED VIEWPORT ANCHORED) ─── */}
+                {/* ─── KASKADE: ORIGIN // EXACT AMBIENT POSTER BLUR BACKDROP (ZERO-FLICKER PERFECTED) ─── */}
                 <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden bg-[#0c0714]">
+                  {/* Instant dark base shield to prevent initial unblurred green raster flash */}
+                  <div className="absolute inset-0 bg-[#0c0714] z-0" />
+
                   <Image
                     src="/images/4go_dj_green_alien_hero_2k.png"
                     alt="Kaskade: ORIGIN //"
@@ -2380,10 +2383,10 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                     priority
                     quality={100}
                     sizes="100vw"
-                    className="object-cover object-center scale-150 blur-[110px] saturate-200 brightness-110 opacity-75"
+                    className="object-cover object-center scale-150 blur-[110px] saturate-200 brightness-110 opacity-75 relative z-10"
                   />
                   {/* Exact Dark Gradient Overlay from Event Detail Screen */}
-                  <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-black/40 to-[#0c0714]/95" />
+                  <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-black/40 to-[#0c0714]/95 z-20" />
                 </div>
 
                 <div className="max-w-[1400px] mx-auto space-y-6 relative z-10">
