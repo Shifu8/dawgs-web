@@ -1870,9 +1870,9 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
               <motion.div
                 key="screen-1-home"
                 initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
+                animate={{ opacity: [0.2, 1] }}
                 exit={{ opacity: 0 }}
-                transition={{ duration: 0.25, ease: "easeOut" }}
+                transition={{ duration: 0.5, ease: "easeInOut" }}
                 className="bg-black text-white min-h-screen pt-0 pb-0 font-sans"
               >
                 {/* ─── 1. FULL-BLEED HERO SHOWCASE ─── */}
@@ -2322,7 +2322,7 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                       onClick={() => router.push("/merch")}
                       className="mt-5 px-8 py-3.5 rounded-full bg-white text-black font-black uppercase text-xs sm:text-sm tracking-wider hover:bg-zinc-100 active:scale-95 transition-all shadow-[0_10px_30px_rgba(0,0,0,0.5)] cursor-pointer"
                     >
-                      COMPRAR
+                      COMPRAR AHORA
                     </button>
                   </div>
                 </section>
