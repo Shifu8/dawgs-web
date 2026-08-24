@@ -197,7 +197,7 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
       if (token) {
         setUserLoggedIn(true);
         if (profile) {
-          try { setUserProfile(JSON.parse(profile)); } catch {}
+          try { setUserProfile(JSON.parse(profile)); } catch { }
         }
       }
 
@@ -1237,8 +1237,8 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                   }
                 }}
                 className={`w-10 h-10 rounded-full border backdrop-blur-xl flex items-center justify-center shadow-lg cursor-pointer transition-all active:scale-95 ${isHeaderSearchOpen
-                    ? "bg-white border-white text-zinc-900 shadow-xl scale-105"
-                    : "bg-white/10 border-white/20 hover:bg-white/20 text-white"
+                  ? "bg-white border-white text-zinc-900 shadow-xl scale-105"
+                  : "bg-white/10 border-white/20 hover:bg-white/20 text-white"
                   }`}
                 aria-label="Buscar eventos o perfiles"
               >
@@ -1369,11 +1369,10 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                                   [prof.id]: !prev[prof.id],
                                 }));
                               }}
-                              className={`px-5 py-2 rounded-full text-[11px] font-extrabold uppercase tracking-wider transition-all border shrink-0 cursor-pointer active:scale-95 ${
-                                followedProfiles[prof.id]
-                                  ? "bg-zinc-900 text-white border-zinc-900 shadow-sm"
-                                  : "bg-zinc-100 hover:bg-zinc-200 text-zinc-900 border-zinc-200/80"
-                              }`}
+                              className={`px-5 py-2 rounded-full text-[11px] font-extrabold uppercase tracking-wider transition-all border shrink-0 cursor-pointer active:scale-95 ${followedProfiles[prof.id]
+                                ? "bg-zinc-900 text-white border-zinc-900 shadow-sm"
+                                : "bg-zinc-100 hover:bg-zinc-200 text-zinc-900 border-zinc-200/80"
+                                }`}
                             >
                               {followedProfiles[prof.id] ? "SIGUIENDO" : "SEGUIR"}
                             </button>
@@ -1814,7 +1813,7 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                     )}
                   </div>
 
-                  </div>
+                </div>
 
                 {/* ─── LOWER FEATURE SECTION BELOW VIDEO & LOGIN HERO (SCROLLABLE DOWN) ─── */}
                 <div id="subir-features-section" className="w-full bg-zinc-950 text-white pt-16 sm:pt-24 pb-28 sm:pb-36 px-6 sm:px-12 border-t border-zinc-800 font-sans">
@@ -2095,8 +2094,8 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                               >
                                 <Heart
                                   className={`w-3.5 h-3.5 transition-colors ${likedEvents[evt.id]
-                                      ? "text-red-500 fill-red-500"
-                                      : "text-white hover:text-red-400"
+                                    ? "text-red-500 fill-red-500"
+                                    : "text-white hover:text-red-400"
                                     }`}
                                 />
                               </button>
@@ -2205,20 +2204,13 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                         </p>
 
                         {/* Action Buttons */}
-                        <div className="flex flex-wrap items-center gap-3.5 pt-2">
+                        <div className="flex items-center justify-start pt-2">
                           <button
                             type="button"
                             onClick={() => setActiveStoryScreen(0)}
                             className="px-6 py-3.5 rounded-full bg-black text-white hover:bg-zinc-800 text-xs sm:text-sm font-black uppercase tracking-wider transition-all active:scale-95 shadow-xl inline-flex items-center justify-center cursor-pointer"
                           >
                             CREAR CUENTA DE ORGANIZADOR
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => setActiveStoryScreen(2)}
-                            className="px-6 py-3.5 rounded-full bg-transparent border-2 border-black/80 hover:bg-black/5 text-black text-xs sm:text-sm font-black uppercase tracking-wider transition-all active:scale-95 cursor-pointer inline-flex items-center justify-center"
-                          >
-                            EXPLORAR EVENTOS
                           </button>
                         </div>
                       </div>
@@ -2243,48 +2235,29 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                   </div>
                 </section>
 
-                {/* ─── 5. MERCH 4GO SECTION WITH CLEAN MINIMAL OVERLAY ─── */}
-                <section id="merch-4go-section" className="w-full relative z-20 font-sans py-36 sm:py-48 lg:py-56 overflow-hidden border-t border-white/10 text-white min-h-[550px] sm:min-h-[680px] lg:min-h-[820px] flex items-end justify-center pb-16 sm:pb-24 lg:pb-28">
-                  {/* Full-bleed Vivid Hero Image as Section Background */}
-                  <div className="absolute inset-0 z-0 overflow-hidden">
-                    <Image
-                      src="/images/nenez_merch_official_couch_hero.png"
-                      alt="NENEZ Merch Official Couch"
-                      fill
-                      priority
-                      quality={100}
-                      className="object-cover object-center"
-                      sizes="100vw"
-                    />
-                    {/* Soft vignette gradient overlay for bottom text readability */}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-black/40" />
-                  </div>
-
-                  {/* Clean Minimal Overlay: Title + Subtitle + White Pill Button */}
-                  <div className="max-w-md mx-auto px-6 relative z-10 text-center flex flex-col items-center">
-                    <h3 className="text-xl sm:text-2xl font-black text-white tracking-tight leading-tight drop-shadow-lg font-sans uppercase">
-                      Edición Limitada
-                    </h3>
-                    <p className="text-xs sm:text-sm font-bold text-white/90 tracking-normal mt-1 drop-shadow-md">
-                      4GO también tiene su propia merch oficial
-                    </p>
-
-                    <button
-                      type="button"
-                      onClick={() => router.push("/merch")}
-                      className="mt-5 px-8 py-3.5 rounded-full bg-white text-black font-black uppercase text-xs sm:text-sm tracking-wider hover:bg-zinc-100 active:scale-95 transition-all shadow-[0_10px_30px_rgba(0,0,0,0.5)] cursor-pointer"
-                    >
-                      COMPRAR
-                    </button>
-                  </div>
-                </section>
-
-                {/* ─── 6. THIRD WHITE BANNER SECTION (VIVE EXPERIENCIAS ÚNICAS & FAN SUPPORT) ─── */}
+                {/* ─── 5. WHITE BANNER SECTION (VIVE EXPERIENCIAS ÚNICAS & FAN SUPPORT) ─── */}
                 <section className="w-full bg-white text-black py-16 sm:py-24 relative z-20 font-sans border-t border-zinc-200">
                   <div className="max-w-[1300px] mx-auto px-6 sm:px-12">
                     <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8 items-center">
-                      {/* Left Column: Title, Description & Action Buttons */}
-                      <div className="lg:col-span-6 space-y-6 text-left">
+                      {/* Left Column: Rounded Image Container with Party/Presentation Photo & Copyright watermark */}
+                      <div className="lg:col-span-6 w-full flex justify-center lg:justify-start order-2 lg:order-1">
+                        <div className="relative w-full max-w-[540px] aspect-[4/3.5] rounded-[2.5rem] overflow-hidden shadow-2xl border border-black/10 bg-zinc-950">
+                          <Image
+                            src="/images/now4go-hero-presentation-hd-fullbleed.png"
+                            alt="Vive experiencias 4GO"
+                            fill
+                            className="object-cover brightness-105"
+                            sizes="(max-width: 768px) 100vw, 600px"
+                          />
+                          {/* Overlay copyright text on bottom left */}
+                          <span className="absolute bottom-4 left-5 text-[10px] sm:text-[11px] font-extrabold text-white/90 tracking-wider shadow-md drop-shadow">
+                            © 4GO 2026, all rights reserved
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Right Column: Title, Description & Action Buttons */}
+                      <div className="lg:col-span-6 space-y-6 text-left order-1 lg:order-2">
                         <h2 className="text-3xl sm:text-5xl lg:text-6xl font-black text-black tracking-tight font-sans uppercase leading-[1.05]">
                           VIVE EXPERIENCIAS ÚNICAS &amp; ACCEDE AL INSTANTE
                         </h2>
@@ -2314,24 +2287,43 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                           </button>
                         </div>
                       </div>
-
-                      {/* Right Column: Rounded Image Container with Party/Presentation Photo & Copyright watermark */}
-                      <div className="lg:col-span-6 w-full flex justify-center lg:justify-end">
-                        <div className="relative w-full max-w-[540px] aspect-[4/3.5] rounded-[2.5rem] overflow-hidden shadow-2xl border border-black/10 bg-zinc-950">
-                          <Image
-                            src="/images/now4go-hero-presentation-hd-fullbleed.png"
-                            alt="Vive experiencias 4GO"
-                            fill
-                            className="object-cover brightness-105"
-                            sizes="(max-width: 768px) 100vw, 600px"
-                          />
-                          {/* Overlay copyright text on bottom left */}
-                          <span className="absolute bottom-4 left-5 text-[10px] sm:text-[11px] font-extrabold text-white/90 tracking-wider shadow-md drop-shadow">
-                            © 4GO 2026, all rights reserved
-                          </span>
-                        </div>
-                      </div>
                     </div>
+                  </div>
+                </section>
+
+                {/* ─── 6. MERCH 4GO SECTION WITH CLEAN MINIMAL OVERLAY ─── */}
+                <section id="merch-4go-section" className="w-full relative z-20 font-sans py-36 sm:py-48 lg:py-56 overflow-hidden border-t border-white/10 text-white min-h-[550px] sm:min-h-[680px] lg:min-h-[820px] flex items-end justify-center pb-16 sm:pb-24 lg:pb-28">
+                  {/* Full-bleed Vivid Hero Image as Section Background */}
+                  <div className="absolute inset-0 z-0 overflow-hidden">
+                    <Image
+                      src="/images/nenez_merch_official_couch_hero.png"
+                      alt="NENEZ Merch Official Couch"
+                      fill
+                      priority
+                      quality={100}
+                      className="object-cover object-center"
+                      sizes="100vw"
+                    />
+                    {/* Soft vignette gradient overlay for bottom text readability */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-black/40" />
+                  </div>
+
+                  {/* Clean Minimal Overlay: Title + Subtitle + White Pill Button */}
+                  <div className="max-w-md mx-auto px-6 relative z-10 text-center flex flex-col items-center">
+                    <h3 className="text-xl sm:text-2xl font-black text-white tracking-tight leading-tight drop-shadow-lg font-sans uppercase">
+                      MERCH
+                    </h3>
+                    <p className="text-xs sm:text-sm font-bold text-white/90 tracking-normal mt-1 drop-shadow-md">
+                      4GO presenta su linea de ropa urbana limitada
+                    </p>
+
+                    <button
+                      type="button"
+                      onClick={() => router.push("/merch")}
+                      className="mt-5 px-8 py-3.5 rounded-full bg-white text-black font-black uppercase text-xs sm:text-sm tracking-wider hover:bg-zinc-100 active:scale-95 transition-all shadow-[0_10px_30px_rgba(0,0,0,0.5)] cursor-pointer"
+                    >
+                      COMPRAR
+                    </button>
                   </div>
                 </section>
               </motion.div>
@@ -2416,11 +2408,10 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                           key={`horiz-pill-${cat.id}`}
                           type="button"
                           onClick={() => setSelectedDay(cat.id)}
-                          className={`px-4 py-2 rounded-full text-xs font-black uppercase tracking-wider shrink-0 transition-all cursor-pointer shadow-md border ${
-                            selectedDay === cat.id || (cat.id === "todos" && selectedDay === "todos")
-                              ? "bg-[#dfff28] text-black border-[#dfff28] scale-105 shadow-[0_0_20px_rgba(223,255,40,0.5)]"
-                              : "bg-black/40 border-white/10 text-white/80 hover:text-white hover:border-white/30 hover:bg-white/10"
-                          }`}
+                          className={`px-4 py-2 rounded-full text-xs font-black uppercase tracking-wider shrink-0 transition-all cursor-pointer shadow-md border ${selectedDay === cat.id || (cat.id === "todos" && selectedDay === "todos")
+                            ? "bg-[#dfff28] text-black border-[#dfff28] scale-105 shadow-[0_0_20px_rgba(223,255,40,0.5)]"
+                            : "bg-black/40 border-white/10 text-white/80 hover:text-white hover:border-white/30 hover:bg-white/10"
+                            }`}
                         >
                           <span>{cat.label}</span>
                         </button>
@@ -2496,9 +2487,8 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                                     aria-label="Guardar favorito"
                                   >
                                     <Heart
-                                      className={`w-4 h-4 sm:w-5 sm:h-5 transition-colors ${
-                                        likedEvents[evt.id] ? "text-red-500 fill-red-500" : "text-white hover:text-red-400"
-                                      }`}
+                                      className={`w-4 h-4 sm:w-5 sm:h-5 transition-colors ${likedEvents[evt.id] ? "text-red-500 fill-red-500" : "text-white hover:text-red-400"
+                                        }`}
                                     />
                                   </button>
                                 </div>
@@ -2607,8 +2597,8 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
             }
           }}
           className={`relative w-full h-[96dvh] transition-all duration-500 overflow-hidden flex flex-col rounded-t-[32px] md:rounded-[36px] border border-white/[0.07] bg-gradient-to-b from-zinc-900 via-zinc-950 to-black shadow-[0_-20px_80px_rgba(0,0,0,0.8)] md:shadow-[0_40px_120px_rgba(0,0,0,0.9)] md:mx-4 ${checkoutState === "success" || checkoutState === "verifying"
-              ? "md:max-w-[460px] md:h-[580px]"
-              : "md:max-w-[860px] md:h-[96vh]"
+            ? "md:max-w-[460px] md:h-[580px]"
+            : "md:max-w-[860px] md:h-[96vh]"
             }`}
         >
           {/* Drag handle — mobile only */}
