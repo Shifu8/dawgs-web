@@ -2371,27 +2371,19 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                 transition={{ duration: 0.3, ease: "easeOut" }}
                 className="w-full text-white min-h-screen pt-28 sm:pt-32 pb-40 px-4 sm:px-8 relative z-10 bg-[#0c0714] overflow-hidden"
               >
-                {/* ─── VIBRANT CHEVERE AMBIENT GREEN OLIVE BACKDROP WITH PC SIDE VIGNETTE ─── */}
-                <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden bg-[#0c0812]">
-                  {/* Rich Vibrant Olive Green Radial Glow */}
-                  <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-[#485e0c] via-[#1c2605] to-[#0c0812] opacity-95" />
-
-                  {/* Blurred Hero Poster Chroma Image */}
+                {/* ─── KASKADE: ORIGIN // EXACT AMBIENT POSTER BLUR BACKDROP (FIXED VIEWPORT ANCHORED) ─── */}
+                <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden bg-[#0c0714]">
                   <Image
-                    src="/images/4go_dj_green_alien_hero.png"
-                    alt=""
+                    src="/images/4go_dj_green_alien_hero_2k.png"
+                    alt="Kaskade: ORIGIN //"
                     fill
                     priority
-                    quality={95}
+                    quality={100}
                     sizes="100vw"
-                    className="object-cover object-center scale-125 blur-[105px] saturate-150 opacity-48 mix-blend-screen"
+                    className="object-cover object-center scale-150 blur-[110px] saturate-200 brightness-110 opacity-75"
                   />
-
-                  {/* PC Side Vignette Overlay (Dims far left and right edges on PC desktop views) */}
-                  <div className="absolute inset-0 bg-gradient-to-r from-[#0c0812] via-transparent to-[#0c0812] opacity-90 hidden md:block" />
-
-                  {/* Vignette Overlay */}
-                  <div className="absolute inset-0 bg-gradient-to-b from-transparent via-[#0c0812]/30 to-[#0c0812]/70" />
+                  {/* Exact Dark Gradient Overlay from Event Detail Screen */}
+                  <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-black/40 to-[#0c0714]/95" />
                 </div>
 
                 <div className="max-w-[1400px] mx-auto space-y-6 relative z-10">
