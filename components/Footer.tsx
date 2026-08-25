@@ -152,16 +152,16 @@ export default function Footer() {
 
             {/* Middle: Legal / Policy Links & Social Icons (CENTERED) */}
             <div className="flex flex-wrap items-center justify-center gap-5 sm:gap-7 text-zinc-600 text-xs sm:text-sm font-medium">
-              <a href="#privacy" className="hover:text-black transition-colors">
+              <a href="/privacy_policy" className="hover:text-black transition-colors">
                 Política de Privacidad
               </a>
-              <a href="#terms" className="hover:text-black transition-colors">
+              <a href="/terms_and_conditions" className="hover:text-black transition-colors">
                 Términos y Condiciones
               </a>
-              <a href="#terms" className="hover:text-black transition-colors">
+              <a href="/ticket_purchase_terms" className="hover:text-black transition-colors">
                 Condiciones de Compra
               </a>
-              <a href="#cookies" className="hover:text-black transition-colors">
+              <a href="/cookie_settings" className="hover:text-black transition-colors">
                 Configuración de cookies
               </a>
 

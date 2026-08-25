@@ -229,3 +229,24 @@ create table if not exists public.web_tickets (
 
 alter table public.web_tickets enable row level security;
 
+-- Tabla de usuarios registrados / autenticados con Google o Apple
+create table if not exists public.users (
+  id uuid primary key default gen_random_uuid(),
+  email text not null unique,
+  name text not null,
+  avatar text default '',
+  provider text not null default 'google',
+  provider_id text default '',
+  type text default 'usuario',
+  venue_name text default '',
+  city text default 'Quito',
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now(),
+  last_login_at timestamptz not null default now()
+);
+
+create index if not exists users_email_idx on public.users (email);
+
+alter table public.users enable row level security;
+
+

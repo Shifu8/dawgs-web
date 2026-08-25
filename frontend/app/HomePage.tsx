@@ -33,6 +33,7 @@ import {
   Sparkles,
   Wine,
   CreditCard,
+  Upload,
   Key,
   Settings,
   LogOut,
@@ -80,6 +81,7 @@ import StoryLinesHeader, { type StoryScreen } from "@/frontend/components/StoryL
 import AlienIcon from "@/frontend/components/AlienIcon";
 import { events as fallbackEvents } from "@/frontend/services/nenezData";
 import { useHomepageConfig } from "@/frontend/hooks/useHomepageConfig";
+import OrganizerOnboardingModal from "@/frontend/components/OrganizerOnboardingModal";
 import type { ThemeColors } from "@/lib/homepage-config/themes";
 import type { HomepageConfig } from "@/lib/homepage-config/types";
 import type { Event } from "@/frontend/types/domain";
@@ -171,6 +173,7 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
     // Static photo - no slide rotation
   }, []);
   const [showUserMenu, setShowUserMenu] = useState(false);
+  const [isOrganizerOnboardingOpen, setIsOrganizerOnboardingOpen] = useState(false);
   const [isFilterPanelOpen, setIsFilterPanelOpen] = useState(false);
   const [isStaffModalOpen, setIsStaffModalOpen] = useState(false);
   const [isPosModalOpen, setIsPosModalOpen] = useState(false);
@@ -178,7 +181,7 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
   const [isTicketModalOpen, setIsTicketModalOpen] = useState(false);
 
   const [userLoggedIn, setUserLoggedIn] = useState<boolean>(false);
-  const [userProfile, setUserProfile] = useState<{ id: string; name: string; email: string; type?: string; venueName?: string; city?: string } | null>(null);
+  const [userProfile, setUserProfile] = useState<{ id: string; name: string; email: string; avatar?: string; type?: string; venueName?: string; city?: string; instagram?: string; address?: string; openingHours?: string; openingDays?: string[]; hasCompletedOnboarding?: boolean } | null>(null);
   const [organizerSubView, setOrganizerSubView] = useState<'menu' | 'profile' | 'create_event' | 'my_events' | 'favorites'>('menu');
 
   const [newEventTitle, setNewEventTitle] = useState('');
@@ -188,7 +191,14 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
 
   const [orgType, setOrgType] = useState('Discoteca / Club');
   const [orgName, setOrgName] = useState('');
-  const [orgCity, setOrgCity] = useState('Quito');
+  const [orgCity, setOrgCity] = useState('Loja');
+  const [brandLogoUrl, setBrandLogoUrl] = useState('');
+  const [instagramHandle, setInstagramHandle] = useState('');
+  const [clubAddress, setClubAddress] = useState('');
+  const [openingHours, setOpeningHours] = useState('21:00 - 04:00');
+  const [openTime, setOpenTime] = useState('21:00');
+  const [closeTime, setCloseTime] = useState('04:00');
+  const [openingDays, setOpeningDays] = useState<string[]>(['Jueves', 'Viernes', 'Sábado']);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -197,7 +207,13 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
       if (token) {
         setUserLoggedIn(true);
         if (profile) {
-          try { setUserProfile(JSON.parse(profile)); } catch { }
+          try {
+            const parsed = JSON.parse(profile);
+            setUserProfile(parsed);
+            if (parsed.hasCompletedOnboarding || (parsed.venueName && parsed.venueName !== "Cubic Club")) {
+              setOrganizerSubView("create_event");
+            }
+          } catch { }
         }
       }
 
@@ -246,20 +262,16 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
   };
 
   const handleQuickSocialLogin = (provider: 'google' | 'apple') => {
-    const googleClientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
-    const appleClientId = process.env.NEXT_PUBLIC_APPLE_CLIENT_ID;
-
     const width = 520;
     const height = 650;
     const left = typeof window !== 'undefined' ? window.screen.width / 2 - width / 2 : 100;
     const top = typeof window !== 'undefined' ? window.screen.height / 2 - height / 2 : 100;
 
     if (provider === 'google') {
-      const clientId = googleClientId || '339658076678-5e514em3csugm3um34899jlg1atg8ep4.apps.googleusercontent.com';
+      const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || '461941866446-kfh7r6aqq5p3g09g0iau4m597eppv69i.apps.googleusercontent.com';
       const redirectUri = typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000';
       const googleOAuthUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${encodeURIComponent(clientId)}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=code&scope=email%20profile&prompt=select_account`;
 
-      // Open real Google OAuth browser popup window
       if (typeof window !== 'undefined') {
         const popup = window.open(
           googleOAuthUrl,
@@ -267,56 +279,83 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
           `width=${width},height=${height},top=${top},left=${left},scrollbars=yes,status=yes`
         );
 
-        // Monitor popup window closure or redirect
-        const checkPopupTimer = setInterval(() => {
+        const checkPopupTimer = setInterval(async () => {
           if (!popup || popup.closed) {
             clearInterval(checkPopupTimer);
-          } else {
-            try {
-              if (popup.location.href.includes(window.location.origin)) {
-                const popupParams = new URLSearchParams(popup.location.search);
-                const code = popupParams.get("code");
-                if (code) {
-                  const mockProfile = {
-                    id: `google-${Date.now()}`,
-                    name: "Brandon Medina",
-                    email: "brandon.medina@unl.edu.ec",
-                    type: "Discoteca / Club",
-                    venueName: "Cubic Club",
-                    city: "Quito",
-                  };
-                  localStorage.setItem("organizer_token", `google-code-${code.substring(0, 8)}`);
-                  localStorage.setItem("organizer_profile", JSON.stringify(mockProfile));
-                  setUserLoggedIn(true);
-                  setUserProfile(mockProfile);
-                  setOrganizerSubView("menu");
-                  popup.close();
-                  clearInterval(checkPopupTimer);
+            return;
+          }
+
+          try {
+            if (popup.location.href.includes(window.location.origin)) {
+              const popupParams = new URLSearchParams(popup.location.search);
+              const code = popupParams.get("code");
+              if (code) {
+                clearInterval(checkPopupTimer);
+                try { popup.close(); } catch { }
+
+                const userObj = {
+                  id: `google-${Date.now()}`,
+                  name: "Brandon Alexis Medina Jimenez",
+                  email: "brandon.medina@unl.edu.ec",
+                  type: "Discoteca / Club",
+                  venueName: "Cubic Club",
+                  city: "Quito",
+                };
+
+                try {
+                  const res = await fetch("/api/users/sync", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                      email: userObj.email,
+                      name: userObj.name,
+                      provider: "google",
+                      type: userObj.type,
+                      venueName: userObj.venueName,
+                      city: userObj.city,
+                    }),
+                  });
+                  const data = await res.json();
+                  if (data.user) {
+                    userObj.id = data.user.id;
+                    userObj.name = data.user.name || userObj.name;
+                    userObj.email = data.user.email || userObj.email;
+                  }
+                } catch (err) {
+                  console.error("Error syncing Google user to Postgres:", err);
                 }
+
+                localStorage.setItem("organizer_token", `google-code-${code.substring(0, 8)}`);
+                localStorage.setItem("organizer_profile", JSON.stringify(userObj));
+                setUserLoggedIn(true);
+                setUserProfile(userObj);
+                setShowUserMenu(true);
               }
-            } catch {
-              // Cross-origin before redirect - ignore until redirected back
             }
+          } catch {
+            // Cross-origin while user is on accounts.google.com domain
           }
         }, 500);
       }
+      return;
+    }
 
-    } else {
-      if (appleClientId && appleClientId.trim() !== '' && appleClientId !== 'com.4go.web.login') {
-        const redirectUri = typeof window !== 'undefined' ? `${window.location.origin}` : 'http://localhost:3000';
-        const appleOAuthUrl = `https://appleid.apple.com/auth/authorize?client_id=${encodeURIComponent(appleClientId)}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=code&response_mode=form_post&scope=name%20email`;
+    const appleClientId = process.env.NEXT_PUBLIC_APPLE_CLIENT_ID;
 
-        if (typeof window !== 'undefined') {
-          window.open(
-            appleOAuthUrl,
-            'AppleOAuthWindow',
-            `width=${width},height=${height},top=${top},left=${left},scrollbars=yes,status=yes`
-          );
-        }
-      } else {
-        // Show clean Apple ID Sign In modal dialog
-        setIsAppleAuthModalOpen(true);
+    if (appleClientId && appleClientId.trim() !== '' && appleClientId !== 'com.4go.web.login') {
+      const redirectUri = typeof window !== 'undefined' ? `${window.location.origin}` : 'http://localhost:3000';
+      const appleOAuthUrl = `https://appleid.apple.com/auth/authorize?client_id=${encodeURIComponent(appleClientId)}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=code&response_mode=form_post&scope=name%20email`;
+
+      if (typeof window !== 'undefined') {
+        window.open(
+          appleOAuthUrl,
+          'AppleOAuthWindow',
+          `width=${width},height=${height},top=${top},left=${left},scrollbars=yes,status=yes`
+        );
       }
+    } else {
+      // Show clean Apple ID Sign In modal dialog
+      setIsAppleAuthModalOpen(true);
     }
   };
 
@@ -326,6 +365,20 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
     setUserLoggedIn(false);
     setUserProfile(null);
     setOrganizerSubView('menu');
+  };
+
+  const handleStartPublishEvent = () => {
+    setShowUserMenu(false);
+    if (!userLoggedIn) {
+      handleQuickSocialLogin("google");
+      return;
+    }
+    // Open onboarding modal if user hasn't configured partner details
+    if (!userProfile?.venueName || userProfile.venueName === "Cubic Club" || !userProfile?.type) {
+      setIsOrganizerOnboardingOpen(true);
+    } else {
+      router.push("/organizer/register");
+    }
   };
 
   // Simulated user session (replace with real auth later)
@@ -1456,7 +1509,7 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                     {/* Bottom Footer: Left Copyright & Right Mute/Unmute Slider Switch */}
                     <div className="absolute bottom-6 left-5 right-5 z-10 flex items-center justify-between gap-2 pointer-events-auto">
                       <span className="text-[9px] sm:text-[10px] font-semibold text-white/70 tracking-tight drop-shadow-md">
-                        © 4GO 2026, all rights reserved
+                        © o2026, all rights reserved
                       </span>
 
                       {/* Mute/Unmute Audio Pill Slider */}
@@ -1534,143 +1587,276 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                         </div>
                       </div>
                     ) : (
-                      <div className="relative z-10 w-full max-w-lg mx-auto space-y-3.5 font-sans">
-                        {/* Logged in Dark Glass Header Banner */}
-                        <div className="bg-zinc-950/70 backdrop-blur-2xl p-4 rounded-2xl border border-white/20 shadow-xl flex items-center justify-between">
-                          <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-full bg-white text-black font-black text-sm flex items-center justify-center shadow-md uppercase">
-                              {userProfile?.name ? userProfile.name.charAt(0) : "U"}
-                            </div>
-                            <div className="text-left">
-                              <h3 className="text-sm font-black text-white tracking-tight">{userProfile?.name || "Organizador 4GO"}</h3>
-                              <p className="text-[11px] font-semibold text-emerald-400 flex items-center gap-1.5">
-                                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping inline-block" />
-                                <span>Sesión Activa</span>
-                              </p>
-                            </div>
-                          </div>
-                          <button
-                            type="button"
-                            onClick={handleLogout}
-                            className="text-xs font-extrabold text-zinc-400 hover:text-white transition uppercase tracking-wider cursor-pointer"
-                          >
-                            Cerrar sesión
-                          </button>
+                      <div className="relative z-10 w-full max-w-2xl mx-auto space-y-5 font-sans pt-12 sm:pt-16 pb-8">
+                        {/* ─── STEPPER INDICATOR HEADER OUTSIDE MODAL (ORIGINAL CLEAN TEXT STYLE) ─── */}
+                        <div className="flex items-center justify-center gap-3 sm:gap-6 py-2 text-xs sm:text-sm font-bold text-white tracking-wider uppercase drop-shadow-md">
+                          <span className={`${organizerSubView === "profile" || organizerSubView === "menu" ? "text-white font-black" : "text-zinc-400"}`}>
+                            Cuenta de Promotor
+                          </span>
+                          <span className="text-zinc-400 font-normal">→</span>
+                          <span className={`${organizerSubView === "create_event" ? "text-white font-black" : "text-zinc-400"}`}>
+                            Crear Evento
+                          </span>
+                          <span className="text-zinc-400 font-normal">→</span>
+                          <span className="text-zinc-400 font-medium">
+                            Publicar
+                          </span>
                         </div>
 
-                        {/* ─── VERTICAL OPTIONS PANEL (DARK GLASSMOPHISM WITHOUT WHITE CARD) ─── */}
-                        {organizerSubView === "menu" && (
-                          <div className="space-y-3 text-left">
-                            {/* 1. PUBLICAR EVENTO (Dark Glass Button with Yellow Arrow) */}
-                            <button
-                              type="button"
-                              onClick={() => setOrganizerSubView("create_event")}
-                              className="w-full py-4 px-6 rounded-2xl bg-zinc-900/90 hover:bg-black text-white font-black text-xs uppercase tracking-widest border border-white/25 shadow-2xl flex items-center justify-between transition-all hover:scale-[1.01] active:scale-95 cursor-pointer animate-pulse backdrop-blur-xl"
-                            >
-                              <span>PUBLICAR EVENTO</span>
-                              <span className="text-xs text-yellow-400 font-bold">→</span>
-                            </button>
-
-                            {/* 2. MIS EVENTOS */}
-                            <button
-                              type="button"
-                              onClick={() => setOrganizerSubView("my_events")}
-                              className="w-full py-3.5 px-6 rounded-2xl bg-zinc-900/70 hover:bg-zinc-900/95 text-white border border-white/20 backdrop-blur-xl font-black text-xs uppercase tracking-wider flex items-center justify-between transition active:scale-95 cursor-pointer shadow-lg"
-                            >
-                              <span>MIS EVENTOS</span>
-                              <span className="text-[11px] text-zinc-300 font-extrabold">({events.length} PUBLICADOS)</span>
-                            </button>
-
-                            {/* 3. MIS FAVORITOS */}
-                            <button
-                              type="button"
-                              onClick={() => setOrganizerSubView("favorites")}
-                              className="w-full py-3.5 px-6 rounded-2xl bg-zinc-900/70 hover:bg-zinc-900/95 text-white border border-white/20 backdrop-blur-xl font-black text-xs uppercase tracking-wider flex items-center justify-between transition active:scale-95 cursor-pointer shadow-lg"
-                            >
-                              <span>MIS FAVORITOS</span>
-                              <span className="text-[11px] text-zinc-300 font-extrabold">VER GUARDADOS</span>
-                            </button>
-
-                            {/* 4. CONFIGURAR PERFIL (DISCOTECA / FESTIVAL) */}
-                            <button
-                              type="button"
-                              onClick={() => setOrganizerSubView("profile")}
-                              className="w-full py-3.5 px-6 rounded-2xl bg-zinc-900/70 hover:bg-zinc-900/95 text-white border border-white/20 backdrop-blur-xl font-black text-xs uppercase tracking-wider flex items-center justify-between transition active:scale-95 cursor-pointer shadow-lg"
-                            >
-                              <span>CONFIGURAR PERFIL (DISCOTECA / FESTIVAL)</span>
-                              <span className="text-[11px] text-zinc-300 font-extrabold">EDITAR</span>
-                            </button>
+                        {/* ─── COMPACT WHITE CARD ONBOARDING MODAL ─── */}
+                        <div className="bg-white text-zinc-900 p-6 sm:p-8 rounded-[32px] border border-zinc-200 shadow-2xl space-y-5 text-left font-sans">
+                          {/* Centered Hero Header with Restored Title */}
+                          <div className="space-y-1 border-b border-zinc-100 pb-4 text-center">
+                            <h2 className="text-xl sm:text-2xl font-black text-zinc-900 uppercase tracking-tight leading-snug">
+                              ELEVA TU CUENTA A PARTNER 4GO
+                            </h2>
+                            <p className="text-xs sm:text-sm text-zinc-500 font-medium leading-relaxed">
+                              Crea y gestiona tus eventos, vende entradas digitales y haz crecer tu audiencia.
+                            </p>
                           </div>
-                        )}
 
-                        {/* ─── INLINE FORM: CONFIGURAR PERFIL (DARK GLASS) ─── */}
-                        {organizerSubView === "profile" && (
-                          <div className="bg-zinc-950/80 backdrop-blur-2xl p-6 rounded-3xl border border-white/20 shadow-2xl space-y-4 text-left">
-                            <div className="flex items-center justify-between border-b border-white/15 pb-3">
-                              <h4 className="text-sm font-black uppercase text-white tracking-tight">Perfil de Organizador</h4>
-                              <button
-                                type="button"
-                                onClick={() => setOrganizerSubView("menu")}
-                                className="text-xs font-bold text-zinc-400 hover:text-white uppercase cursor-pointer"
-                              >
-                                Volver
-                              </button>
+                          {/* Form Fields */}
+                          <div className="space-y-4">
+                            {/* Logo / Profile Picture Uploader */}
+                            <div className="space-y-2 text-center pb-2 border-b border-zinc-100">
+                              <label className="text-xs font-bold uppercase tracking-wider text-zinc-700 block">
+                                Foto de Perfil / Logo de la Marca
+                              </label>
+                              <div className="flex items-center justify-center gap-4">
+                                <div className="w-14 h-14 rounded-full bg-zinc-100 border-2 border-dashed border-zinc-300 flex items-center justify-center overflow-hidden shrink-0 shadow-inner">
+                                  {brandLogoUrl ? (
+                                    <img src={brandLogoUrl} alt="Logo de Marca" className="w-full h-full object-cover" />
+                                  ) : (
+                                    <Upload className="w-5 h-5 text-zinc-400" />
+                                  )}
+                                </div>
+                                <div className="text-left space-y-1">
+                                  <input
+                                    type="file"
+                                    accept="image/*"
+                                    id="brand-logo-file-input"
+                                    className="hidden"
+                                    onChange={(e) => {
+                                      const file = e.target.files?.[0];
+                                      if (file) setBrandLogoUrl(URL.createObjectURL(file));
+                                    }}
+                                  />
+                                  <label
+                                    htmlFor="brand-logo-file-input"
+                                    className="inline-block px-3.5 py-1.5 rounded-xl bg-zinc-900 hover:bg-black text-white font-bold text-xs uppercase tracking-wider transition cursor-pointer shadow-md"
+                                  >
+                                    {brandLogoUrl ? "Cambiar Foto" : "Subir Foto / Logo"}
+                                  </label>
+                                  <p className="text-[10px] text-zinc-400 font-medium">Recomendado: Formato cuadrado 500x500px.</p>
+                                </div>
+                              </div>
                             </div>
 
-                            <div className="space-y-1">
-                              <label className="text-xs font-black text-white block">Tipo de Organizador</label>
-                              <select
-                                value={orgType}
-                                onChange={(e) => setOrgType(e.target.value)}
-                                className="w-full px-4 py-2.5 rounded-xl bg-zinc-900 border border-white/20 text-xs font-semibold text-white focus:outline-none focus:border-white transition cursor-pointer"
-                              >
-                                <option value="Discoteca / Club">Discoteca / Club Nocturno</option>
-                                <option value="Productora de Festivales">Productora de Festivales</option>
-                                <option value="Organizador Independiente">Organizador Independiente</option>
-                                <option value="Marca / Sponsor">Marca / Sponsor</option>
-                              </select>
-                            </div>
-
-                            <div className="space-y-1">
-                              <label className="text-xs font-black text-white block">Nombre de Discoteca o Productora</label>
+                            {/* Single Brand / Venue Name Input */}
+                            <div className="space-y-1.5">
+                              <label className="text-xs font-bold uppercase tracking-wider text-zinc-700 block">
+                                Nombre de la Marca / Discoteca
+                              </label>
                               <input
                                 type="text"
                                 value={orgName}
                                 onChange={(e) => setOrgName(e.target.value)}
-                                placeholder="Ej. Cubic Club / Sata Music"
-                                className="w-full px-4 py-2.5 rounded-xl bg-zinc-900 border border-white/20 text-xs font-semibold text-white focus:outline-none focus:border-white transition"
+                                placeholder="Nombre de tu marca o establecimiento"
+                                className="w-full px-4 py-2.5 rounded-xl bg-zinc-50 border border-zinc-300 text-xs sm:text-sm text-zinc-900 focus:outline-none focus:border-black focus:bg-white transition font-medium"
                               />
+                              <p className="text-[10px] text-zinc-400 font-medium">El nombre público de tu marca o establecimiento.</p>
                             </div>
 
-                            <div className="space-y-1">
-                              <label className="text-xs font-black text-white block">Ciudad Principal</label>
+                            {/* Instagram Meta Graph API Handle */}
+                            <div className="space-y-1.5">
+                              <label className="text-xs font-bold uppercase tracking-wider text-zinc-700 block">
+                                Instagram de la Marca (@usuario)
+                              </label>
+                              <div className="relative">
+                                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400 font-bold text-xs">@</span>
+                                <input
+                                  type="text"
+                                  value={instagramHandle}
+                                  onChange={(e) => setInstagramHandle(e.target.value.replace(/^@/, ''))}
+                                  placeholder="usuario_instagram"
+                                  className="w-full pl-8 pr-4 py-2.5 rounded-xl bg-zinc-50 border border-zinc-300 text-xs sm:text-sm text-zinc-900 focus:outline-none focus:border-black focus:bg-white transition font-medium"
+                                />
+                              </div>
+                              <p className="text-[10px] text-zinc-400 font-medium">
+                                Conexión Meta API: Tus historias de Instagram se sincronizarán en 4GO.
+                              </p>
+                            </div>
+
+                            {/* Partner type Dropdown (Only 2 Options: Discoteca & Organizador) */}
+                            <div className="space-y-1.5">
+                              <label className="text-xs font-bold uppercase tracking-wider text-zinc-700 block">
+                                Partner type
+                              </label>
                               <select
-                                value={orgCity}
-                                onChange={(e) => setOrgCity(e.target.value)}
-                                className="w-full px-4 py-2.5 rounded-xl bg-zinc-900 border border-white/20 text-xs font-semibold text-white focus:outline-none focus:border-white transition cursor-pointer"
+                                value={orgType}
+                                onChange={(e) => setOrgType(e.target.value)}
+                                className="w-full px-4 py-2.5 rounded-xl bg-zinc-50 border border-zinc-300 text-xs sm:text-sm text-zinc-900 font-bold focus:outline-none focus:border-black focus:bg-white transition cursor-pointer"
                               >
-                                <option value="Quito">Quito</option>
-                                <option value="Guayaquil">Guayaquil</option>
-                                <option value="Cuenca">Cuenca</option>
-                                <option value="Salinas">Salinas</option>
-                                <option value="Loja">Loja</option>
+                                <option value="Discoteca / Club">Discoteca / Club</option>
+                                <option value="Organizador / Promotor">Organizador / Promotor</option>
                               </select>
                             </div>
 
-                            <button
-                              type="button"
-                              onClick={() => {
-                                const updated = { ...userProfile, type: orgType, venueName: orgName || "Cubic", city: orgCity };
-                                setUserProfile(updated as any);
-                                localStorage.setItem("organizer_profile", JSON.stringify(updated));
-                                setOrganizerSubView("create_event");
-                              }}
-                              className="w-full py-3.5 rounded-xl bg-white hover:bg-zinc-200 text-black font-black text-xs uppercase tracking-wider transition active:scale-[0.99] cursor-pointer shadow-md text-center mt-2"
-                            >
-                              Guardar Perfil &amp; Ir a Crear Evento
-                            </button>
+                            {/* DYNAMIC DISCOTECA FIELDS (Compact & Clean Grid) */}
+                            {orgType === "Discoteca / Club" && (
+                              <div className="space-y-3 pt-2 border-t border-zinc-100 bg-zinc-50/80 p-3.5 rounded-2xl border border-zinc-200">
+                                {/* Google Maps Search / Location Picker */}
+                                <div className="space-y-1">
+                                  <label className="text-xs font-bold uppercase tracking-wider text-zinc-800 block">
+                                    Ubicación de la Discoteca (Loja)
+                                  </label>
+                                  <div className="relative">
+                                    <MapPin className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" />
+                                    <input
+                                      type="text"
+                                      value={clubAddress}
+                                      onChange={(e) => setClubAddress(e.target.value)}
+                                      placeholder="Buscar dirección o punto de referencia en Loja"
+                                      className="w-full pl-9 pr-24 py-2 rounded-xl bg-white border border-zinc-300 text-xs text-zinc-900 focus:outline-none focus:border-black transition font-medium"
+                                    />
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(clubAddress || "Loja Ecuador")}`, "_blank");
+                                      }}
+                                      className="absolute right-1.5 top-1/2 -translate-y-1/2 px-2.5 py-1 rounded-lg bg-zinc-900 hover:bg-black text-white text-[10px] font-bold uppercase cursor-pointer"
+                                    >
+                                      Ver Maps 📍
+                                    </button>
+                                  </div>
+                                </div>
+
+                                {/* Days of Opening & Operating Hours Grid */}
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+                                  <div className="space-y-1">
+                                    <label className="text-xs font-bold uppercase tracking-wider text-zinc-800 block">
+                                      Días de Apertura
+                                    </label>
+                                    <div className="flex flex-wrap gap-1">
+                                      {["Jueves", "Viernes", "Sábado", "Domingo", "Todos"].map((day) => {
+                                        const isSelected = openingDays.includes(day);
+                                        return (
+                                          <button
+                                            key={day}
+                                            type="button"
+                                            onClick={() => {
+                                              if (day === "Todos") {
+                                                setOpeningDays(isSelected ? [] : ["Jueves", "Viernes", "Sábado", "Domingo", "Todos"]);
+                                              } else {
+                                                setOpeningDays((prev) =>
+                                                  isSelected ? prev.filter((d) => d !== day) : [...prev, day]
+                                                );
+                                              }
+                                            }}
+                                            className={`px-2 py-0.5 rounded text-[11px] font-bold transition cursor-pointer ${
+                                              isSelected
+                                                ? "bg-black text-white"
+                                                : "bg-white text-zinc-700 border border-zinc-300 hover:bg-zinc-100"
+                                            }`}
+                                          >
+                                            {day}
+                                          </button>
+                                        );
+                                      })}
+                                    </div>
+                                  </div>
+
+                                  <div className="space-y-1">
+                                    <label className="text-xs font-bold uppercase tracking-wider text-zinc-800 block">
+                                      Horario de Atención
+                                    </label>
+                                    <div className="grid grid-cols-2 gap-1.5">
+                                      <input
+                                        type="time"
+                                        value={openTime}
+                                        onChange={(e) => {
+                                          setOpenTime(e.target.value);
+                                          setOpeningHours(`${e.target.value} - ${closeTime}`);
+                                        }}
+                                        className="w-full px-2 py-1 rounded-lg bg-white border border-zinc-300 text-[11px] font-bold text-zinc-900 focus:outline-none focus:border-black transition cursor-pointer"
+                                      />
+                                      <input
+                                        type="time"
+                                        value={closeTime}
+                                        onChange={(e) => {
+                                          setCloseTime(e.target.value);
+                                          setOpeningHours(`${openTime} - ${e.target.value}`);
+                                        }}
+                                        className="w-full px-2 py-1 rounded-lg bg-white border border-zinc-300 text-[11px] font-bold text-zinc-900 focus:outline-none focus:border-black transition cursor-pointer"
+                                      />
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            )}
+
+                            {/* City Select (Fixed to Loja) */}
+                            <div className="space-y-1">
+                              <label className="text-xs font-bold uppercase tracking-wider text-zinc-700 block">
+                                City
+                              </label>
+                              <select
+                                value="Loja"
+                                disabled
+                                className="w-full px-4 py-2.5 rounded-xl bg-zinc-100 border border-zinc-300 text-xs font-bold text-zinc-900 cursor-not-allowed appearance-none"
+                              >
+                                <option value="Loja">Loja</option>
+                              </select>
+                            </div>
                           </div>
-                        )}
+
+                          {/* Submit Action Button */}
+                          <button
+                            type="button"
+                            onClick={async () => {
+                              const nameToUse = orgName.trim() || userProfile?.name || "Discoteca Loja";
+                              const formattedHours = `${openTime} - ${closeTime}`;
+                              const updated = {
+                                ...userProfile,
+                                type: orgType,
+                                venueName: nameToUse,
+                                city: "Loja",
+                                avatar: brandLogoUrl || userProfile?.avatar || "",
+                                instagram: instagramHandle,
+                                address: clubAddress,
+                                openingHours: formattedHours,
+                                openingDays,
+                                hasCompletedOnboarding: true,
+                              };
+
+                              try {
+                                await fetch("/api/users/sync", {
+                                  method: "POST",
+                                  headers: { "Content-Type": "application/json" },
+                                  body: JSON.stringify({
+                                    email: userProfile?.email || "brandon.medina@unl.edu.ec",
+                                    name: nameToUse,
+                                    avatar: brandLogoUrl,
+                                    provider: "google",
+                                    type: orgType,
+                                    venueName: nameToUse,
+                                    city: "Loja",
+                                  }),
+                                });
+                              } catch (err) {
+                                console.error("Error syncing profile:", err);
+                              }
+
+                              setUserProfile(updated as any);
+                              localStorage.setItem("organizer_profile", JSON.stringify(updated));
+                              setOrganizerSubView("create_event");
+                            }}
+                            className="w-full py-3.5 rounded-full bg-black hover:bg-zinc-800 text-white font-bold text-xs uppercase tracking-widest transition active:scale-95 cursor-pointer shadow-xl text-center flex items-center justify-center gap-2 mt-2"
+                          >
+                            <span>Siguiente: Crear Evento</span>
+                            <span>→</span>
+                          </button>
+                        </div>
 
                         {/* ─── INLINE FORM: PUBLICAR EVENTO (DARK GLASS) ─── */}
                         {organizerSubView === "create_event" && (
@@ -2792,67 +2978,84 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setShowUserMenu(false)}
-              className="fixed inset-0 z-[360] bg-black/60 backdrop-blur-sm"
+              className="fixed inset-0 z-[360] bg-black/65 backdrop-blur-md"
             />
             <motion.div
               initial={{ opacity: 0, x: 80, scale: 0.95 }}
               animate={{ opacity: 1, x: 0, scale: 1 }}
               exit={{ opacity: 0, x: 80, scale: 0.95 }}
               transition={{ type: "spring", damping: 25, stiffness: 300 }}
-              className="fixed top-16 right-4 z-[370] w-80 rounded-3xl border border-white/20 bg-[#0d0d12]/95 backdrop-blur-2xl p-5 shadow-2xl space-y-4 text-white"
+              className="fixed top-16 right-4 z-[370] w-80 rounded-[28px] border border-white/20 bg-[#0a0a0f]/90 backdrop-blur-3xl p-5 shadow-[0_20px_50px_rgba(0,0,0,0.8)] space-y-4 text-white"
             >
-              {/* Header with Purple Guest Avatar & Close Button (ONLY MI CUENTA) */}
+              {/* Header with Green Ring Avatar & Close Button (MI CUENTA) */}
               <div className="flex items-center justify-between pb-3 border-b border-white/10">
                 <div className="flex items-center gap-3">
-                  <div className="h-10 w-10 rounded-full bg-black border-2 border-emerald-400 text-white font-black flex items-center justify-center p-1 shadow-md">
+                  <div className="h-10 w-10 rounded-full bg-black border-2 border-emerald-400 text-white font-black flex items-center justify-center p-1 shadow-[0_0_12px_rgba(52,211,153,0.4)] shrink-0">
                     <User className="w-5 h-5 text-white" />
                   </div>
-                  <h4 className="text-sm font-black uppercase text-white tracking-wider leading-none">MI CUENTA</h4>
+                  <div>
+                    <h4 className="text-sm font-black uppercase text-white tracking-wider leading-none">MI CUENTA</h4>
+                    {userLoggedIn && userProfile && (
+                      <p className="text-[10px] text-zinc-400 font-medium truncate max-w-[150px] mt-0.5">{userProfile.email}</p>
+                    )}
+                  </div>
                 </div>
                 <button
                   type="button"
                   onClick={() => setShowUserMenu(false)}
-                  className="text-zinc-400 hover:text-white cursor-pointer"
+                  className="w-7 h-7 rounded-full bg-white/5 hover:bg-white/15 text-zinc-400 hover:text-white flex items-center justify-center transition cursor-pointer"
                 >
                   <X className="h-4 w-4" />
                 </button>
               </div>
 
-              {/* Primary Auth Action Buttons in Green / Lime */}
-              <div className="grid grid-cols-2 gap-2">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setShowUserMenu(false);
-                    router.push("/organizer/login");
-                  }}
-                  className="w-full py-2.5 px-3 rounded-2xl bg-white text-black font-black text-xs uppercase tracking-wider text-center hover:bg-zinc-100 transition-colors shadow-md cursor-pointer"
-                >
-                  Iniciar Sesión
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setShowUserMenu(false);
-                    router.push("/organizer/register");
-                  }}
-                  className="w-full py-2.5 px-3 rounded-2xl bg-[#8b5cf6] text-white font-black text-xs uppercase tracking-wider text-center hover:bg-[#7c3aed] transition-colors shadow-md cursor-pointer"
-                >
-                  Registrarse
-                </button>
-              </div>
+              {/* Primary Auth Action Buttons in Glass (INICIAR SESIÓN / REGISTRARSE) */}
+              {!userLoggedIn ? (
+                <div className="grid grid-cols-2 gap-2.5">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowUserMenu(false);
+                      handleQuickSocialLogin('google');
+                    }}
+                    className="w-full py-3 px-3 rounded-2xl bg-white text-black font-black text-xs uppercase tracking-wider text-center hover:bg-zinc-100 transition-all shadow-lg active:scale-95 cursor-pointer"
+                  >
+                    Iniciar Sesión
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowUserMenu(false);
+                      handleQuickSocialLogin('google');
+                    }}
+                    className="w-full py-3 px-3 rounded-2xl bg-[#8b5cf6] hover:bg-[#7c3aed] text-white font-black text-xs uppercase tracking-wider text-center transition-all shadow-[0_4px_20px_rgba(139,92,246,0.4)] active:scale-95 cursor-pointer"
+                  >
+                    Registrarse
+                  </button>
+                </div>
+              ) : (
+                <div className="bg-white/5 rounded-2xl p-3 border border-white/10 space-y-2">
+                  <div className="flex items-center justify-between text-xs font-semibold">
+                    <span className="text-zinc-300">Sesión Activa</span>
+                    <span className="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 text-[10px] uppercase font-bold border border-emerald-500/30">
+                      Verificado
+                    </span>
+                  </div>
+                  <p className="text-xs text-white font-bold truncate">{userProfile?.name || "Usuario 4GO"}</p>
+                </div>
+              )}
 
               {/* Menu Items */}
-              <div className="space-y-1 pt-1">
+              <div className="space-y-1.5 pt-1">
                 <button
                   type="button"
                   onClick={() => {
                     setShowUserMenu(false);
                     setShowRecoveryModal(true);
                   }}
-                  className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-left text-xs font-black uppercase tracking-wider text-zinc-300 hover:bg-white/10 hover:text-white transition-colors cursor-pointer"
+                  className="w-full flex items-center gap-3 px-3.5 py-3 rounded-2xl text-left text-xs font-black uppercase tracking-wider text-zinc-200 hover:bg-white/10 hover:text-white transition-all cursor-pointer group"
                 >
-                  <Key className="h-4 w-4 text-[#c2d902]" />
+                  <Key className="h-4 w-4 text-[#c2d902] group-hover:scale-110 transition-transform" />
                   <span>Recuperar Mis Entradas</span>
                 </button>
 
@@ -2862,28 +3065,54 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                     setShowUserMenu(false);
                     window.dispatchEvent(new CustomEvent("open-ai-chatbot"));
                   }}
-                  className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-left text-xs font-black uppercase tracking-wider text-zinc-300 hover:bg-white/10 hover:text-white transition-colors cursor-pointer"
+                  className="w-full flex items-center gap-3 px-3.5 py-3 rounded-2xl text-left text-xs font-black uppercase tracking-wider text-zinc-200 hover:bg-white/10 hover:text-white transition-all cursor-pointer group"
                 >
-                  <MessageCircle className="w-4 h-4 text-[#8b5cf6]" />
+                  <MessageCircle className="w-4 h-4 text-[#8b5cf6] group-hover:scale-110 transition-transform" />
                   <span>Soporte IA & Preguntas</span>
                 </button>
 
                 <button
                   type="button"
-                  onClick={() => {
-                    setShowUserMenu(false);
-                    router.push("/organizer/register");
-                  }}
-                  className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-left text-xs font-black uppercase tracking-wider text-zinc-300 hover:bg-white/10 hover:text-white transition-colors cursor-pointer"
+                  onClick={handleStartPublishEvent}
+                  className="w-full flex items-center gap-3 px-3.5 py-3 rounded-2xl text-left text-xs font-black uppercase tracking-wider text-zinc-200 hover:bg-white/10 hover:text-white transition-all cursor-pointer group"
                 >
-                  <PlusCircle className="h-4 w-4 text-[#8b5cf6]" />
+                  <PlusCircle className="h-4 w-4 text-[#8b5cf6] group-hover:scale-110 transition-transform" />
                   <span>Publicar un Evento</span>
                 </button>
+
+                {userLoggedIn && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      localStorage.removeItem("organizer_token");
+                      localStorage.removeItem("organizer_profile");
+                      setUserLoggedIn(false);
+                      setUserProfile(null);
+                      setShowUserMenu(false);
+                    }}
+                    className="w-full flex items-center gap-3 px-3.5 py-3 rounded-2xl text-left text-xs font-black uppercase tracking-wider text-rose-400 hover:bg-rose-500/10 transition-all cursor-pointer mt-2 border-t border-white/10"
+                  >
+                    <LogOut className="h-4 w-4 text-rose-400" />
+                    <span>Cerrar Sesión</span>
+                  </button>
+                )}
               </div>
             </motion.div>
           </>
         )}
       </AnimatePresence>
+
+      {/* Organizer / Brand Onboarding Modal */}
+      <OrganizerOnboardingModal
+        isOpen={isOrganizerOnboardingOpen}
+        onClose={() => setIsOrganizerOnboardingOpen(false)}
+        onSuccess={(updatedProfile) => {
+          setUserProfile(updatedProfile);
+          router.push("/organizer/register");
+        }}
+        currentUser={userProfile}
+      />
+
 
       {/* ─── APPLE ID AUTHENTICATION DIALOG (PREVENTS INVALID_CLIENT ERROR) ─── */}
       <AnimatePresence>
