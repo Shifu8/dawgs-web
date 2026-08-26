@@ -3042,7 +3042,7 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                 </div>
               )}
 
-              {/* Updated Clean Options (No Emojis, No Sesión Activa card) */}
+              {/* Pure Text Options (No Icons / No Emojis) */}
               <div className="space-y-1.5 pt-1 font-sans">
                 <button
                   type="button"
@@ -3052,19 +3052,17 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                     const onboardingCard = document.getElementById("subir-evento-section");
                     if (onboardingCard) onboardingCard.scrollIntoView({ behavior: "smooth" });
                   }}
-                  className="w-full flex items-center gap-3 px-3.5 py-3 rounded-2xl text-left text-xs font-black uppercase tracking-wider text-zinc-200 hover:bg-white/10 hover:text-white transition-all cursor-pointer group border border-white/5"
+                  className="w-full px-4 py-3.5 rounded-2xl text-left text-xs font-black uppercase tracking-wider text-zinc-200 hover:bg-white/10 hover:text-white transition-all cursor-pointer border border-white/5 block"
                 >
-                  <Settings className="h-4 w-4 text-purple-400 group-hover:scale-110 transition-transform" />
-                  <span>Configuración / Editar Perfil</span>
+                  Configuración / Editar Perfil
                 </button>
 
                 <button
                   type="button"
                   onClick={handleStartPublishEvent}
-                  className="w-full flex items-center gap-3 px-3.5 py-3 rounded-2xl text-left text-xs font-black uppercase tracking-wider text-zinc-200 hover:bg-white/10 hover:text-white transition-all cursor-pointer group border border-white/5"
+                  className="w-full px-4 py-3.5 rounded-2xl text-left text-xs font-black uppercase tracking-wider text-zinc-200 hover:bg-white/10 hover:text-white transition-all cursor-pointer border border-white/5 block"
                 >
-                  <PlusCircle className="h-4 w-4 text-emerald-400 group-hover:scale-110 transition-transform" />
-                  <span>Publicar un Evento</span>
+                  Publicar un Evento
                 </button>
 
                 <button
@@ -3073,10 +3071,9 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                     setShowUserMenu(false);
                     setOrganizerSubView("my_events");
                   }}
-                  className="w-full flex items-center gap-3 px-3.5 py-3 rounded-2xl text-left text-xs font-black uppercase tracking-wider text-zinc-200 hover:bg-white/10 hover:text-white transition-all cursor-pointer group border border-white/5"
+                  className="w-full px-4 py-3.5 rounded-2xl text-left text-xs font-black uppercase tracking-wider text-zinc-200 hover:bg-white/10 hover:text-white transition-all cursor-pointer border border-white/5 block"
                 >
-                  <Calendar className="h-4 w-4 text-amber-400 group-hover:scale-110 transition-transform" />
-                  <span>Mis Eventos y Reservas</span>
+                  Mis Eventos y Reservas
                 </button>
 
                 {userLoggedIn && (
@@ -3089,10 +3086,9 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                       setUserProfile(null);
                       setShowUserMenu(false);
                     }}
-                    className="w-full flex items-center gap-3 px-3.5 py-3 rounded-2xl text-left text-xs font-black uppercase tracking-wider text-red-400 hover:bg-red-500/10 hover:text-red-300 transition-all cursor-pointer border border-red-500/20 group mt-2"
+                    className="w-full px-4 py-3.5 rounded-2xl text-left text-xs font-black uppercase tracking-wider text-red-400 hover:bg-red-500/10 hover:text-red-300 transition-all cursor-pointer border border-red-500/20 block mt-2"
                   >
-                    <LogOut className="h-4 w-4 text-red-400 group-hover:scale-110 transition-transform" />
-                    <span>Cerrar Sesión</span>
+                    Cerrar Sesión
                   </button>
                 )}
               </div>
