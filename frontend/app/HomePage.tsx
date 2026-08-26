@@ -356,10 +356,10 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
   const handleLogout = () => {
     localStorage.removeItem("organizer_token");
     localStorage.removeItem("organizer_profile");
-    localStorage.removeItem("organizer_reservations");
     setUserLoggedIn(false);
     setUserProfile(null);
     setUserReservations({});
+    setLikedEvents({});
     setShowUserMenu(false);
     setOrganizerSubView('menu');
   };
@@ -562,16 +562,17 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
   const homeCarouselRef = useRef<HTMLDivElement>(null);
   const [isCarouselHovered, setIsCarouselHovered] = useState(false);
   const [showAuthModalForFavorites, setShowAuthModalForFavorites] = useState(false);
-  const [likedEvents, setLikedEvents] = useState<Record<string, boolean>>(() => {
-    if (typeof window === "undefined") return {};
-    try {
-      const stored = localStorage.getItem("organizer_favorites");
-      return stored ? JSON.parse(stored) : {};
-    } catch { return {}; }
-  });
+  const [likedEvents, setLikedEvents] = useState<Record<string, boolean>>({});
+  const [userReservations, setUserReservations] = useState<Record<string, boolean>>({});
 
-  // Sync per-user favorites from PostgreSQL database on login/mount without wiping local storage
+  // Sync per-user favorites and reservations from localStorage & DB on login
   useEffect(() => {
+    if (!userLoggedIn) {
+      setLikedEvents({});
+      setUserReservations({});
+      return;
+    }
+
     const emailToUse = userProfile?.email || (() => {
       if (typeof window === "undefined") return null;
       try {
@@ -581,6 +582,25 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
     })();
 
     if (emailToUse) {
+      // 1. Load favorites from account-specific localStorage
+      try {
+        const favKey = `user_favorites_${emailToUse}`;
+        const storedFav = localStorage.getItem(favKey) || localStorage.getItem("organizer_favorites");
+        if (storedFav) {
+          setLikedEvents(JSON.parse(storedFav));
+        }
+      } catch {}
+
+      // 2. Load reservations from account-specific localStorage
+      try {
+        const resKey = `user_reservations_${emailToUse}`;
+        const storedRes = localStorage.getItem(resKey) || localStorage.getItem("organizer_reservations");
+        if (storedRes) {
+          setUserReservations(JSON.parse(storedRes));
+        }
+      } catch {}
+
+      // 3. Fetch favorites from backend DB
       fetch(`/api/users/favorites?email=${encodeURIComponent(emailToUse)}`)
         .then((res) => res.json())
         .then((data) => {
@@ -588,16 +608,15 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
             setLikedEvents((prev) => {
               const merged = { ...prev };
               data.favorites.forEach((id: string) => { merged[id] = true; });
-              try { localStorage.setItem("organizer_favorites", JSON.stringify(merged)); } catch {}
+              try {
+                localStorage.setItem(`user_favorites_${emailToUse}`, JSON.stringify(merged));
+                localStorage.setItem("organizer_favorites", JSON.stringify(merged));
+              } catch {}
               return merged;
             });
           }
         })
         .catch((err) => console.error("Error loading user favorites from DB:", err));
-    } else {
-      // Guest user: Clear favorites
-      setLikedEvents({});
-      try { localStorage.removeItem("organizer_favorites"); } catch {}
     }
   }, [userProfile?.email, userLoggedIn]);
 
@@ -621,6 +640,9 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
       const nextState = !prev[eventId];
       const updated = { ...prev, [eventId]: nextState };
       try {
+        if (emailToUse) {
+          localStorage.setItem(`user_favorites_${emailToUse}`, JSON.stringify(updated));
+        }
         localStorage.setItem("organizer_favorites", JSON.stringify(updated));
       } catch {}
 
@@ -640,15 +662,6 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
     });
   };
 
-  const [userReservations, setUserReservations] = useState<Record<string, boolean>>(() => {
-    if (typeof window === "undefined") return {};
-    try {
-      const token = localStorage.getItem("organizer_token");
-      if (!token) return {};
-      const stored = localStorage.getItem("organizer_reservations");
-      return stored ? JSON.parse(stored) : {};
-    } catch { return {}; }
-  });
   const [showReservationModal, setShowReservationModal] = useState(false);
   const [reservationTargetEvent, setReservationTargetEvent] = useState<Event | null>(null);
 
@@ -659,9 +672,20 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
   };
 
   const handleConfirmReservation = (eventId: string, tierId: string) => {
+    const emailToUse = userProfile?.email || (() => {
+      if (typeof window === "undefined") return null;
+      try {
+        const stored = localStorage.getItem("organizer_profile");
+        return stored ? JSON.parse(stored).email : null;
+      } catch { return null; }
+    })();
+
     setUserReservations((prev) => {
       const updated = { ...prev, [eventId]: true };
       try {
+        if (emailToUse) {
+          localStorage.setItem(`user_reservations_${emailToUse}`, JSON.stringify(updated));
+        }
         localStorage.setItem("organizer_reservations", JSON.stringify(updated));
       } catch {}
       return updated;
