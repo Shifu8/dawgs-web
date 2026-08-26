@@ -102,22 +102,23 @@ export default function ReservationCheckoutModal({
               alt="Backdrop ambient blur"
               fill
               priority
-              className="object-cover object-center scale-150 blur-[110px] opacity-50 brightness-90 transition-all duration-700"
+              quality={100}
+              className="object-cover object-center scale-150 blur-[90px] opacity-40 brightness-75 transition-all duration-700"
             />
           )}
-          <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-[#0c0714]/80 to-black" />
+          <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-black/80 to-black" />
         </div>
 
-        {/* ─── TOP HEADER BAR (MATCHING SCREENSHOT 1) ─── */}
-        <div className="relative z-10 w-full max-w-7xl mx-auto flex items-center justify-between gap-4 pb-4 border-b border-white/10">
-          {/* Top Left: Back Button */}
+        {/* ─── TOP NAVIGATION HEADER BAR (FULL VIEWPORT EDGE-TO-EDGE) ─── */}
+        <div className="relative z-10 w-full px-4 sm:px-8 py-4 flex items-center justify-between gap-4 border-b border-white/10">
+          {/* Top Left: Circular Arrow Back Button (Exact match to EventDetailOverlay) */}
           <button
             type="button"
             onClick={onClose}
-            className="px-4 py-2 rounded-full bg-black/60 backdrop-blur-md hover:bg-white/20 border border-white/20 text-xs font-bold uppercase tracking-wider text-white flex items-center gap-2 transition cursor-pointer active:scale-95"
+            className="flex items-center justify-center w-11 h-11 rounded-full bg-black/60 border border-white/20 text-white hover:bg-white/20 backdrop-blur-md transition-all cursor-pointer shadow-2xl active:scale-95"
+            aria-label="Volver"
           >
-            <ArrowLeft className="w-4 h-4" />
-            <span>ATRÁS</span>
+            <ArrowLeft className="w-5 h-5" />
           </button>
 
           {/* Center: Step Breadcrumbs */}
@@ -138,7 +139,7 @@ export default function ReservationCheckoutModal({
             <button
               type="button"
               onClick={onClose}
-              className="p-2 rounded-full bg-black/60 backdrop-blur-md hover:bg-white/20 border border-white/20 text-white transition cursor-pointer"
+              className="flex items-center justify-center w-11 h-11 rounded-full bg-black/60 border border-white/20 text-white hover:bg-white/20 backdrop-blur-md transition-all cursor-pointer shadow-2xl active:scale-95"
               aria-label="Cerrar modal"
             >
               <X className="w-5 h-5" />
@@ -147,7 +148,7 @@ export default function ReservationCheckoutModal({
         </div>
 
         {/* ─── MAIN CONTENT CONTAINER ─── */}
-        <div className="relative z-10 flex-1 w-full max-w-6xl mx-auto py-6 sm:py-10">
+        <div className="relative z-10 flex-1 w-full max-w-6xl mx-auto py-6 sm:py-10 px-4 sm:px-8">
           {isSuccess ? (
             /* SUCCESS CONFIRMATION PASSHOLDER CARD */
             <motion.div
@@ -214,9 +215,9 @@ export default function ReservationCheckoutModal({
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
               {/* LEFT COLUMN: EVENT BANNER & TIER CARDS */}
               <div className="lg:col-span-7 space-y-6 text-left">
-                {/* Event Summary Header */}
-                <div className="flex items-center gap-4 bg-black/60 border border-white/15 rounded-3xl p-4 shadow-xl backdrop-blur-xl">
-                  <div className="relative w-16 h-16 rounded-2xl overflow-hidden shrink-0 border border-white/20 bg-zinc-950">
+                {/* Event Summary Header (UNBOXED matching Image 2) */}
+                <div className="flex items-center gap-4 py-2">
+                  <div className="relative w-16 h-16 sm:w-20 sm:h-20 rounded-2xl overflow-hidden shrink-0 border border-white/20 bg-zinc-950 shadow-2xl">
                     <Image
                       src={activeEvent.poster || "/images/event_fisher.png"}
                       alt={activeEvent.title}
@@ -225,11 +226,11 @@ export default function ReservationCheckoutModal({
                     />
                   </div>
                   <div className="space-y-1 min-w-0">
-                    <h2 className="text-xl sm:text-2xl font-black text-white uppercase tracking-tight truncate">
+                    <h2 className="text-2xl sm:text-4xl font-black text-white uppercase tracking-tight truncate drop-shadow-md">
                       {activeEvent.title}
                     </h2>
-                    <p className="text-xs sm:text-sm font-semibold text-[#dfff28] truncate">
-                      {activeEvent.dateLabel || "SÁB, 26 SEPT, 22:00 GMT-5"} • {activeEvent.venue || "CUBIC CLUB LOJA"}
+                    <p className="text-sm sm:text-base font-bold text-[#dfff28] truncate">
+                      {activeEvent.dateLabel || "18 SEP 2026"} • {activeEvent.venue || "Factory Town • Miami"}
                     </p>
                   </div>
                 </div>
