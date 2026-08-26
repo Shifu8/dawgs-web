@@ -372,16 +372,20 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
 
   const handleStartPublishEvent = () => {
     setShowUserMenu(false);
-    const publishSection = document.getElementById("subir-evento-section") || document.getElementById("subir-features-section");
-    if (publishSection) {
-      publishSection.scrollIntoView({ behavior: "smooth" });
-    }
+    setActiveStoryScreen(0);
 
     if (userProfile?.hasCompletedOnboarding) {
       setOrganizerSubView("create_event");
     } else {
       setOrganizerSubView("profile");
     }
+
+    setTimeout(() => {
+      const publishSection = document.getElementById("subir-evento-section") || document.getElementById("subir-features-section");
+      if (publishSection) {
+        publishSection.scrollIntoView({ behavior: "smooth" });
+      }
+    }, 50);
   };
 
   // Simulated user session (replace with real auth later)
@@ -1540,7 +1544,7 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                   </div>
 
                   {/* 2. RIGHT COLUMN (70% WIDTH): CENTERED AUTH FORM WITH BACKGROUND VIDEO */}
-                  <div className="relative w-full lg:w-[70%] min-h-screen px-6 sm:px-12 py-16 sm:py-20 flex flex-col items-center justify-center bg-black text-black font-sans overflow-hidden">
+                  <div id="subir-evento-section" className="relative w-full lg:w-[70%] min-h-screen px-6 sm:px-12 py-16 sm:py-20 flex flex-col items-center justify-center bg-black text-black font-sans overflow-hidden">
                     <video
                       autoPlay
                       loop
