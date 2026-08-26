@@ -568,6 +568,13 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
   const homeCarouselRef = useRef<HTMLDivElement>(null);
   const [isCarouselHovered, setIsCarouselHovered] = useState(false);
   const [likedEvents, setLikedEvents] = useState<Record<string, boolean>>({});
+  const [userReservations, setUserReservations] = useState<Record<string, boolean>>(() => {
+    if (typeof window === "undefined") return {};
+    try {
+      const stored = localStorage.getItem("organizer_reservations");
+      return stored ? JSON.parse(stored) : {};
+    } catch { return {}; }
+  });
   const [followedProfiles, setFollowedProfiles] = useState<Record<string, boolean>>({});
 
   // Dynamic Real-Time Cartelera Events Filter by Category / Tag & Search Query
@@ -585,6 +592,7 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
         const venue = (evt.venue || "").toLowerCase();
 
         if (tag === "favoritos") matchesCategory = Boolean(likedEvents[evt.id]);
+        else if (tag === "mis_reservas" || tag === "reservas") matchesCategory = Boolean(userReservations[evt.id]);
         else if (tag === "dj") matchesCategory = cat.includes("dj") || sub.includes("dj") || title.includes("dj") || cat.includes("electro") || cat.includes("techno");
         else if (tag === "party" || tag === "fiesta") matchesCategory = cat.includes("fiesta") || cat.includes("party") || sub.includes("fiesta") || sub.includes("nocturno");
         else if (tag === "comedy" || tag === "comedia") matchesCategory = cat.includes("comedia") || cat.includes("comedy") || sub.includes("stand");
@@ -2572,6 +2580,7 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                       {[
                         { id: "todos", label: "Todos" },
                         { id: "favoritos", label: "Favoritos" },
+                        { id: "mis_reservas", label: "Mis Reservas" },
                         { id: "dj", label: "DJ" },
                         { id: "party", label: "Fiesta" },
                         { id: "comedy", label: "Comedia" },
@@ -2683,10 +2692,12 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                           ))}
                         </div>
                       ) : (
-                        <div className="w-full py-16 text-center space-y-3 bg-white/5 border border-white/10 rounded-3xl backdrop-blur-xl p-8 max-w-2xl mx-auto">
+                        <div className="w-full py-16 text-center space-y-3 bg-white/5 border border-white/10 rounded-3xl backdrop-blur-xl p-8 max-w-2xl mx-auto my-6">
                           <p className="text-sm sm:text-base text-zinc-300 font-semibold">
                             {selectedDay === "favoritos"
                               ? "Aún no tienes eventos guardados en tus favoritos. Toca el corazón en cualquier evento para guardarlo aquí."
+                              : selectedDay === "mis_reservas"
+                              ? "Aún no tienes reservas activas. Explora los eventos de la cartelera y asegura tu lugar en puerta gratis."
                               : `No hay eventos que coincidan con la búsqueda "${carteleraSearchQuery || selectedDay}"`}
                           </p>
                           <button
@@ -2697,7 +2708,7 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                             }}
                             className="px-5 py-2.5 rounded-full bg-[#dfff28] text-black font-black text-xs uppercase tracking-wider shadow-lg hover:scale-105 transition cursor-pointer"
                           >
-                            {selectedDay === "favoritos" ? "Explorar todos los eventos" : "Restablecer búsqueda"}
+                            {selectedDay === "favoritos" || selectedDay === "mis_reservas" ? "Explorar todos los eventos" : "Restablecer búsqueda"}
                           </button>
                         </div>
                       )}
