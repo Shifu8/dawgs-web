@@ -297,9 +297,10 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                   id: `google-${Date.now()}`,
                   name: "Brandon Alexis Medina Jimenez",
                   email: "brandon.medina@unl.edu.ec",
+                  avatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80",
                   type: "Discoteca / Club",
                   venueName: "Cubic Club",
-                  city: "Quito",
+                  city: "Loja",
                 };
 
                 try {
@@ -309,6 +310,7 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                     body: JSON.stringify({
                       email: userObj.email,
                       name: userObj.name,
+                      avatar: userObj.avatar,
                       provider: "google",
                       type: userObj.type,
                       venueName: userObj.venueName,
@@ -320,6 +322,7 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                     userObj.id = data.user.id;
                     userObj.name = data.user.name || userObj.name;
                     userObj.email = data.user.email || userObj.email;
+                    if (data.user.avatar) userObj.avatar = data.user.avatar;
                   }
                 } catch (err) {
                   console.error("Error syncing Google user to Postgres:", err);
@@ -329,7 +332,7 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                 localStorage.setItem("organizer_profile", JSON.stringify(userObj));
                 setUserLoggedIn(true);
                 setUserProfile(userObj);
-                setShowUserMenu(true);
+                // Smooth login without auto-opening popup modal
               }
             }
           } catch {
@@ -2985,18 +2988,22 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
               animate={{ opacity: 1, x: 0, scale: 1 }}
               exit={{ opacity: 0, x: 80, scale: 0.95 }}
               transition={{ type: "spring", damping: 25, stiffness: 300 }}
-              className="fixed top-16 right-4 z-[370] w-80 rounded-[28px] border border-white/20 bg-[#0a0a0f]/90 backdrop-blur-3xl p-5 shadow-[0_20px_50px_rgba(0,0,0,0.8)] space-y-4 text-white"
+              className="fixed top-16 right-4 z-[370] w-80 rounded-[32px] border border-white/20 bg-zinc-950/85 backdrop-blur-2xl p-5 shadow-[0_25px_60px_rgba(0,0,0,0.9)] space-y-4 text-white font-sans"
             >
               {/* Header with Green Ring Avatar & Close Button (MI CUENTA) */}
               <div className="flex items-center justify-between pb-3 border-b border-white/10">
                 <div className="flex items-center gap-3">
-                  <div className="h-10 w-10 rounded-full bg-black border-2 border-emerald-400 text-white font-black flex items-center justify-center p-1 shadow-[0_0_12px_rgba(52,211,153,0.4)] shrink-0">
-                    <User className="w-5 h-5 text-white" />
+                  <div className="h-10 w-10 rounded-full bg-black border-2 border-emerald-400 text-white font-black flex items-center justify-center p-0.5 shadow-[0_0_12px_rgba(52,211,153,0.4)] shrink-0 overflow-hidden">
+                    {userProfile?.avatar ? (
+                      <img src={userProfile.avatar} alt={userProfile.name} className="w-full h-full object-cover rounded-full" />
+                    ) : (
+                      <User className="w-5 h-5 text-white" />
+                    )}
                   </div>
                   <div>
                     <h4 className="text-sm font-black uppercase text-white tracking-wider leading-none">MI CUENTA</h4>
                     {userLoggedIn && userProfile && (
-                      <p className="text-[10px] text-zinc-400 font-medium truncate max-w-[150px] mt-0.5">{userProfile.email}</p>
+                      <p className="text-[10px] text-zinc-400 font-medium truncate max-w-[150px] mt-1">{userProfile.email}</p>
                     )}
                   </div>
                 </div>
@@ -3009,7 +3016,7 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                 </button>
               </div>
 
-              {/* Primary Auth Action Buttons in Glass (INICIAR SESIÓN / REGISTRARSE) */}
+              {/* Primary Auth Status Card */}
               {!userLoggedIn ? (
                 <div className="grid grid-cols-2 gap-2.5">
                   <button
@@ -3034,7 +3041,7 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                   </button>
                 </div>
               ) : (
-                <div className="bg-white/5 rounded-2xl p-3 border border-white/10 space-y-2">
+                <div className="bg-white/5 rounded-2xl p-3 border border-white/10 space-y-1.5">
                   <div className="flex items-center justify-between text-xs font-semibold">
                     <span className="text-zinc-300">Sesión Activa</span>
                     <span className="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 text-[10px] uppercase font-bold border border-emerald-500/30">
@@ -3045,39 +3052,41 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                 </div>
               )}
 
-              {/* Menu Items */}
-              <div className="space-y-1.5 pt-1">
+              {/* Updated Clean Options (No Obsolete Recovery or AI Support Buttons) */}
+              <div className="space-y-1.5 pt-1 font-sans">
                 <button
                   type="button"
                   onClick={() => {
                     setShowUserMenu(false);
-                    setShowRecoveryModal(true);
+                    setOrganizerSubView("profile");
+                    const onboardingCard = document.getElementById("subir-evento-section");
+                    if (onboardingCard) onboardingCard.scrollIntoView({ behavior: "smooth" });
                   }}
-                  className="w-full flex items-center gap-3 px-3.5 py-3 rounded-2xl text-left text-xs font-black uppercase tracking-wider text-zinc-200 hover:bg-white/10 hover:text-white transition-all cursor-pointer group"
+                  className="w-full flex items-center gap-3 px-3.5 py-3 rounded-2xl text-left text-xs font-black uppercase tracking-wider text-zinc-200 hover:bg-white/10 hover:text-white transition-all cursor-pointer group border border-white/5"
                 >
-                  <Key className="h-4 w-4 text-[#c2d902] group-hover:scale-110 transition-transform" />
-                  <span>Recuperar Mis Entradas</span>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => {
-                    setShowUserMenu(false);
-                    window.dispatchEvent(new CustomEvent("open-ai-chatbot"));
-                  }}
-                  className="w-full flex items-center gap-3 px-3.5 py-3 rounded-2xl text-left text-xs font-black uppercase tracking-wider text-zinc-200 hover:bg-white/10 hover:text-white transition-all cursor-pointer group"
-                >
-                  <MessageCircle className="w-4 h-4 text-[#8b5cf6] group-hover:scale-110 transition-transform" />
-                  <span>Soporte IA & Preguntas</span>
+                  <Settings className="h-4 w-4 text-purple-400 group-hover:scale-110 transition-transform" />
+                  <span>Crear / Elevar Cuenta</span>
                 </button>
 
                 <button
                   type="button"
                   onClick={handleStartPublishEvent}
-                  className="w-full flex items-center gap-3 px-3.5 py-3 rounded-2xl text-left text-xs font-black uppercase tracking-wider text-zinc-200 hover:bg-white/10 hover:text-white transition-all cursor-pointer group"
+                  className="w-full flex items-center gap-3 px-3.5 py-3 rounded-2xl text-left text-xs font-black uppercase tracking-wider text-zinc-200 hover:bg-white/10 hover:text-white transition-all cursor-pointer group border border-white/5"
                 >
-                  <PlusCircle className="h-4 w-4 text-[#8b5cf6] group-hover:scale-110 transition-transform" />
+                  <PlusCircle className="h-4 w-4 text-emerald-400 group-hover:scale-110 transition-transform" />
                   <span>Publicar un Evento</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowUserMenu(false);
+                    setOrganizerSubView("my_events");
+                  }}
+                  className="w-full flex items-center gap-3 px-3.5 py-3 rounded-2xl text-left text-xs font-black uppercase tracking-wider text-zinc-200 hover:bg-white/10 hover:text-white transition-all cursor-pointer group border border-white/5"
+                >
+                  <Calendar className="h-4 w-4 text-amber-400 group-hover:scale-110 transition-transform" />
+                  <span>Mis Eventos y Reservas</span>
                 </button>
 
                 {userLoggedIn && (
@@ -3090,9 +3099,9 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                       setUserProfile(null);
                       setShowUserMenu(false);
                     }}
-                    className="w-full flex items-center gap-3 px-3.5 py-3 rounded-2xl text-left text-xs font-black uppercase tracking-wider text-rose-400 hover:bg-rose-500/10 transition-all cursor-pointer mt-2 border-t border-white/10"
+                    className="w-full flex items-center gap-3 px-3.5 py-3 rounded-2xl text-left text-xs font-black uppercase tracking-wider text-red-400 hover:bg-red-500/10 hover:text-red-300 transition-all cursor-pointer border border-red-500/20 group mt-2"
                   >
-                    <LogOut className="h-4 w-4 text-rose-400" />
+                    <LogOut className="h-4 w-4 text-red-400 group-hover:scale-110 transition-transform" />
                     <span>Cerrar Sesión</span>
                   </button>
                 )}
