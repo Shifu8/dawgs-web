@@ -433,15 +433,15 @@ export default function ReservationCheckoutModal({
                   </button>
                 </div>
 
-                {/* Below Box Legal Terms Notice Badge with Mascot Logo Avatar (Matching Photo 2) */}
-                <div className="bg-black/70 border border-white/20 backdrop-blur-xl rounded-2xl p-4 flex items-center gap-4 text-zinc-300 text-[11px] leading-relaxed shadow-xl">
-                  <div className="w-12 h-12 rounded-2xl bg-white flex items-center justify-center text-black font-black shrink-0 shadow-lg p-1">
+                {/* Below Box Legal Terms Notice Badge with Custom Mascot Logo (Matching Photo 1 & 2) */}
+                <div className="flex items-center gap-4 text-zinc-300 text-[11px] leading-relaxed pt-2">
+                  <div className="w-12 h-12 rounded-2xl bg-white flex items-center justify-center shrink-0 shadow-lg p-1.5 overflow-hidden">
                     <Image
-                      src="/alien_avatar.png"
+                      src="/images/brand-mascot-logo.png"
                       alt="4GO Mascot Logo"
-                      width={36}
-                      height={36}
-                      className="object-contain filter grayscale invert brightness-0"
+                      width={38}
+                      height={38}
+                      className="object-contain"
                     />
                   </div>
                   <p className="text-zinc-300 text-xs font-semibold leading-snug">
