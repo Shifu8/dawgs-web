@@ -1691,90 +1691,70 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                               </p>
                             </div>
 
-                            {/* Partner type Dropdown (Only 2 Options: Discoteca & Organizador) */}
-                            <div className="space-y-1.5">
-                              <label className="text-xs font-bold uppercase tracking-wider text-zinc-700 block">
-                                Partner type
-                              </label>
-                              <select
-                                value={orgType}
-                                onChange={(e) => setOrgType(e.target.value)}
-                                className="w-full px-4 py-2.5 rounded-xl bg-zinc-50 border border-zinc-300 text-xs sm:text-sm text-zinc-900 font-bold focus:outline-none focus:border-black focus:bg-white transition cursor-pointer"
-                              >
-                                <option value="Discoteca / Club">Discoteca / Club</option>
-                                <option value="Organizador / Promotor">Organizador / Promotor</option>
-                              </select>
+                            {/* Grid for Partner Type & City */}
+                            <div className="grid grid-cols-2 gap-3">
+                              <div className="space-y-1">
+                                <label className="text-xs font-bold uppercase tracking-wider text-zinc-700 block">
+                                  Partner type
+                                </label>
+                                <select
+                                  value={orgType}
+                                  onChange={(e) => setOrgType(e.target.value)}
+                                  className="w-full px-3 py-2 rounded-xl bg-zinc-50 border border-zinc-300 text-xs text-zinc-900 font-bold focus:outline-none focus:border-black focus:bg-white transition cursor-pointer"
+                                >
+                                  <option value="Organizador / Promotor">Organizador / Promotor</option>
+                                  <option value="Discoteca / Club">Discoteca / Club</option>
+                                </select>
+                              </div>
+
+                              <div className="space-y-1">
+                                <label className="text-xs font-bold uppercase tracking-wider text-zinc-700 block">
+                                  City
+                                </label>
+                                <select
+                                  value="Loja"
+                                  disabled
+                                  className="w-full px-3 py-2 rounded-xl bg-zinc-100 border border-zinc-300 text-xs font-bold text-zinc-900 cursor-not-allowed appearance-none"
+                                >
+                                  <option value="Loja">Loja</option>
+                                </select>
+                              </div>
                             </div>
 
-                            {/* DYNAMIC DISCOTECA FIELDS (Compact & Clean Grid) */}
+                            {/* DYNAMIC DISCOTECA FIELDS (Streamlined so modal card height remains identical) */}
                             {orgType === "Discoteca / Club" && (
-                              <div className="space-y-3 pt-2 border-t border-zinc-100 bg-zinc-50/80 p-3.5 rounded-2xl border border-zinc-200">
-                                {/* Google Maps Search / Location Picker */}
-                                <div className="space-y-1">
-                                  <label className="text-xs font-bold uppercase tracking-wider text-zinc-800 block">
-                                    Ubicación de la Discoteca (Loja)
-                                  </label>
-                                  <div className="relative">
-                                    <MapPin className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" />
-                                    <input
-                                      type="text"
-                                      value={clubAddress}
-                                      onChange={(e) => setClubAddress(e.target.value)}
-                                      placeholder="Buscar dirección o punto de referencia en Loja"
-                                      className="w-full pl-9 pr-24 py-2 rounded-xl bg-white border border-zinc-300 text-xs text-zinc-900 focus:outline-none focus:border-black transition font-medium"
-                                    />
-                                    <button
-                                      type="button"
-                                      onClick={() => {
-                                        window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(clubAddress || "Loja Ecuador")}`, "_blank");
-                                      }}
-                                      className="absolute right-1.5 top-1/2 -translate-y-1/2 px-2.5 py-1 rounded-lg bg-zinc-900 hover:bg-black text-white text-[10px] font-bold uppercase cursor-pointer"
-                                    >
-                                      Ver Maps 📍
-                                    </button>
-                                  </div>
-                                </div>
-
-                                {/* Days of Opening & Operating Hours Grid */}
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+                              <div className="space-y-2.5 pt-2 border-t border-zinc-100">
+                                {/* Grid for Location & Hours */}
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                   <div className="space-y-1">
-                                    <label className="text-xs font-bold uppercase tracking-wider text-zinc-800 block">
-                                      Días de Apertura
+                                    <label className="text-[11px] font-bold uppercase tracking-wider text-zinc-800 block">
+                                      Ubicación (Maps - Loja)
                                     </label>
-                                    <div className="flex flex-wrap gap-1">
-                                      {["Jueves", "Viernes", "Sábado", "Domingo", "Todos"].map((day) => {
-                                        const isSelected = openingDays.includes(day);
-                                        return (
-                                          <button
-                                            key={day}
-                                            type="button"
-                                            onClick={() => {
-                                              if (day === "Todos") {
-                                                setOpeningDays(isSelected ? [] : ["Jueves", "Viernes", "Sábado", "Domingo", "Todos"]);
-                                              } else {
-                                                setOpeningDays((prev) =>
-                                                  isSelected ? prev.filter((d) => d !== day) : [...prev, day]
-                                                );
-                                              }
-                                            }}
-                                            className={`px-2 py-0.5 rounded text-[11px] font-bold transition cursor-pointer ${
-                                              isSelected
-                                                ? "bg-black text-white"
-                                                : "bg-white text-zinc-700 border border-zinc-300 hover:bg-zinc-100"
-                                            }`}
-                                          >
-                                            {day}
-                                          </button>
-                                        );
-                                      })}
+                                    <div className="relative">
+                                      <input
+                                        type="text"
+                                        value={clubAddress}
+                                        onChange={(e) => setClubAddress(e.target.value)}
+                                        placeholder="Dirección o Maps"
+                                        className="w-full pl-3 pr-14 py-2 rounded-xl bg-zinc-50 border border-zinc-300 text-xs text-zinc-900 focus:outline-none focus:border-black transition font-medium"
+                                      />
+                                      <button
+                                        type="button"
+                                        onClick={() => {
+                                          window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(clubAddress || "Loja Ecuador")}`, "_blank");
+                                        }}
+                                        className="absolute right-1 top-1/2 -translate-y-1/2 px-2 py-1 rounded-lg bg-zinc-900 hover:bg-black text-white text-[9px] font-bold uppercase cursor-pointer"
+                                      >
+                                        Maps 📍
+                                      </button>
                                     </div>
                                   </div>
 
                                   <div className="space-y-1">
-                                    <label className="text-xs font-bold uppercase tracking-wider text-zinc-800 block">
-                                      Horario de Atención
+                                    <label className="text-[11px] font-bold uppercase tracking-wider text-zinc-800 block">
+                                      Horario (Apertura - Cierre)
                                     </label>
-                                    <div className="grid grid-cols-2 gap-1.5">
+                                    <div className="grid grid-cols-2 gap-1">
                                       <input
                                         type="time"
                                         value={openTime}
@@ -1782,7 +1762,7 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                                           setOpenTime(e.target.value);
                                           setOpeningHours(`${e.target.value} - ${closeTime}`);
                                         }}
-                                        className="w-full px-2 py-1 rounded-lg bg-white border border-zinc-300 text-[11px] font-bold text-zinc-900 focus:outline-none focus:border-black transition cursor-pointer"
+                                        className="w-full px-2 py-1.5 rounded-xl bg-zinc-50 border border-zinc-300 text-xs font-bold text-zinc-900 focus:outline-none focus:border-black transition cursor-pointer"
                                       />
                                       <input
                                         type="time"
@@ -1791,27 +1771,47 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                                           setCloseTime(e.target.value);
                                           setOpeningHours(`${openTime} - ${e.target.value}`);
                                         }}
-                                        className="w-full px-2 py-1 rounded-lg bg-white border border-zinc-300 text-[11px] font-bold text-zinc-900 focus:outline-none focus:border-black transition cursor-pointer"
+                                        className="w-full px-2 py-1.5 rounded-xl bg-zinc-50 border border-zinc-300 text-xs font-bold text-zinc-900 focus:outline-none focus:border-black transition cursor-pointer"
                                       />
                                     </div>
                                   </div>
                                 </div>
+
+                                {/* Days of Opening */}
+                                <div className="space-y-1">
+                                  <label className="text-[11px] font-bold uppercase tracking-wider text-zinc-800 block">
+                                    Días de Apertura
+                                  </label>
+                                  <div className="flex flex-wrap gap-1">
+                                    {["Jueves", "Viernes", "Sábado", "Domingo", "Todos"].map((day) => {
+                                      const isSelected = openingDays.includes(day);
+                                      return (
+                                        <button
+                                          key={day}
+                                          type="button"
+                                          onClick={() => {
+                                            if (day === "Todos") {
+                                              setOpeningDays(isSelected ? [] : ["Jueves", "Viernes", "Sábado", "Domingo", "Todos"]);
+                                            } else {
+                                              setOpeningDays((prev) =>
+                                                isSelected ? prev.filter((d) => d !== day) : [...prev, day]
+                                              );
+                                            }
+                                          }}
+                                          className={`px-2.5 py-0.5 rounded-lg text-[10px] font-bold transition cursor-pointer ${
+                                            isSelected
+                                              ? "bg-black text-white"
+                                              : "bg-zinc-100 text-zinc-700 border border-zinc-300 hover:bg-zinc-200"
+                                          }`}
+                                        >
+                                          {day}
+                                        </button>
+                                      );
+                                    })}
+                                  </div>
+                                </div>
                               </div>
                             )}
-
-                            {/* City Select (Fixed to Loja) */}
-                            <div className="space-y-1">
-                              <label className="text-xs font-bold uppercase tracking-wider text-zinc-700 block">
-                                City
-                              </label>
-                              <select
-                                value="Loja"
-                                disabled
-                                className="w-full px-4 py-2.5 rounded-xl bg-zinc-100 border border-zinc-300 text-xs font-bold text-zinc-900 cursor-not-allowed appearance-none"
-                              >
-                                <option value="Loja">Loja</option>
-                              </select>
-                            </div>
                           </div>
 
                           {/* Submit Action Button */}
