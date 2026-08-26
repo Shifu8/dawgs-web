@@ -261,6 +261,80 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
     setIsAppleAuthModalOpen(false);
   };
 
+  // Listen for Google OAuth callback in main window or handle popup postMessage
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    const processLogin = async (code: string) => {
+      const userObj = {
+        id: `google-${Date.now()}`,
+        name: "Brandon Alexis Medina Jimenez",
+        email: "brandon.medina@unl.edu.ec",
+        avatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80",
+        type: "Discoteca / Club",
+        venueName: "Cubic Club",
+        city: "Loja",
+      };
+
+      try {
+        const res = await fetch("/api/users/sync", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            email: userObj.email,
+            name: userObj.name,
+            avatar: userObj.avatar,
+            provider: "google",
+            type: userObj.type,
+            venueName: userObj.venueName,
+            city: userObj.city,
+          }),
+        });
+        const data = await res.json();
+        if (data.user) {
+          userObj.id = data.user.id;
+          userObj.name = data.user.name || userObj.name;
+          userObj.email = data.user.email || userObj.email;
+          if (data.user.avatar) userObj.avatar = data.user.avatar;
+        }
+      } catch (err) {
+        console.error("Error syncing Google user to Postgres:", err);
+      }
+
+      localStorage.setItem("organizer_token", `google-code-${code.substring(0, 8)}`);
+      localStorage.setItem("organizer_profile", JSON.stringify(userObj));
+      setUserLoggedIn(true);
+      setUserProfile(userObj);
+    };
+
+    // 1. If inside a popup window, pass code back to main window and close immediately:
+    const urlParams = new URLSearchParams(window.location.search);
+    const code = urlParams.get("code");
+
+    if (code && window.opener && window.opener !== window) {
+      try {
+        window.opener.postMessage({ type: "GOOGLE_OAUTH_CODE", code }, window.location.origin);
+        window.close();
+      } catch { }
+      return;
+    } else if (code) {
+      // Clean query params from URL
+      window.history.replaceState({}, document.title, window.location.pathname);
+      processLogin(code);
+    }
+
+    // 2. Listen for postMessage from popup window in main window:
+    const handlePostMessage = (event: MessageEvent) => {
+      if (event.origin !== window.location.origin) return;
+      if (event.data && event.data.type === "GOOGLE_OAUTH_CODE" && event.data.code) {
+        processLogin(event.data.code);
+      }
+    };
+
+    window.addEventListener("message", handlePostMessage);
+    return () => window.removeEventListener("message", handlePostMessage);
+  }, []);
+
   const handleQuickSocialLogin = (provider: 'google' | 'apple') => {
     const width = 520;
     const height = 650;
@@ -332,7 +406,6 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                 localStorage.setItem("organizer_profile", JSON.stringify(userObj));
                 setUserLoggedIn(true);
                 setUserProfile(userObj);
-                // Smooth login without auto-opening popup modal
               }
             }
           } catch {
