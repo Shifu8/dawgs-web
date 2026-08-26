@@ -360,8 +360,12 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
     setUserProfile(null);
     setUserReservations({});
     setLikedEvents({});
+    setSelectedDay("todos");
     setShowUserMenu(false);
     setOrganizerSubView('menu');
+    if (typeof window !== "undefined") {
+      window.location.reload();
+    }
   };
 
   const handleStartPublishEvent = () => {
@@ -3281,14 +3285,14 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
         )}
       </AnimatePresence>
 
-      {/* ─── AUTHENTICATION REQUIRED MODAL FOR FAVORITES ─── */}
+      {/* ─── AUTHENTICATION REQUIRED MODAL FOR FAVORITES & RESERVATIONS ─── */}
       <AnimatePresence>
         {showAuthModalForFavorites && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[100] bg-black/80 backdrop-blur-xl flex items-center justify-center p-4"
+            className="fixed inset-0 z-[600] bg-black/80 backdrop-blur-xl flex items-center justify-center p-4"
             onClick={() => setShowAuthModalForFavorites(false)}
           >
             <motion.div
