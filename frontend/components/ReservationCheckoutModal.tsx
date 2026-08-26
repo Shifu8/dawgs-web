@@ -122,8 +122,8 @@ export default function ReservationCheckoutModal({
           <div className="absolute top-0 inset-x-0 h-36 bg-gradient-to-b from-black/80 via-black/30 to-transparent pointer-events-none" />
         </div>
 
-        {/* ─── TOP NAVIGATION HEADER BAR (FULL VIEWPORT EDGE-TO-EDGE FLOATING) ─── */}
-        <header className="relative z-10 w-full px-4 sm:px-8 py-4 flex items-center justify-between gap-4 pointer-events-none">
+        {/* ─── TOP NAVIGATION HEADER BAR (FIXED EXACT MATCH TO EVENT DETAIL OVERLAY) ─── */}
+        <header className="fixed top-0 inset-x-0 z-[520] flex items-center justify-between px-4 sm:px-8 py-4 bg-gradient-to-b from-[#0c0714]/90 via-[#0c0714]/50 to-transparent pointer-events-none">
           {/* Top Left: Circular Arrow Back Button (Exact match to EventDetailOverlay) */}
           <button
             type="button"
@@ -145,7 +145,7 @@ export default function ReservationCheckoutModal({
           <div className="pointer-events-auto flex items-center gap-3">
             <button
               type="button"
-              className="hidden md:inline-flex px-4 py-2 rounded-full bg-black/60 backdrop-blur-md hover:bg-white/20 border border-white/20 text-[11px] font-extrabold uppercase tracking-wider text-zinc-300 transition cursor-pointer"
+              className="hidden md:inline-flex px-4 py-2 rounded-full bg-black/60 border border-white/20 text-white hover:bg-white/20 backdrop-blur-md text-[11px] font-extrabold uppercase tracking-wider transition-all cursor-pointer shadow-2xl active:scale-95"
             >
               ¿TIENES UN CÓDIGO?
             </button>
@@ -161,7 +161,7 @@ export default function ReservationCheckoutModal({
         </header>
 
         {/* ─── MAIN CONTENT CONTAINER ─── */}
-        <div className="relative z-10 flex-1 w-full max-w-6xl mx-auto py-6 sm:py-10 px-4 sm:px-8">
+        <div className="relative z-10 flex-1 w-full max-w-6xl mx-auto pt-24 pb-10 px-4 sm:px-8">
           {isSuccess ? (
             /* SUCCESS CONFIRMATION PASSHOLDER CARD */
             <motion.div
@@ -336,7 +336,7 @@ export default function ReservationCheckoutModal({
 
                   <div className="mt-4 pt-3 border-t border-white/10 text-xs font-medium text-zinc-300 space-y-1">
                     <p>- General admission access to the event...</p>
-                    <span className="text-xs font-black text-white underline cursor-pointer hover:text-zinc-200">Más info</span>
+                    <span className="text-xs font-black text-white cursor-pointer hover:underline">Más info</span>
                   </div>
                 </div>
 
@@ -387,7 +387,7 @@ export default function ReservationCheckoutModal({
 
                   <div className="mt-4 pt-3 border-t border-white/10 text-xs font-medium text-zinc-300 space-y-1">
                     <p>- VIP ticket holder(s) must be 21+...</p>
-                    <span className="text-xs font-black text-white underline cursor-pointer hover:text-zinc-200">Más info</span>
+                    <span className="text-xs font-black text-white cursor-pointer hover:underline">Más info</span>
                   </div>
                 </div>
               </div>
@@ -445,7 +445,7 @@ export default function ReservationCheckoutModal({
                     />
                   </div>
                   <p className="text-zinc-300 text-xs font-semibold leading-snug">
-                    Comprando esta entrada, abrirás una cuenta y aceptarás nuestras <span className="underline text-white font-bold cursor-pointer">Condiciones de Uso generales</span>, la <span className="underline text-white font-bold cursor-pointer">Política de Privacidad</span> y las <span className="underline text-white font-bold cursor-pointer">Condiciones de Compra</span> de entradas. Procesamos tus datos personales de acuerdo con nuestra <span className="underline text-white font-bold cursor-pointer">Política de Privacidad</span>.
+                    Comprando esta entrada, abrirás una cuenta y aceptarás nuestras <span className="text-white font-bold cursor-pointer hover:underline">Condiciones de Uso generales</span>, la <span className="text-white font-bold cursor-pointer hover:underline">Política de Privacidad</span> y las <span className="text-white font-bold cursor-pointer hover:underline">Condiciones de Compra</span> de entradas. Procesamos tus datos personales de acuerdo con nuestra <span className="text-white font-bold cursor-pointer hover:underline">Política de Privacidad</span>.
                   </p>
                 </div>
               </div>
