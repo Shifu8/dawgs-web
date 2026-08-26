@@ -102,7 +102,7 @@ export default function ReservationCheckoutModal({
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        transition={{ duration: 0.2 }}
+        transition={{ duration: 0.35, ease: "easeInOut" }}
         className="fixed inset-0 z-[500] bg-[#0c0714] text-white flex flex-col select-none overflow-y-auto p-4 sm:p-6 md:p-8"
       >
         {/* ─── ULTRA-VIVID AMBIENT POSTER COLOR BLUR BACKDROP (EXACT 1:1 MATCH TO EVENT DETAIL OVERLAY) ─── */}
@@ -224,27 +224,33 @@ export default function ReservationCheckoutModal({
               </div>
             </motion.div>
           ) : (
-            /* RESERVA SELECTION GRID (MATCHING SCREENSHOT 1 & 2) */
+            /* RESERVA SELECTION GRID (MATCHING SCREENSHOT 1, 2 & 3) */
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
               {/* LEFT COLUMN: EVENT BANNER & TIER CARDS */}
               <div className="lg:col-span-7 space-y-6 text-left">
-                {/* Event Summary Header (UNBOXED matching Image 2) */}
-                <div className="flex items-center gap-4 py-2">
+                {/* Event Summary Header (UNBOXED matching Photo 3 with White Text & Separate Organizers Row) */}
+                <div className="flex items-start gap-4 py-2">
                   <div className="relative w-16 h-16 sm:w-20 sm:h-20 rounded-2xl overflow-hidden shrink-0 border border-white/20 bg-zinc-950 shadow-2xl">
                     <Image
-                      src={activeEvent.poster || "/images/event_fisher.png"}
+                      src={getHdImageSrc(activeEvent.poster)}
                       alt={activeEvent.title}
                       fill
                       className="object-cover"
                     />
                   </div>
-                  <div className="space-y-1 min-w-0">
-                    <h2 className="text-2xl sm:text-4xl font-black text-white uppercase tracking-tight truncate drop-shadow-md">
+                  <div className="space-y-1.5 min-w-0">
+                    <h2 className="text-3xl sm:text-5xl font-black text-white uppercase tracking-tight truncate drop-shadow-md">
                       {activeEvent.title}
                     </h2>
-                    <p className="text-sm sm:text-base font-bold text-[#dfff28] truncate">
-                      {activeEvent.dateLabel || "18 SEP 2026"} • {activeEvent.venue || "Factory Town • Miami"}
+                    <p className="text-sm sm:text-base font-bold text-white/90 truncate">
+                      {activeEvent.dateLabel || "sáb, 26 sept, 22:00 GMT-4"} • {activeEvent.venue || "Factory Town • Miami"}
                     </p>
+                    {/* Separate Organizers Row (Matching Photo 3) */}
+                    <div className="flex items-center gap-2 pt-1 text-xs sm:text-sm font-semibold text-zinc-300">
+                      <span className="text-zinc-400 font-medium">Promotores:</span>
+                      <span className="text-white font-black px-2.5 py-0.5 rounded-full bg-white/10 border border-white/20 text-[11px] uppercase tracking-wider">CUBIC</span>
+                      <span className="text-white font-black px-2.5 py-0.5 rounded-full bg-white/10 border border-white/20 text-[11px] uppercase tracking-wider">SATA</span>
+                    </div>
                   </div>
                 </div>
 
@@ -280,38 +286,39 @@ export default function ReservationCheckoutModal({
                   </div>
                 )}
 
-                {/* TIER OPTION 1: GA ACCESO GENERAL */}
+                {/* TIER OPTION 1: GA (MATCHING PHOTO 1 RECTANGULAR STYLE WITHOUT PILL TITLE) */}
                 <div
-                  className={`relative p-6 rounded-3xl border transition-all backdrop-blur-xl ${selectedTier === "ga" && quantity > 0
-                    ? "bg-zinc-900/90 border-[#dfff28] shadow-[0_0_30px_rgba(223,255,40,0.2)]"
-                    : "bg-black/60 border-white/15 hover:border-white/30"
+                  className={`relative p-6 rounded-2xl border transition-all backdrop-blur-xl ${selectedTier === "ga" && quantity > 0
+                    ? "bg-black/80 border-white shadow-[0_0_30px_rgba(255,255,255,0.15)]"
+                    : "bg-black/60 border-white/20 hover:border-white/40"
                     }`}
                 >
                   <div className="flex items-start justify-between gap-4">
-                    <div className="space-y-1.5 min-w-0">
-                      <span className="px-2.5 py-0.5 rounded-full bg-white/10 border border-white/20 text-[9px] font-black uppercase tracking-widest text-zinc-300">
-                        ACCESO INDIVIDUAL
+                    <div className="space-y-1 min-w-0">
+                      <span className="px-2 py-0.5 rounded-md bg-white/10 text-[9px] font-black uppercase tracking-widest text-zinc-300">
+                        LISTA DE ESPERA
                       </span>
-                      <h3 className="text-lg sm:text-xl font-black text-white uppercase tracking-tight">
-                        GA - Entrada General
+                      <h3 className="text-xl sm:text-2xl font-black text-white tracking-tight pt-1">
+                        GA
                       </h3>
-                      <p className="text-base sm:text-lg font-black text-white">
-                        {activeEvent.price === 0 ? "0,00 $" : `${activeEvent.price || 10},00 $`}
+                      <p className="text-lg sm:text-xl font-black text-white">
+                        {activeEvent.price === 0 ? "0,00 $" : `${activeEvent.price || 130.50} $`}
                       </p>
+                      <p className="text-xs font-semibold text-zinc-400">(Final Release)</p>
                     </div>
 
-                    {/* Quantity Counter Box (Matching Screenshot 1 & 2) */}
-                    <div className="flex items-center gap-3 bg-zinc-950/80 border border-white/20 rounded-2xl p-1.5 shrink-0 shadow-lg">
+                    {/* Quantity Counter Box (Matching Photo 1) */}
+                    <div className="flex items-center gap-3 shrink-0 pt-2">
                       <button
                         type="button"
                         onClick={() => handleDecreaseQuantity("ga")}
                         disabled={isAlreadyReserved || (selectedTier === "ga" && quantity === 0)}
-                        className="w-8 h-8 rounded-xl bg-white/10 hover:bg-white/20 disabled:opacity-30 text-white font-black text-base flex items-center justify-center transition cursor-pointer disabled:cursor-not-allowed"
+                        className="text-white hover:text-zinc-300 disabled:opacity-30 text-2xl font-black transition cursor-pointer"
                       >
-                        -
+                        —
                       </button>
 
-                      <div className="w-10 h-8 rounded-xl bg-white/10 border border-white/20 flex items-center justify-center font-black text-sm text-white">
+                      <div className="w-12 h-10 rounded-xl bg-zinc-800 border border-white/20 flex items-center justify-center font-black text-sm text-white shadow-inner">
                         <Ticket className="w-3.5 h-3.5 mr-1 text-zinc-400" />
                         <span>{selectedTier === "ga" ? quantity : 0}</span>
                       </div>
@@ -320,50 +327,49 @@ export default function ReservationCheckoutModal({
                         type="button"
                         onClick={() => handleIncreaseQuantity("ga")}
                         disabled={isAlreadyReserved}
-                        className="w-8 h-8 rounded-xl bg-white/10 hover:bg-white/20 disabled:opacity-30 text-white font-black text-base flex items-center justify-center transition cursor-pointer disabled:cursor-not-allowed"
+                        className="text-white hover:text-zinc-300 disabled:opacity-30 text-2xl font-black transition cursor-pointer"
                       >
                         +
                       </button>
                     </div>
                   </div>
 
-                  <div className="mt-4 pt-3 border-t border-white/10 text-xs font-medium text-zinc-400 leading-relaxed">
-                    - Acceso general individual al evento con reserva confirmada en lista de puerta.
+                  <div className="mt-4 pt-3 border-t border-white/10 text-xs font-medium text-zinc-300 space-y-1">
+                    <p>- General admission access to the event...</p>
+                    <span className="text-xs font-black text-white underline cursor-pointer hover:text-zinc-200">Más info</span>
                   </div>
                 </div>
 
-                {/* TIER OPTION 2: MESA VIP / ZONA EXCLUSIVA */}
+                {/* TIER OPTION 2: VIP ON STAGE (MATCHING PHOTO 1 RECTANGULAR STYLE WITHOUT PILL TITLE) */}
                 <div
-                  className={`relative p-6 rounded-3xl border transition-all backdrop-blur-xl ${selectedTier === "vip" && quantity > 0
-                    ? "bg-zinc-900/90 border-[#dfff28] shadow-[0_0_30px_rgba(223,255,40,0.2)]"
-                    : "bg-black/60 border-white/15 hover:border-white/30"
+                  className={`relative p-6 rounded-2xl border transition-all backdrop-blur-xl ${selectedTier === "vip" && quantity > 0
+                    ? "bg-black/80 border-white shadow-[0_0_30px_rgba(255,255,255,0.15)]"
+                    : "bg-black/60 border-white/20 hover:border-white/40"
                     }`}
                 >
                   <div className="flex items-start justify-between gap-4">
-                    <div className="space-y-1.5 min-w-0">
-                      <span className="px-2.5 py-0.5 rounded-full bg-amber-500/20 border border-amber-500/40 text-[9px] font-black uppercase tracking-widest text-amber-300">
-                        ZONA EXCLUSIVA [21+]
-                      </span>
-                      <h3 className="text-lg sm:text-xl font-black text-white uppercase tracking-tight">
-                        Reserva Mesa VIP / Lounge
+                    <div className="space-y-1 min-w-0">
+                      <h3 className="text-xl sm:text-2xl font-black text-white tracking-tight">
+                        VIP - On Stage [21+]
                       </h3>
-                      <p className="text-base sm:text-lg font-black text-white">
-                        Reserva Preferencial VIP
+                      <p className="text-lg sm:text-xl font-black text-white">
+                        199,99 $
                       </p>
+                      <p className="text-xs font-semibold text-zinc-400">(Final Release)</p>
                     </div>
 
-                    {/* Quantity Counter Box */}
-                    <div className="flex items-center gap-3 bg-zinc-950/80 border border-white/20 rounded-2xl p-1.5 shrink-0 shadow-lg">
+                    {/* Quantity Counter Box (Matching Photo 1) */}
+                    <div className="flex items-center gap-3 shrink-0 pt-2">
                       <button
                         type="button"
                         onClick={() => handleDecreaseQuantity("vip")}
                         disabled={isAlreadyReserved || (selectedTier === "vip" && quantity === 0)}
-                        className="w-8 h-8 rounded-xl bg-white/10 hover:bg-white/20 disabled:opacity-30 text-white font-black text-base flex items-center justify-center transition cursor-pointer disabled:cursor-not-allowed"
+                        className="text-white hover:text-zinc-300 disabled:opacity-30 text-2xl font-black transition cursor-pointer"
                       >
-                        -
+                        —
                       </button>
 
-                      <div className="w-10 h-8 rounded-xl bg-white/10 border border-white/20 flex items-center justify-center font-black text-sm text-white">
+                      <div className="w-12 h-10 rounded-xl bg-zinc-800 border border-white/20 flex items-center justify-center font-black text-sm text-white shadow-inner">
                         <Ticket className="w-3.5 h-3.5 mr-1 text-amber-400" />
                         <span>{selectedTier === "vip" ? quantity : 0}</span>
                       </div>
@@ -372,15 +378,16 @@ export default function ReservationCheckoutModal({
                         type="button"
                         onClick={() => handleIncreaseQuantity("vip")}
                         disabled={isAlreadyReserved}
-                        className="w-8 h-8 rounded-xl bg-white/10 hover:bg-white/20 disabled:opacity-30 text-white font-black text-base flex items-center justify-center transition cursor-pointer disabled:cursor-not-allowed"
+                        className="text-white hover:text-zinc-300 disabled:opacity-30 text-2xl font-black transition cursor-pointer"
                       >
                         +
                       </button>
                     </div>
                   </div>
 
-                  <div className="mt-4 pt-3 border-t border-white/10 text-xs font-medium text-zinc-400 leading-relaxed">
-                    - Reserva de espacio en zona VIP exclusiva con servicio prioritario en barra y atención personalizada.
+                  <div className="mt-4 pt-3 border-t border-white/10 text-xs font-medium text-zinc-300 space-y-1">
+                    <p>- VIP ticket holder(s) must be 21+...</p>
+                    <span className="text-xs font-black text-white underline cursor-pointer hover:text-zinc-200">Más info</span>
                   </div>
                 </div>
               </div>
@@ -394,7 +401,7 @@ export default function ReservationCheckoutModal({
                       {quantity} {quantity === 1 ? "reserva" : "reservas"}
                     </h3>
                     <p className="text-sm font-extrabold text-zinc-700">
-                      Total – {quantity > 0 ? (activeEvent.price === 0 ? "0 $" : `${activeEvent.price || 10} $`) : "0 $"}
+                      Total – {quantity > 0 ? (activeEvent.price === 0 ? "0 $" : `${activeEvent.price || 130.50} $`) : "0 $"}
                     </p>
                   </div>
 
@@ -426,11 +433,19 @@ export default function ReservationCheckoutModal({
                   </button>
                 </div>
 
-                {/* Below Box Notice (Matching Screenshot 1 & 2) */}
-                <div className="bg-black/60 border border-white/15 backdrop-blur-xl rounded-2xl p-4 flex items-start gap-3 text-zinc-300 text-[11px] leading-relaxed">
-                  <ShieldCheck className="w-5 h-5 text-zinc-300 shrink-0 mt-0.5" />
-                  <p>
-                    Reservando esta entrada, abrirás una cuenta o vincularás tu acceso y aceptarás nuestras <span className="underline text-white font-bold cursor-pointer">Condiciones de Uso</span> y <span className="underline text-white font-bold cursor-pointer">Política de Privacidad</span>. Procesamos tus datos de acuerdo con nuestra normativa.
+                {/* Below Box Legal Terms Notice Badge with Mascot Logo Avatar (Matching Photo 2) */}
+                <div className="bg-black/70 border border-white/20 backdrop-blur-xl rounded-2xl p-4 flex items-center gap-4 text-zinc-300 text-[11px] leading-relaxed shadow-xl">
+                  <div className="w-12 h-12 rounded-2xl bg-white flex items-center justify-center text-black font-black shrink-0 shadow-lg p-1">
+                    <Image
+                      src="/alien_avatar.png"
+                      alt="4GO Mascot Logo"
+                      width={36}
+                      height={36}
+                      className="object-contain filter grayscale invert brightness-0"
+                    />
+                  </div>
+                  <p className="text-zinc-300 text-xs font-semibold leading-snug">
+                    Comprando esta entrada, abrirás una cuenta y aceptarás nuestras <span className="underline text-white font-bold cursor-pointer">Condiciones de Uso generales</span>, la <span className="underline text-white font-bold cursor-pointer">Política de Privacidad</span> y las <span className="underline text-white font-bold cursor-pointer">Condiciones de Compra</span> de entradas. Procesamos tus datos personales de acuerdo con nuestra <span className="underline text-white font-bold cursor-pointer">Política de Privacidad</span>.
                   </p>
                 </div>
               </div>
