@@ -643,6 +643,8 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
   const [userReservations, setUserReservations] = useState<Record<string, boolean>>(() => {
     if (typeof window === "undefined") return {};
     try {
+      const token = localStorage.getItem("organizer_token");
+      if (!token) return {};
       const stored = localStorage.getItem("organizer_reservations");
       return stored ? JSON.parse(stored) : {};
     } catch { return {}; }
@@ -2778,7 +2780,7 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                                     onClick={(e) => handleOpenReservationModal(evt, e)}
                                     className="px-3.5 py-1.5 rounded-full bg-white hover:bg-zinc-200 text-black text-[11px] font-black uppercase tracking-wider transition-all shadow-md active:scale-95 shrink-0"
                                   >
-                                    {userReservations[evt.id] ? "RESERVADO ✓" : "RESERVAR"}
+                                    {userLoggedIn && userReservations[evt.id] ? "RESERVADO ✓" : "RESERVAR"}
                                   </button>
                                 </div>
                               </div>
