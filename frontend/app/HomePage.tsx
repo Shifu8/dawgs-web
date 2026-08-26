@@ -2661,7 +2661,7 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                           type="button"
                           onClick={() => setSelectedDay(cat.id)}
                           className={`px-4 py-2 rounded-full text-xs font-black uppercase tracking-wider shrink-0 transition-all cursor-pointer shadow-md border ${selectedDay === cat.id || (cat.id === "todos" && selectedDay === "todos")
-                            ? "bg-[#dfff28] text-black border-[#dfff28] scale-105 shadow-[0_0_20px_rgba(223,255,40,0.5)]"
+                            ? "bg-white text-black border-white scale-105 shadow-[0_0_20px_rgba(255,255,255,0.4)]"
                             : "bg-black/40 border-white/10 text-white/80 hover:text-white hover:border-white/30 hover:bg-white/10"
                             }`}
                         >
@@ -2767,7 +2767,7 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                               setSelectedDay("todos");
                               setCarteleraSearchQuery("");
                             }}
-                            className="px-5 py-2.5 rounded-full bg-[#dfff28] text-black font-black text-xs uppercase tracking-wider shadow-lg hover:scale-105 transition cursor-pointer"
+                            className="px-6 py-3 rounded-full bg-white hover:bg-zinc-200 text-black font-black text-xs uppercase tracking-wider shadow-xl hover:scale-105 active:scale-95 transition cursor-pointer"
                           >
                             {selectedDay === "favoritos" || selectedDay === "mis_reservas" ? "Explorar todos los eventos" : "Restablecer búsqueda"}
                           </button>
