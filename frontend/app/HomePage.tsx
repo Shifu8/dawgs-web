@@ -584,7 +584,8 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
         const title = (evt.title || "").toLowerCase();
         const venue = (evt.venue || "").toLowerCase();
 
-        if (tag === "dj") matchesCategory = cat.includes("dj") || sub.includes("dj") || title.includes("dj") || cat.includes("electro") || cat.includes("techno");
+        if (tag === "favoritos") matchesCategory = Boolean(likedEvents[evt.id]);
+        else if (tag === "dj") matchesCategory = cat.includes("dj") || sub.includes("dj") || title.includes("dj") || cat.includes("electro") || cat.includes("techno");
         else if (tag === "party" || tag === "fiesta") matchesCategory = cat.includes("fiesta") || cat.includes("party") || sub.includes("fiesta") || sub.includes("nocturno");
         else if (tag === "comedy" || tag === "comedia") matchesCategory = cat.includes("comedia") || cat.includes("comedy") || sub.includes("stand");
         else if (tag === "gigs" || tag === "conciertos") matchesCategory = cat.includes("gig") || cat.includes("concierto") || cat.includes("live") || cat.includes("banda");
@@ -2570,6 +2571,7 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                     <div className="flex items-center gap-1.5 sm:gap-2 shrink-0 overflow-x-auto no-scrollbar pr-1">
                       {[
                         { id: "todos", label: "Todos" },
+                        { id: "favoritos", label: "Favoritos" },
                         { id: "dj", label: "DJ" },
                         { id: "party", label: "Fiesta" },
                         { id: "comedy", label: "Comedia" },
@@ -2683,7 +2685,9 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                       ) : (
                         <div className="w-full py-16 text-center space-y-3 bg-white/5 border border-white/10 rounded-3xl backdrop-blur-xl p-8 max-w-2xl mx-auto">
                           <p className="text-sm sm:text-base text-zinc-300 font-semibold">
-                            No hay eventos que coincidan con la búsqueda "{carteleraSearchQuery || selectedDay}"
+                            {selectedDay === "favoritos"
+                              ? "Aún no tienes eventos guardados en tus favoritos. Toca el corazón en cualquier evento para guardarlo aquí."
+                              : `No hay eventos que coincidan con la búsqueda "${carteleraSearchQuery || selectedDay}"`}
                           </p>
                           <button
                             type="button"
@@ -2693,7 +2697,7 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                             }}
                             className="px-5 py-2.5 rounded-full bg-[#dfff28] text-black font-black text-xs uppercase tracking-wider shadow-lg hover:scale-105 transition cursor-pointer"
                           >
-                            Restablecer búsqueda
+                            {selectedDay === "favoritos" ? "Explorar todos los eventos" : "Restablecer búsqueda"}
                           </button>
                         </div>
                       )}
