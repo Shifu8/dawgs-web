@@ -343,7 +343,7 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
 
     if (provider === 'google') {
       const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || '461941866446-kfh7r6aqq5p3g09g0iau4m597eppv69i.apps.googleusercontent.com';
-      const redirectUri = typeof window !== 'undefined' ? `${window.location.origin}/api/auth/google/callback` : 'http://localhost:3000/api/auth/google/callback';
+      const redirectUri = typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000';
       const googleOAuthUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${encodeURIComponent(clientId)}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=code&scope=email%20profile&prompt=select_account`;
 
       if (typeof window !== 'undefined') {
