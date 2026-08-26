@@ -287,7 +287,7 @@ export default function AIChatbot() {
 
               {/* Watermark branding */}
               <div className="mt-3 flex items-center justify-center gap-1.5 text-[8px] font-extrabold uppercase tracking-[0.3em] text-zinc-500">
-                <span>4GO TICKETING ENGINE</span>
+                <span>4GO EVENTS ENGINE</span>
                 <div className="h-1 w-1 rounded-full bg-violet-400/60" />
                 <span>GLASS AI ASSISTANT</span>
               </div>

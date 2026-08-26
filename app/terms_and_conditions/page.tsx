@@ -18,7 +18,7 @@ export default function TermsAndConditionsPage() {
         <section className="space-y-3">
           <h2 className="text-xl font-bold text-zinc-900 border-b border-zinc-200 pb-2">1. Aceptación de los Términos</h2>
           <p>
-            Al ingresar, registrarte o adquirir entradas a través de 4GO, aceptas quedar vinculado legalmente por los presentes Términos y Condiciones. Si no estás de acuerdo con alguna parte de estas condiciones, deberás abstenerte de utilizar la plataforma.
+            Al ingresar, registrarte o reservar pases a través de 4GO, aceptas quedar vinculado legalmente por los presentes Términos y Condiciones. Si no estás de acuerdo con alguna parte de estas condiciones, deberás abstenerte de utilizar la plataforma.
           </p>
         </section>
 
@@ -34,7 +34,7 @@ export default function TermsAndConditionsPage() {
           <p>Los usuarios se comprometen a utilizar la plataforma de acuerdo con la ley y a no realizar:</p>
           <ul className="list-disc pl-6 space-y-2 text-zinc-700">
             <li>Reventa no autorizada o falsificación de pases y códigos QR de eventos.</li>
-            <li>Uso de bots, automatizaciones o scripts para extracción masiva de datos o acaparamiento de entradas.</li>
+            <li>Uso de bots, automatizaciones o scripts para extracción masiva de datos o acaparamiento de reservas.</li>
             <li>Acceso no autorizado a sistemas informáticos, servidores o bases de datos de la plataforma.</li>
           </ul>
         </section>
@@ -49,7 +49,7 @@ export default function TermsAndConditionsPage() {
         <section className="space-y-3">
           <h2 className="text-xl font-bold text-zinc-900 border-b border-zinc-200 pb-2">5. Limitación de Responsabilidad</h2>
           <p>
-            4GO opera como intermediario tecnológico para la venta de entradas entre los organizadores de eventos/discotecas y los compradores. Salvo disposición legal en contrario, la responsabilidad del desarrollo, horarios y seguridad del evento recae en los organizadores respectivos.
+            4GO opera como intermediario tecnológico para la gestión y reserva de pases entre los organizadores de eventos/discotecas y los asistentes. Salvo disposición legal en contrario, la responsabilidad del desarrollo, horarios y seguridad del evento recae en los organizadores respectivos.
           </p>
         </section>
       </div>

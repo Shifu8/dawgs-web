@@ -18,7 +18,7 @@ export default function PrivacyPolicyPage() {
         <section className="space-y-3">
           <h2 className="text-xl font-bold text-zinc-900 border-b border-zinc-200 pb-2">1. Introducción</h2>
           <p>
-            En 4GO (operado como plataforma de boletaje y ticketing digital de eventos y clubes), la privacidad y protección de los datos de nuestros usuarios es una prioridad fundamental. Esta Política de Privacidad describe nuestras prácticas con respecto a la recopilación, uso y divulgación de la información que obtenemos a través del sitio web, aplicaciones y servicios asociados.
+            En 4GO (operado como plataforma de gestión de reservas y pases digitales de eventos y clubes), la privacidad y protección de los datos de nuestros usuarios es una prioridad fundamental. Esta Política de Privacidad describe nuestras prácticas con respecto a la recopilación, uso y divulgación de la información que obtenemos a través del sitio web, aplicaciones y servicios asociados.
           </p>
         </section>
 
@@ -30,7 +30,7 @@ export default function PrivacyPolicyPage() {
               <strong>Datos de Identificación y Cuenta:</strong> Nombre completo, correo electrónico, número telefónico y credenciales provistas al iniciar sesión con Google u otros proveedores OAuth.
             </li>
             <li>
-              <strong>Datos de Compra y Boletos:</strong> Historial de entradas adquiridas, códigos seriales de pases, métodos de pago procesados de manera encriptada y registros de validación QR.
+              <strong>Datos de Reserva y Pases:</strong> Historial de pases reservados, códigos seriales de pases y registros de validación QR.
             </li>
             <li>
               <strong>Datos Técnicos y de Dispositivo:</strong> Dirección IP encriptada/hasheada, agente de usuario del navegador, identificadores únicos y cookies necesarias para mantener la sesión.
@@ -42,9 +42,9 @@ export default function PrivacyPolicyPage() {
           <h2 className="text-xl font-bold text-zinc-900 border-b border-zinc-200 pb-2">3. Uso de la Información</h2>
           <p>Utilizamos la información recopilada para las siguientes finalidades esenciales:</p>
           <ul className="list-disc pl-6 space-y-2 text-zinc-700">
-            <li>Emitir, validar y transferir entradas y Party Passes digitales con código QR seguro.</li>
+            <li>Emitir, validar y transferir reservas y Party Passes digitales con código QR seguro.</li>
             <li>Almacenar y sincronizar cuentas de usuario en nuestra base de datos PostgreSQL de forma segura.</li>
-            <li>Procesar transacciones mediante pasarelas autorizadas y entregar comprobantes de pago.</li>
+            <li>Gestionar las confirmaciones de reserva y emitir pases de entrada digital.</li>
             <li>Brindar soporte técnico mediante nuestro asistente IA y canales de atención al cliente.</li>
             <li>Garantizar la seguridad de la plataforma y prevenir actividades fraudulentas o accesos no autorizados.</li>
           </ul>

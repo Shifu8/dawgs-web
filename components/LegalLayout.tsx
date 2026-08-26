@@ -2,12 +2,12 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
-import { Search, ChevronRight, ArrowLeft, Shield, FileText, ShoppingCart, Cookie, Check } from "lucide-react";
+import { Search, ChevronRight, ArrowLeft, Shield, FileText, CalendarCheck, Cookie } from "lucide-react";
 
 interface LegalLayoutProps {
   title: string;
   subtitle: string;
-  activeTab: "privacy" | "terms" | "purchase" | "cookies";
+  activeTab: "privacy" | "terms" | "reservation" | "purchase" | "cookies";
   children: React.ReactNode;
 }
 
@@ -28,10 +28,10 @@ export default function LegalLayout({ title, subtitle, activeTab, children }: Le
       icon: FileText,
     },
     {
-      id: "purchase",
-      href: "/ticket_purchase_terms",
-      label: "Condiciones de Compra",
-      icon: ShoppingCart,
+      id: "reservation",
+      href: "/ticket_reservation_terms",
+      label: "Condiciones de Reserva",
+      icon: CalendarCheck,
     },
     {
       id: "cookies",
@@ -50,12 +50,14 @@ export default function LegalLayout({ title, subtitle, activeTab, children }: Le
             {/* Brand Logo & Title */}
             <div className="flex items-center gap-6">
               <Link href="/" className="flex items-center gap-3 group">
-                <div className="w-10 h-10 rounded-2xl bg-black text-white flex items-center justify-center font-black text-lg tracking-wider group-hover:scale-105 transition-transform">
-                  4GO
-                </div>
+                <img
+                  src="/images/alien_green_hands_white.jpg?v=3"
+                  alt="4GO Favicon Logo"
+                  className="w-10 h-10 rounded-2xl object-cover group-hover:scale-105 transition-transform shadow-sm"
+                />
                 <div className="border-l border-zinc-200 pl-4">
                   <span className="text-sm font-bold text-zinc-900 tracking-tight block">Centro Legal & Ayuda</span>
-                  <span className="text-[11px] text-zinc-500 font-medium">4GO Events & Ticketing</span>
+                  <span className="text-[11px] text-zinc-500 font-medium">4GO Events</span>
                 </div>
               </Link>
             </div>
@@ -105,7 +107,7 @@ export default function LegalLayout({ title, subtitle, activeTab, children }: Le
             <nav className="space-y-1">
               {navLinks.map((item) => {
                 const Icon = item.icon;
-                const isActive = activeTab === item.id;
+                const isActive = activeTab === item.id || (activeTab === "purchase" && item.id === "reservation");
                 return (
                   <Link
                     key={item.id}
@@ -150,11 +152,11 @@ export default function LegalLayout({ title, subtitle, activeTab, children }: Le
       {/* Footer */}
       <footer className="bg-zinc-100 border-t border-zinc-200 py-10 px-4 sm:px-6 lg:px-8 mt-16 text-xs text-zinc-500">
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
-          <p>© {new Date().getFullYear()} 4GO / NENEZ Ticketing Platform. Todos los derechos reservados.</p>
+          <p>© {new Date().getFullYear()} 4GO Events. Todos los derechos reservados.</p>
           <div className="flex items-center gap-6 font-medium text-zinc-600">
             <Link href="/privacy_policy" className="hover:text-black transition">Privacidad</Link>
             <Link href="/terms_and_conditions" className="hover:text-black transition">Términos</Link>
-            <Link href="/ticket_purchase_terms" className="hover:text-black transition">Compra</Link>
+            <Link href="/ticket_reservation_terms" className="hover:text-black transition">Reserva</Link>
             <Link href="/cookie_settings" className="hover:text-black transition">Cookies</Link>
           </div>
         </div>
@@ -162,3 +164,4 @@ export default function LegalLayout({ title, subtitle, activeTab, children }: Le
     </div>
   );
 }
+

@@ -27,7 +27,7 @@ export default function Footer() {
               />
             </div>
             <p className="text-sm sm:text-base text-zinc-600 font-medium max-w-md leading-relaxed">
-              Descubre los mejores eventos, conciertos y experiencias en Loja. Entradas oficiales y acceso instantáneo desde tu dispositivo.
+              Descubre los mejores eventos, conciertos y experiencias en Loja. Pases oficiales y reservas instantáneas desde tu dispositivo.
             </p>
           </div>
 
@@ -91,7 +91,7 @@ export default function Footer() {
                 </li>
                 <li>
                   <a href="https://wa.me/593999999999" target="_blank" rel="noopener noreferrer" className="hover:text-black transition-colors">
-                    Solicitar un reembolso
+                    Soporte de reserva
                   </a>
                 </li>
               </ul>
@@ -158,8 +158,8 @@ export default function Footer() {
               <a href="/terms_and_conditions" className="hover:text-black transition-colors">
                 Términos y Condiciones
               </a>
-              <a href="/ticket_purchase_terms" className="hover:text-black transition-colors">
-                Condiciones de Compra
+              <a href="/ticket_reservation_terms" className="hover:text-black transition-colors">
+                Condiciones de Reserva
               </a>
               <a href="/cookie_settings" className="hover:text-black transition-colors">
                 Configuración de cookies

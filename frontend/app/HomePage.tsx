@@ -2876,24 +2876,28 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
         }}
       />
 
-      {/* ─── NEW RESERVATION CHECKOUT MODAL (MATCHING SCREENSHOT 1 & 2) ─── */}
-      <ReservationCheckoutModal
-        isOpen={showReservationModal || isTicketModalOpen}
-        onClose={() => {
-          setShowReservationModal(false);
-          setIsTicketModalOpen(false);
-        }}
-        event={reservationTargetEvent || selectedCarouselEvent}
-        userProfile={userProfile}
-        userLoggedIn={userLoggedIn}
-        userReservations={userReservations}
-        onConfirmReservation={handleConfirmReservation}
-        onOpenAuth={() => setShowAuthModalForFavorites(true)}
-        onViewMyReservations={() => {
-          setActiveStoryScreen(2);
-          setSelectedDay("mis_reservas");
-        }}
-      />
+      {/* ─── NEW RESERVATION CHECKOUT MODAL (WITH EXIT ANIMATION MATCHING ENTRANCE) ─── */}
+      <AnimatePresence>
+        {(showReservationModal || isTicketModalOpen) && (
+          <ReservationCheckoutModal
+            isOpen={showReservationModal || isTicketModalOpen}
+            onClose={() => {
+              setShowReservationModal(false);
+              setIsTicketModalOpen(false);
+            }}
+            event={reservationTargetEvent || selectedCarouselEvent}
+            userProfile={userProfile}
+            userLoggedIn={userLoggedIn}
+            userReservations={userReservations}
+            onConfirmReservation={handleConfirmReservation}
+            onOpenAuth={() => setShowAuthModalForFavorites(true)}
+            onViewMyReservations={() => {
+              setActiveStoryScreen(2);
+              setSelectedDay("mis_reservas");
+            }}
+          />
+        )}
+      </AnimatePresence>
 
       {/* Meet2Go Style Glassmorphic Quick Preview Modal */}
       <QuickPreviewModal
