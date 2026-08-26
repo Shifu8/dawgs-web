@@ -2021,39 +2021,14 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                 <div id="subir-features-section" className="w-full bg-zinc-950 text-white pt-16 sm:pt-24 pb-28 sm:pb-36 px-6 sm:px-12 border-t border-zinc-800 font-sans">
                   <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
                     {/* Left Side: Marketing & Feature Text */}
-                    <div className="lg:col-span-7 space-y-5 text-left">
+                    <div className="lg:col-span-7 space-y-6 text-left">
                       <h2 className="text-3xl sm:text-5xl font-black uppercase tracking-tight leading-tight text-white font-sans">
-                        REVOLUCIONA TUS NOCHES Y EVENTOS CON 4GO
+                        Ventajas exclusivas de ser Partner 4GO
                       </h2>
                       <p className="text-sm sm:text-base text-zinc-300 leading-relaxed font-medium">
-                        La plataforma creada exclusivamente para potenciar discotecas, clubes y organizadores de eventos en Loja. Descubre todo lo que obtienes al sumarte:
+                        Potencia tu discoteca u organización con 4GO. Conexión automática con Meta API para sincronizar tus historias de Instagram, posicionamiento destacado en cartelera, gestión de reservas en tiempo real y acceso directo a tu audiencia en Loja.
                       </p>
-
-                      {/* Advantages Grid / List */}
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1 text-xs text-zinc-200 font-semibold">
-                        <div className="p-3 rounded-2xl bg-zinc-900/90 border border-white/10 space-y-1">
-                          <p className="text-white font-black text-xs">📲 Sincronización Meta API</p>
-                          <p className="text-zinc-400 text-[11px]">Tus historias de Instagram se muestran en vivo dentro de 4GO.</p>
-                        </div>
-
-                        <div className="p-3 rounded-2xl bg-zinc-900/90 border border-white/10 space-y-1">
-                          <p className="text-white font-black text-xs">🍸 Reservas en Tiempo Real</p>
-                          <p className="text-zinc-400 text-[11px]">Gestiona RSVPs y accesos VIP de forma limpia y directa.</p>
-                        </div>
-
-                        <div className="p-3 rounded-2xl bg-zinc-900/90 border border-white/10 space-y-1">
-                          <p className="text-white font-black text-xs">🔥 Posicionamiento Prioritario</p>
-                          <p className="text-zinc-400 text-[11px]">Tu marca en la cartelera principal que consultan miles de jóvenes.</p>
-                        </div>
-
-                        <div className="p-3 rounded-2xl bg-zinc-900/90 border border-white/10 space-y-1">
-                          <p className="text-white font-black text-xs">⚡ Control Veloz en Puerta</p>
-                          <p className="text-zinc-400 text-[11px]">Check-in fluido de invitados y confirmaciones al instante.</p>
-                        </div>
-                      </div>
-
-                      {/* Updated Action Buttons */}
-                      <div className="pt-3 flex flex-wrap items-center gap-4">
+                      <div className="pt-2 flex flex-wrap items-center gap-4">
                         <button
                           type="button"
                           onClick={() => {
@@ -2063,14 +2038,7 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                           }}
                           className="px-8 py-3.5 rounded-full bg-white hover:bg-zinc-200 text-black font-black text-xs uppercase tracking-widest transition-all shadow-xl active:scale-95 cursor-pointer"
                         >
-                          ELEVAR CUENTA A PARTNER 4GO
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => setActiveStoryScreen(2)}
-                          className="px-8 py-3.5 rounded-full bg-zinc-900 hover:bg-zinc-800 text-white border border-white/25 font-black text-xs uppercase tracking-widest transition-all shadow-xl active:scale-95 cursor-pointer"
-                        >
-                          VER CARTELERA DE EVENTOS
+                          ELEVA TU CUENTA A PARTNER 4GO
                         </button>
                       </div>
                     </div>
