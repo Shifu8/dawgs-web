@@ -380,12 +380,9 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
       setOrganizerSubView("profile");
     }
 
-    setTimeout(() => {
-      const publishSection = document.getElementById("subir-evento-section") || document.getElementById("subir-features-section");
-      if (publishSection) {
-        publishSection.scrollIntoView({ behavior: "smooth" });
-      }
-    }, 50);
+    if (typeof window !== "undefined") {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
   };
 
   // Simulated user session (replace with real auth later)
@@ -3052,9 +3049,11 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                   type="button"
                   onClick={() => {
                     setShowUserMenu(false);
+                    setActiveStoryScreen(0);
                     setOrganizerSubView("profile");
-                    const onboardingCard = document.getElementById("subir-evento-section");
-                    if (onboardingCard) onboardingCard.scrollIntoView({ behavior: "smooth" });
+                    if (typeof window !== "undefined") {
+                      window.scrollTo({ top: 0, behavior: "smooth" });
+                    }
                   }}
                   className="w-full px-4 py-3 rounded-2xl text-left text-xs font-black uppercase tracking-wider text-zinc-200 hover:bg-white/10 hover:text-white transition-all cursor-pointer border border-white/5 block"
                 >
