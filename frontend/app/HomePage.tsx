@@ -2023,10 +2023,10 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                     {/* Left Side: Marketing & Feature Text */}
                     <div className="lg:col-span-7 space-y-6 text-left">
                       <h2 className="text-3xl sm:text-5xl font-black uppercase tracking-tight leading-tight text-white font-sans">
-                        Publica tus eventos &amp; Conecta con tu audiencia
+                        Ventajas exclusivas de ser Partner 4GO
                       </h2>
                       <p className="text-sm sm:text-base text-zinc-300 leading-relaxed font-medium">
-                        Diseñado exclusivamente para productores, creadores y clubes nocturnos. Gestiona preventas en tiempo real, validación QR ultrasónica en puerta y control total de entradas en una sola plataforma.
+                        Potencia tu discoteca u organización con 4GO. Conexión automática con Meta API para sincronizar tus historias de Instagram, posicionamiento destacado en cartelera, gestión de reservas en tiempo real y acceso directo a tu audiencia en Loja.
                       </p>
                       <div className="pt-2 flex flex-wrap items-center gap-4">
                         <button
@@ -2046,14 +2046,14 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                       </div>
                     </div>
 
-                    {/* Right Side: The Party Showcase Photo */}
-                    <div className="lg:col-span-5 relative w-full h-[400px] sm:h-[500px] rounded-3xl overflow-hidden shadow-2xl border border-white/15 group cursor-pointer bg-zinc-950">
+                    {/* Right Side: The Party Showcase Photo (No Zoom Effect) */}
+                    <div className="lg:col-span-5 relative w-full h-[400px] sm:h-[500px] rounded-3xl overflow-hidden shadow-2xl border border-white/15 bg-zinc-950">
                       <Image
                         src="/images/subir_evento_party_showcase.jpg"
                         alt="4GO Party Showcase"
                         fill
                         priority
-                        className="object-cover group-hover:scale-105 transition-transform duration-500"
+                        className="object-cover"
                         sizes="(max-width: 1024px) 100vw, 500px"
                       />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-80" />
