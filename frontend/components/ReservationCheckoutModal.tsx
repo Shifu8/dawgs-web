@@ -102,9 +102,9 @@ export default function ReservationCheckoutModal({
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        className="fixed inset-0 z-[500] bg-[#0c0714] overflow-y-auto text-white font-sans flex flex-col justify-between p-4 sm:p-6 md:p-8"
+        className="fixed inset-0 z-[500] bg-black overflow-y-auto text-white font-sans flex flex-col justify-between p-4 sm:p-6 md:p-8"
       >
-        {/* Dynamic Ambient Blur Backdrop from Event Poster (100% Identical match to EventDetailOverlay) */}
+        {/* Dynamic Ambient Blur Backdrop from Event Poster (Vibrant 100% Identical match to EventDetailOverlay) */}
         <div className="fixed inset-0 pointer-events-none overflow-hidden z-0">
           <Image
             src={getHdImageSrc(activeEvent?.poster)}
@@ -113,9 +113,9 @@ export default function ReservationCheckoutModal({
             priority
             quality={100}
             sizes="100vw"
-            className="object-cover object-center scale-150 blur-[90px] opacity-40 brightness-75 transition-all duration-700"
+            className="object-cover object-center scale-150 blur-[80px] opacity-65 brightness-95 transition-all duration-700"
           />
-          <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-black/80 to-black" />
+          <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/70 to-black" />
         </div>
 
         {/* ─── TOP NAVIGATION HEADER BAR (FULL VIEWPORT EDGE-TO-EDGE) ─── */}
