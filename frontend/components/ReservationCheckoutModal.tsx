@@ -117,16 +117,18 @@ export default function ReservationCheckoutModal({
             className="object-cover object-center scale-150 blur-[110px] saturate-200 brightness-110 opacity-75"
           />
           {/* Subtle Dark Gradient Overlay */}
-          <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-black/40 to-[#0c0714]/95" />
+          <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/20 to-[#0c0714]/95" />
+          {/* Top Edge Shadow Fade for Controls */}
+          <div className="absolute top-0 inset-x-0 h-36 bg-gradient-to-b from-black/80 via-black/30 to-transparent pointer-events-none" />
         </div>
 
-        {/* ─── TOP NAVIGATION HEADER BAR (FULL VIEWPORT EDGE-TO-EDGE) ─── */}
-        <div className="relative z-10 w-full px-4 sm:px-8 py-4 flex items-center justify-between gap-4 border-b border-white/10">
+        {/* ─── TOP NAVIGATION HEADER BAR (FULL VIEWPORT EDGE-TO-EDGE FLOATING) ─── */}
+        <header className="relative z-10 w-full px-4 sm:px-8 py-4 flex items-center justify-between gap-4 pointer-events-none">
           {/* Top Left: Circular Arrow Back Button (Exact match to EventDetailOverlay) */}
           <button
             type="button"
             onClick={onClose}
-            className="flex items-center justify-center w-11 h-11 rounded-full bg-black/60 border border-white/20 text-white hover:bg-white/20 backdrop-blur-md transition-all cursor-pointer shadow-2xl active:scale-95"
+            className="pointer-events-auto flex items-center justify-center w-11 h-11 rounded-full bg-black/60 border border-white/20 text-white hover:bg-white/20 backdrop-blur-md transition-all cursor-pointer shadow-2xl active:scale-95"
             aria-label="Volver"
           >
             <ArrowLeft className="w-5 h-5" />
@@ -140,7 +142,7 @@ export default function ReservationCheckoutModal({
           </div>
 
           {/* Top Right: Code Promo + Close */}
-          <div className="flex items-center gap-3">
+          <div className="pointer-events-auto flex items-center gap-3">
             <button
               type="button"
               className="hidden md:inline-flex px-4 py-2 rounded-full bg-black/60 backdrop-blur-md hover:bg-white/20 border border-white/20 text-[11px] font-extrabold uppercase tracking-wider text-zinc-300 transition cursor-pointer"
@@ -156,7 +158,7 @@ export default function ReservationCheckoutModal({
               <X className="w-5 h-5" />
             </button>
           </div>
-        </div>
+        </header>
 
         {/* ─── MAIN CONTENT CONTAINER ─── */}
         <div className="relative z-10 flex-1 w-full max-w-6xl mx-auto py-6 sm:py-10 px-4 sm:px-8">
