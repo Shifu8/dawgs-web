@@ -372,15 +372,15 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
 
   const handleStartPublishEvent = () => {
     setShowUserMenu(false);
-    if (!userLoggedIn) {
-      handleQuickSocialLogin("google");
-      return;
+    const publishSection = document.getElementById("subir-evento-section") || document.getElementById("subir-features-section");
+    if (publishSection) {
+      publishSection.scrollIntoView({ behavior: "smooth" });
     }
-    // Open onboarding modal if user hasn't configured partner details
-    if (!userProfile?.venueName || userProfile.venueName === "Cubic Club" || !userProfile?.type) {
-      setIsOrganizerOnboardingOpen(true);
+
+    if (userProfile?.hasCompletedOnboarding) {
+      setOrganizerSubView("create_event");
     } else {
-      router.push("/organizer/register");
+      setOrganizerSubView("profile");
     }
   };
 
@@ -3042,7 +3042,7 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                 </div>
               )}
 
-              {/* Pure Text Options (No Icons / No Emojis) */}
+              {/* Menu Options */}
               <div className="space-y-1.5 pt-1 font-sans">
                 <button
                   type="button"
@@ -3052,7 +3052,7 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                     const onboardingCard = document.getElementById("subir-evento-section");
                     if (onboardingCard) onboardingCard.scrollIntoView({ behavior: "smooth" });
                   }}
-                  className="w-full px-4 py-3.5 rounded-2xl text-left text-xs font-black uppercase tracking-wider text-zinc-200 hover:bg-white/10 hover:text-white transition-all cursor-pointer border border-white/5 block"
+                  className="w-full px-4 py-3 rounded-2xl text-left text-xs font-black uppercase tracking-wider text-zinc-200 hover:bg-white/10 hover:text-white transition-all cursor-pointer border border-white/5 block"
                 >
                   Configuración / Editar Perfil
                 </button>
@@ -3060,7 +3060,7 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                 <button
                   type="button"
                   onClick={handleStartPublishEvent}
-                  className="w-full px-4 py-3.5 rounded-2xl text-left text-xs font-black uppercase tracking-wider text-zinc-200 hover:bg-white/10 hover:text-white transition-all cursor-pointer border border-white/5 block"
+                  className="w-full px-4 py-3 rounded-2xl text-left text-xs font-black uppercase tracking-wider text-zinc-200 hover:bg-white/10 hover:text-white transition-all cursor-pointer border border-white/5 block"
                 >
                   Publicar un Evento
                 </button>
@@ -3071,10 +3071,34 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                     setShowUserMenu(false);
                     setOrganizerSubView("my_events");
                   }}
-                  className="w-full px-4 py-3.5 rounded-2xl text-left text-xs font-black uppercase tracking-wider text-zinc-200 hover:bg-white/10 hover:text-white transition-all cursor-pointer border border-white/5 block"
+                  className="w-full px-4 py-3 rounded-2xl text-left text-xs font-black uppercase tracking-wider text-zinc-200 hover:bg-white/10 hover:text-white transition-all cursor-pointer border border-white/5 block"
                 >
-                  Mis Eventos y Reservas
+                  Mis Reservas
                 </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowUserMenu(false);
+                    setOrganizerSubView("favorites");
+                  }}
+                  className="w-full px-4 py-3 rounded-2xl text-left text-xs font-black uppercase tracking-wider text-zinc-200 hover:bg-white/10 hover:text-white transition-all cursor-pointer border border-white/5 block"
+                >
+                  Favoritos
+                </button>
+
+                {userProfile?.hasCompletedOnboarding && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowUserMenu(false);
+                      setOrganizerSubView("my_events");
+                    }}
+                    className="w-full px-4 py-3 rounded-2xl text-left text-xs font-black uppercase tracking-wider text-emerald-400 hover:bg-white/10 transition-all cursor-pointer border border-emerald-500/20 block"
+                  >
+                    Mis Eventos
+                  </button>
+                )}
 
                 {userLoggedIn && (
                   <button
@@ -3086,9 +3110,10 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                       setUserProfile(null);
                       setShowUserMenu(false);
                     }}
-                    className="w-full px-4 py-3.5 rounded-2xl text-left text-xs font-black uppercase tracking-wider text-red-400 hover:bg-red-500/10 hover:text-red-300 transition-all cursor-pointer border border-red-500/20 block mt-2"
+                    className="w-full px-4 py-3 rounded-2xl text-left text-xs font-black uppercase tracking-wider text-red-400 hover:bg-red-500/10 hover:text-red-300 transition-all cursor-pointer border border-red-500/20 flex items-center justify-between mt-2"
                   >
-                    Cerrar Sesión
+                    <span>Cerrar Sesión</span>
+                    <LogOut className="w-4 h-4 text-red-400 shrink-0" />
                   </button>
                 )}
               </div>
