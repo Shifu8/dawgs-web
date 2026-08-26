@@ -102,20 +102,22 @@ export default function ReservationCheckoutModal({
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        className="fixed inset-0 z-[500] bg-black overflow-y-auto text-white font-sans flex flex-col justify-between p-4 sm:p-6 md:p-8"
+        transition={{ duration: 0.2 }}
+        className="fixed inset-0 z-[500] bg-[#0c0714] text-white flex flex-col select-none overflow-y-auto p-4 sm:p-6 md:p-8"
       >
-        {/* Dynamic Ambient Blur Backdrop from Event Poster (Vibrant 100% Identical match to EventDetailOverlay) */}
-        <div className="fixed inset-0 pointer-events-none overflow-hidden z-0">
+        {/* ─── ULTRA-VIVID AMBIENT POSTER COLOR BLUR BACKDROP (EXACT 1:1 MATCH TO EVENT DETAIL OVERLAY) ─── */}
+        <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden bg-[#0c0714]">
           <Image
-            src={getHdImageSrc(activeEvent?.poster)}
-            alt="Backdrop ambient blur"
+            src={getHdImageSrc(activeEvent.poster)}
+            alt={activeEvent.title}
             fill
             priority
             quality={100}
             sizes="100vw"
-            className="object-cover object-center scale-150 blur-[80px] opacity-65 brightness-95 transition-all duration-700"
+            className="object-cover object-center scale-150 blur-[110px] saturate-200 brightness-110 opacity-75"
           />
-          <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/70 to-black" />
+          {/* Subtle Dark Gradient Overlay */}
+          <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-black/40 to-[#0c0714]/95" />
         </div>
 
         {/* ─── TOP NAVIGATION HEADER BAR (FULL VIEWPORT EDGE-TO-EDGE) ─── */}
