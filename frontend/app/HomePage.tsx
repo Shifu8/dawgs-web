@@ -2988,14 +2988,14 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
               animate={{ opacity: 1, x: 0, scale: 1 }}
               exit={{ opacity: 0, x: 80, scale: 0.95 }}
               transition={{ type: "spring", damping: 25, stiffness: 300 }}
-              className="fixed top-16 right-4 z-[370] w-80 rounded-[32px] border border-white/20 bg-zinc-950/85 backdrop-blur-2xl p-5 shadow-[0_25px_60px_rgba(0,0,0,0.9)] space-y-4 text-white font-sans"
+              className="fixed top-16 right-4 z-[370] w-80 rounded-[32px] border border-white/20 bg-zinc-900/60 backdrop-blur-3xl p-5 shadow-[0_25px_60px_rgba(0,0,0,0.7)] space-y-4 text-white font-sans"
             >
               {/* Header with Green Ring Avatar & Close Button (MI CUENTA) */}
               <div className="flex items-center justify-between pb-3 border-b border-white/10">
                 <div className="flex items-center gap-3">
                   <div className="h-10 w-10 rounded-full bg-black border-2 border-emerald-400 text-white font-black flex items-center justify-center p-0.5 shadow-[0_0_12px_rgba(52,211,153,0.4)] shrink-0 overflow-hidden">
                     {userProfile?.avatar ? (
-                      <img src={userProfile.avatar} alt={userProfile.name} className="w-full h-full object-cover rounded-full" />
+                      <img src={userProfile.avatar} alt={userProfile.name || "Perfil"} className="w-full h-full object-cover rounded-full" />
                     ) : (
                       <User className="w-5 h-5 text-white" />
                     )}
@@ -3016,8 +3016,8 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                 </button>
               </div>
 
-              {/* Primary Auth Status Card */}
-              {!userLoggedIn ? (
+              {/* Logged Out Social Login Action Buttons */}
+              {!userLoggedIn && (
                 <div className="grid grid-cols-2 gap-2.5">
                   <button
                     type="button"
@@ -3040,19 +3040,9 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                     Registrarse
                   </button>
                 </div>
-              ) : (
-                <div className="bg-white/5 rounded-2xl p-3 border border-white/10 space-y-1.5">
-                  <div className="flex items-center justify-between text-xs font-semibold">
-                    <span className="text-zinc-300">Sesión Activa</span>
-                    <span className="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 text-[10px] uppercase font-bold border border-emerald-500/30">
-                      Verificado
-                    </span>
-                  </div>
-                  <p className="text-xs text-white font-bold truncate">{userProfile?.name || "Usuario 4GO"}</p>
-                </div>
               )}
 
-              {/* Updated Clean Options (No Obsolete Recovery or AI Support Buttons) */}
+              {/* Updated Clean Options (No Emojis, No Sesión Activa card) */}
               <div className="space-y-1.5 pt-1 font-sans">
                 <button
                   type="button"
@@ -3065,7 +3055,7 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                   className="w-full flex items-center gap-3 px-3.5 py-3 rounded-2xl text-left text-xs font-black uppercase tracking-wider text-zinc-200 hover:bg-white/10 hover:text-white transition-all cursor-pointer group border border-white/5"
                 >
                   <Settings className="h-4 w-4 text-purple-400 group-hover:scale-110 transition-transform" />
-                  <span>Crear / Elevar Cuenta</span>
+                  <span>Configuración / Editar Perfil</span>
                 </button>
 
                 <button
