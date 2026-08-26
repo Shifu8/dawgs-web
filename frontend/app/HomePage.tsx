@@ -1786,11 +1786,10 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                                               );
                                             }
                                           }}
-                                          className={`px-2.5 py-0.5 rounded-lg text-[10px] font-bold transition cursor-pointer ${
-                                            isSelected
+                                          className={`px-2.5 py-0.5 rounded-lg text-[10px] font-bold transition cursor-pointer ${isSelected
                                               ? "bg-black text-white"
                                               : "bg-zinc-100 text-zinc-700 border border-zinc-300 hover:bg-zinc-200"
-                                          }`}
+                                            }`}
                                         >
                                           {day}
                                         </button>
@@ -1860,11 +1859,10 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                                     localStorage.setItem("organizer_profile", JSON.stringify(updated));
                                     setOrganizerSubView("create_event");
                                   }}
-                                  className={`w-full py-3.5 rounded-full font-bold text-xs uppercase tracking-widest transition active:scale-95 text-center flex items-center justify-center gap-2 ${
-                                    isFormValid
+                                  className={`w-full py-3.5 rounded-full font-bold text-xs uppercase tracking-widest transition active:scale-95 text-center flex items-center justify-center gap-2 ${isFormValid
                                       ? "bg-black hover:bg-zinc-800 text-white cursor-pointer shadow-xl"
                                       : "bg-zinc-200 text-zinc-400 cursor-not-allowed opacity-60"
-                                  }`}
+                                    }`}
                                 >
                                   <span>Siguiente: Crear Evento</span>
                                   <span>→</span>
@@ -2023,10 +2021,10 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                     {/* Left Side: Marketing & Feature Text */}
                     <div className="lg:col-span-7 space-y-6 text-left">
                       <h2 className="text-3xl sm:text-5xl font-black uppercase tracking-tight leading-tight text-white font-sans">
-                        Ventajas exclusivas de ser Partner 4GO
+                        Ventajas de ser Partner 4GO
                       </h2>
                       <p className="text-sm sm:text-base text-zinc-300 leading-relaxed font-medium">
-                        Potencia tu discoteca u organización con 4GO. Conexión automática con Meta API para sincronizar tus historias de Instagram, posicionamiento destacado en cartelera, gestión de reservas en tiempo real y acceso directo a tu audiencia en Loja.
+                        Potencia tu discoteca u organización al máximo nivel con 4GO. Disfruta de conexión automática con Meta API para sincronizar tus historias de Instagram en vivo, posicionamiento destacado en la cartelera principal de Loja, gestión integral de reservas de mesas y listas VIP en tiempo real, análisis de asistencia y control de acceso fluido en puerta para brindar la mejor experiencia a tu público.
                       </p>
                       <div className="pt-2 flex flex-wrap items-center gap-4">
                         <button
