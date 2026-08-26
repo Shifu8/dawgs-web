@@ -567,6 +567,7 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
   const [heroIndex, setHeroIndex] = useState(0);
   const homeCarouselRef = useRef<HTMLDivElement>(null);
   const [isCarouselHovered, setIsCarouselHovered] = useState(false);
+  const [showAuthModalForFavorites, setShowAuthModalForFavorites] = useState(false);
   const [likedEvents, setLikedEvents] = useState<Record<string, boolean>>(() => {
     if (typeof window === "undefined") return {};
     try {
@@ -599,8 +600,12 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
           }
         })
         .catch((err) => console.error("Error loading user favorites from DB:", err));
+    } else {
+      // Guest user: Clear favorites
+      setLikedEvents({});
+      try { localStorage.removeItem("organizer_favorites"); } catch {}
     }
-  }, [userProfile?.email]);
+  }, [userProfile?.email, userLoggedIn]);
 
   const toggleFavorite = async (eventId: string, e?: React.MouseEvent) => {
     if (e) e.stopPropagation();
@@ -611,6 +616,12 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
         return stored ? JSON.parse(stored).email : null;
       } catch { return null; }
     })();
+
+    // REQUIRE LOGIN TO SAVE FAVORITES
+    if (!userLoggedIn || !emailToUse) {
+      setShowAuthModalForFavorites(true);
+      return;
+    }
 
     setLikedEvents((prev) => {
       const nextState = !prev[eventId];
@@ -3288,6 +3299,77 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
               </button>
             </motion.div>
           </div>
+        )}
+      </AnimatePresence>
+
+      {/* ─── AUTHENTICATION REQUIRED MODAL FOR FAVORITES ─── */}
+      <AnimatePresence>
+        {showAuthModalForFavorites && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[100] bg-black/80 backdrop-blur-xl flex items-center justify-center p-4"
+            onClick={() => setShowAuthModalForFavorites(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              className="relative w-full max-w-md bg-zinc-900 border border-white/20 rounded-[32px] p-8 text-center text-white shadow-2xl space-y-6 font-sans overflow-hidden"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Top Close Button */}
+              <button
+                type="button"
+                onClick={() => setShowAuthModalForFavorites(false)}
+                className="absolute top-5 right-5 p-2 rounded-full bg-white/10 hover:bg-white/20 text-white/80 hover:text-white transition cursor-pointer"
+                aria-label="Cerrar modal"
+              >
+                <X className="w-4 h-4" />
+              </button>
+
+              {/* Header Icon */}
+              <div className="w-16 h-16 mx-auto rounded-2xl bg-white/10 border border-white/20 flex items-center justify-center text-white shadow-xl">
+                <Ticket className="w-8 h-8 text-white" />
+              </div>
+
+              {/* Title & Subtitle */}
+              <div className="space-y-2">
+                <h3 className="text-2xl sm:text-3xl font-black uppercase tracking-tight text-white font-sans">
+                  Iniciar sesión / Registrarse
+                </h3>
+                <p className="text-xs sm:text-sm text-zinc-300 font-medium leading-relaxed max-w-xs mx-auto">
+                  Podrás guardar tus eventos favoritos, gestionar tus reservas y acceder a experiencias exclusivas.
+                </p>
+              </div>
+
+              {/* Primary Action Button: Entrar con Google */}
+              <div className="pt-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowAuthModalForFavorites(false);
+                    handleQuickSocialLogin("google");
+                  }}
+                  className="w-full py-4 rounded-full bg-white hover:bg-zinc-200 text-black font-black text-xs uppercase tracking-widest transition-all shadow-xl hover:scale-[1.02] active:scale-95 cursor-pointer flex items-center justify-center gap-3"
+                >
+                  <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24">
+                    <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
+                    <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
+                    <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z" />
+                    <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z" />
+                  </svg>
+                  <span>ENTRAR CON GOOGLE</span>
+                </button>
+              </div>
+
+              {/* Clean Terms & Privacy Footer */}
+              <p className="text-[11px] text-zinc-400 font-medium leading-relaxed max-w-xs mx-auto pt-3 border-t border-white/10">
+                Al registrarte o iniciar sesión, aceptas nuestras <span className="underline text-white cursor-pointer hover:text-zinc-200">condiciones de uso</span> y <span className="underline text-white cursor-pointer hover:text-zinc-200">política de privacidad</span>.
+              </p>
+            </motion.div>
+          </motion.div>
         )}
       </AnimatePresence>
 
