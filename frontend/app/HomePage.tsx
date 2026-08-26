@@ -575,17 +575,27 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
     } catch { return {}; }
   });
 
-  // Sync per-user favorites from PostgreSQL database on login/mount
+  // Sync per-user favorites from PostgreSQL database on login/mount without wiping local storage
   useEffect(() => {
-    if (userProfile?.email) {
-      fetch(`/api/users/favorites?email=${encodeURIComponent(userProfile.email)}`)
+    const emailToUse = userProfile?.email || (() => {
+      if (typeof window === "undefined") return null;
+      try {
+        const stored = localStorage.getItem("organizer_profile");
+        return stored ? JSON.parse(stored).email : null;
+      } catch { return null; }
+    })();
+
+    if (emailToUse) {
+      fetch(`/api/users/favorites?email=${encodeURIComponent(emailToUse)}`)
         .then((res) => res.json())
         .then((data) => {
-          if (data?.favorites && Array.isArray(data.favorites)) {
-            const map: Record<string, boolean> = {};
-            data.favorites.forEach((id: string) => { map[id] = true; });
-            setLikedEvents(map);
-            localStorage.setItem("organizer_favorites", JSON.stringify(map));
+          if (data?.favorites && Array.isArray(data.favorites) && data.favorites.length > 0) {
+            setLikedEvents((prev) => {
+              const merged = { ...prev };
+              data.favorites.forEach((id: string) => { merged[id] = true; });
+              try { localStorage.setItem("organizer_favorites", JSON.stringify(merged)); } catch {}
+              return merged;
+            });
           }
         })
         .catch((err) => console.error("Error loading user favorites from DB:", err));
@@ -594,28 +604,35 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
 
   const toggleFavorite = async (eventId: string, e?: React.MouseEvent) => {
     if (e) e.stopPropagation();
-    const nextState = !likedEvents[eventId];
-    const updated = { ...likedEvents, [eventId]: nextState };
-    setLikedEvents(updated);
-    try {
-      localStorage.setItem("organizer_favorites", JSON.stringify(updated));
-    } catch { }
-
-    if (userProfile?.email) {
+    const emailToUse = userProfile?.email || (() => {
+      if (typeof window === "undefined") return null;
       try {
-        await fetch("/api/users/favorites", {
+        const stored = localStorage.getItem("organizer_profile");
+        return stored ? JSON.parse(stored).email : null;
+      } catch { return null; }
+    })();
+
+    setLikedEvents((prev) => {
+      const nextState = !prev[eventId];
+      const updated = { ...prev, [eventId]: nextState };
+      try {
+        localStorage.setItem("organizer_favorites", JSON.stringify(updated));
+      } catch {}
+
+      if (emailToUse) {
+        fetch("/api/users/favorites", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            email: userProfile.email,
+            email: emailToUse,
             eventId,
             isFavorite: nextState,
           }),
-        });
-      } catch (err) {
-        console.error("Error saving favorite to DB:", err);
+        }).catch((err) => console.error("Error saving favorite to DB:", err));
       }
-    }
+
+      return updated;
+    });
   };
 
   const [userReservations, setUserReservations] = useState<Record<string, boolean>>(() => {
