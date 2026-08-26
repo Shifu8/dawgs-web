@@ -1687,7 +1687,7 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                                 />
                               </div>
                               <p className="text-[10px] text-zinc-400 font-medium">
-                                Conexión Meta API: Tus historias de Instagram se sincronizarán en 4GO.
+                                Conexión con Meta: Tus historias de Instagram se sincronizarán en 4GO.
                               </p>
                             </div>
 
@@ -1721,60 +1721,48 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                               </div>
                             </div>
 
-                            {/* DYNAMIC DISCOTECA FIELDS (Streamlined so modal card height remains identical) */}
+                            {/* DYNAMIC DISCOTECA FIELDS (Button-First Maps Flow, No Operating Hours) */}
                             {orgType === "Discoteca / Club" && (
-                              <div className="space-y-2.5 pt-2 border-t border-zinc-100">
-                                {/* Grid for Location & Hours */}
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                                  <div className="space-y-1">
-                                    <label className="text-[11px] font-bold uppercase tracking-wider text-zinc-800 block">
-                                      Ubicación (Maps - Loja)
-                                    </label>
-                                    <div className="relative">
-                                      <input
-                                        type="text"
-                                        value={clubAddress}
-                                        onChange={(e) => setClubAddress(e.target.value)}
-                                        placeholder="Dirección o Maps"
-                                        className="w-full pl-3 pr-14 py-2 rounded-xl bg-zinc-50 border border-zinc-300 text-xs text-zinc-900 focus:outline-none focus:border-black transition font-medium"
-                                      />
+                              <div className="space-y-3 pt-2 border-t border-zinc-100">
+                                {/* Intuitive Button-First Maps Picker */}
+                                <div className="space-y-1">
+                                  <label className="text-[11px] font-bold uppercase tracking-wider text-zinc-800 block">
+                                    Ubicación de la Discoteca (Loja)
+                                  </label>
+                                  {!clubAddress ? (
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        const userAddr = prompt("Ingresa la dirección o punto de referencia de la discoteca en Loja:", "Av. Salvador Bustamante Celi y Guayaquil");
+                                        if (userAddr && userAddr.trim()) {
+                                          setClubAddress(userAddr.trim());
+                                        }
+                                      }}
+                                      className="w-full py-2.5 px-4 rounded-xl bg-zinc-900 hover:bg-black text-white text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 transition cursor-pointer shadow-sm"
+                                    >
+                                      <MapPin className="w-4 h-4 text-emerald-400" />
+                                      <span>Elegir Ubicación en Maps 📍</span>
+                                    </button>
+                                  ) : (
+                                    <div className="flex items-center justify-between gap-2 p-2.5 rounded-xl bg-zinc-50 border border-zinc-300 text-xs font-medium text-zinc-900">
+                                      <div className="flex items-center gap-2 truncate">
+                                        <MapPin className="w-4 h-4 text-emerald-500 shrink-0" />
+                                        <span className="truncate font-semibold">{clubAddress}</span>
+                                      </div>
                                       <button
                                         type="button"
                                         onClick={() => {
-                                          window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(clubAddress || "Loja Ecuador")}`, "_blank");
+                                          const userAddr = prompt("Editar dirección de la discoteca en Loja:", clubAddress);
+                                          if (userAddr !== null) {
+                                            setClubAddress(userAddr.trim());
+                                          }
                                         }}
-                                        className="absolute right-1 top-1/2 -translate-y-1/2 px-2 py-1 rounded-lg bg-zinc-900 hover:bg-black text-white text-[9px] font-bold uppercase cursor-pointer"
+                                        className="px-2.5 py-1 rounded-lg bg-zinc-900 hover:bg-black text-white text-[10px] font-bold uppercase shrink-0 cursor-pointer"
                                       >
-                                        Maps 📍
+                                        Cambiar 📍
                                       </button>
                                     </div>
-                                  </div>
-
-                                  <div className="space-y-1">
-                                    <label className="text-[11px] font-bold uppercase tracking-wider text-zinc-800 block">
-                                      Horario (Apertura - Cierre)
-                                    </label>
-                                    <div className="grid grid-cols-2 gap-1">
-                                      <input
-                                        type="time"
-                                        value={openTime}
-                                        onChange={(e) => {
-                                          setOpenTime(e.target.value);
-                                          setOpeningHours(`${e.target.value} - ${closeTime}`);
-                                        }}
-                                        className="w-full px-2 py-1.5 rounded-xl bg-zinc-50 border border-zinc-300 text-xs font-bold text-zinc-900 focus:outline-none focus:border-black transition cursor-pointer"
-                                      />
-                                      <input
-                                        type="time"
-                                        value={closeTime}
-                                        onChange={(e) => {
-                                          setCloseTime(e.target.value);
-                                          setOpeningHours(`${openTime} - ${e.target.value}`);
-                                        }}
-                                        className="w-full px-2 py-1.5 rounded-xl bg-zinc-50 border border-zinc-300 text-xs font-bold text-zinc-900 focus:outline-none focus:border-black transition cursor-pointer"
-                                      />
-                                    </div>
-                                  </div>
+                                  )}
                                 </div>
 
                                 {/* Days of Opening */}
@@ -1814,52 +1802,66 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                             )}
                           </div>
 
-                          {/* Submit Action Button */}
-                          <button
-                            type="button"
-                            onClick={async () => {
-                              const nameToUse = orgName.trim() || userProfile?.name || "Discoteca Loja";
-                              const formattedHours = `${openTime} - ${closeTime}`;
-                              const updated = {
-                                ...userProfile,
-                                type: orgType,
-                                venueName: nameToUse,
-                                city: "Loja",
-                                avatar: brandLogoUrl || userProfile?.avatar || "",
-                                instagram: instagramHandle,
-                                address: clubAddress,
-                                openingHours: formattedHours,
-                                openingDays,
-                                hasCompletedOnboarding: true,
-                              };
+                          {/* Submit Action Button (Disabled until required fields are filled) */}
+                          {(() => {
+                            const isFormValid = Boolean(
+                              orgName.trim() &&
+                              instagramHandle.trim() &&
+                              (orgType !== "Discoteca / Club" || (clubAddress.trim() && openingDays.length > 0))
+                            );
 
-                              try {
-                                await fetch("/api/users/sync", {
-                                  method: "POST",
-                                  headers: { "Content-Type": "application/json" },
-                                  body: JSON.stringify({
-                                    email: userProfile?.email || "brandon.medina@unl.edu.ec",
-                                    name: nameToUse,
-                                    avatar: brandLogoUrl,
-                                    provider: "google",
+                            return (
+                              <button
+                                type="button"
+                                disabled={!isFormValid}
+                                onClick={async () => {
+                                  if (!isFormValid) return;
+                                  const nameToUse = orgName.trim() || userProfile?.name || "Discoteca Loja";
+                                  const updated = {
+                                    ...userProfile,
                                     type: orgType,
                                     venueName: nameToUse,
                                     city: "Loja",
-                                  }),
-                                });
-                              } catch (err) {
-                                console.error("Error syncing profile:", err);
-                              }
+                                    avatar: brandLogoUrl || userProfile?.avatar || "",
+                                    instagram: instagramHandle,
+                                    address: clubAddress,
+                                    openingDays,
+                                    hasCompletedOnboarding: true,
+                                  };
 
-                              setUserProfile(updated as any);
-                              localStorage.setItem("organizer_profile", JSON.stringify(updated));
-                              setOrganizerSubView("create_event");
-                            }}
-                            className="w-full py-3.5 rounded-full bg-black hover:bg-zinc-800 text-white font-bold text-xs uppercase tracking-widest transition active:scale-95 cursor-pointer shadow-xl text-center flex items-center justify-center gap-2 mt-2"
-                          >
-                            <span>Siguiente: Crear Evento</span>
-                            <span>→</span>
-                          </button>
+                                  try {
+                                    await fetch("/api/users/sync", {
+                                      method: "POST",
+                                      headers: { "Content-Type": "application/json" },
+                                      body: JSON.stringify({
+                                        email: userProfile?.email || "brandon.medina@unl.edu.ec",
+                                        name: nameToUse,
+                                        avatar: brandLogoUrl,
+                                        provider: "google",
+                                        type: orgType,
+                                        venueName: nameToUse,
+                                        city: "Loja",
+                                      }),
+                                    });
+                                  } catch (err) {
+                                    console.error("Error syncing profile:", err);
+                                  }
+
+                                  setUserProfile(updated as any);
+                                  localStorage.setItem("organizer_profile", JSON.stringify(updated));
+                                  setOrganizerSubView("create_event");
+                                }}
+                                className={`w-full py-3.5 rounded-full font-bold text-xs uppercase tracking-widest transition active:scale-95 text-center flex items-center justify-center gap-2 mt-2 ${
+                                  isFormValid
+                                    ? "bg-black hover:bg-zinc-800 text-white cursor-pointer shadow-xl"
+                                    : "bg-zinc-200 text-zinc-400 cursor-not-allowed opacity-60"
+                                }`}
+                              >
+                                <span>Siguiente: Crear Evento</span>
+                                <span>→</span>
+                              </button>
+                            );
+                          })()}
                         </div>
 
                         {/* ─── INLINE FORM: PUBLICAR EVENTO (DARK GLASS) ─── */}
