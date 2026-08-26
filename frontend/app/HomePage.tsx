@@ -567,7 +567,57 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
   const [heroIndex, setHeroIndex] = useState(0);
   const homeCarouselRef = useRef<HTMLDivElement>(null);
   const [isCarouselHovered, setIsCarouselHovered] = useState(false);
-  const [likedEvents, setLikedEvents] = useState<Record<string, boolean>>({});
+  const [likedEvents, setLikedEvents] = useState<Record<string, boolean>>(() => {
+    if (typeof window === "undefined") return {};
+    try {
+      const stored = localStorage.getItem("organizer_favorites");
+      return stored ? JSON.parse(stored) : {};
+    } catch { return {}; }
+  });
+
+  // Sync per-user favorites from PostgreSQL database on login/mount
+  useEffect(() => {
+    if (userProfile?.email) {
+      fetch(`/api/users/favorites?email=${encodeURIComponent(userProfile.email)}`)
+        .then((res) => res.json())
+        .then((data) => {
+          if (data?.favorites && Array.isArray(data.favorites)) {
+            const map: Record<string, boolean> = {};
+            data.favorites.forEach((id: string) => { map[id] = true; });
+            setLikedEvents(map);
+            localStorage.setItem("organizer_favorites", JSON.stringify(map));
+          }
+        })
+        .catch((err) => console.error("Error loading user favorites from DB:", err));
+    }
+  }, [userProfile?.email]);
+
+  const toggleFavorite = async (eventId: string, e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
+    const nextState = !likedEvents[eventId];
+    const updated = { ...likedEvents, [eventId]: nextState };
+    setLikedEvents(updated);
+    try {
+      localStorage.setItem("organizer_favorites", JSON.stringify(updated));
+    } catch { }
+
+    if (userProfile?.email) {
+      try {
+        await fetch("/api/users/favorites", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            email: userProfile.email,
+            eventId,
+            isFavorite: nextState,
+          }),
+        });
+      } catch (err) {
+        console.error("Error saving favorite to DB:", err);
+      }
+    }
+  };
+
   const [userReservations, setUserReservations] = useState<Record<string, boolean>>(() => {
     if (typeof window === "undefined") return {};
     try {
@@ -2661,13 +2711,7 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                                 <div className="absolute bottom-3.5 right-3.5 z-10">
                                   <button
                                     type="button"
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      setLikedEvents((prev) => ({
-                                        ...prev,
-                                        [evt.id]: !prev[evt.id],
-                                      }));
-                                    }}
+                                    onClick={(e) => toggleFavorite(evt.id, e)}
                                     className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-black/60 backdrop-blur-md border border-white/20 flex items-center justify-center text-white hover:scale-110 active:scale-95 transition-transform shadow-lg cursor-pointer"
                                     aria-label="Guardar favorito"
                                   >
