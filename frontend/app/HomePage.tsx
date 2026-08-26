@@ -343,75 +343,15 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
 
     if (provider === 'google') {
       const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || '461941866446-kfh7r6aqq5p3g09g0iau4m597eppv69i.apps.googleusercontent.com';
-      const redirectUri = typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000';
+      const redirectUri = typeof window !== 'undefined' ? `${window.location.origin}/api/auth/google/callback` : 'http://localhost:3000/api/auth/google/callback';
       const googleOAuthUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${encodeURIComponent(clientId)}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=code&scope=email%20profile&prompt=select_account`;
 
       if (typeof window !== 'undefined') {
-        const popup = window.open(
+        window.open(
           googleOAuthUrl,
           'GoogleOAuthWindow',
           `width=${width},height=${height},top=${top},left=${left},scrollbars=yes,status=yes`
         );
-
-        const checkPopupTimer = setInterval(async () => {
-          if (!popup || popup.closed) {
-            clearInterval(checkPopupTimer);
-            return;
-          }
-
-          try {
-            if (popup.location.href.includes(window.location.origin)) {
-              const popupParams = new URLSearchParams(popup.location.search);
-              const code = popupParams.get("code");
-              if (code) {
-                clearInterval(checkPopupTimer);
-                try { popup.close(); } catch { }
-
-                const userObj = {
-                  id: `google-${Date.now()}`,
-                  name: "Brandon Alexis Medina Jimenez",
-                  email: "brandon.medina@unl.edu.ec",
-                  avatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80",
-                  type: "Discoteca / Club",
-                  venueName: "Cubic Club",
-                  city: "Loja",
-                };
-
-                try {
-                  const res = await fetch("/api/users/sync", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({
-                      email: userObj.email,
-                      name: userObj.name,
-                      avatar: userObj.avatar,
-                      provider: "google",
-                      type: userObj.type,
-                      venueName: userObj.venueName,
-                      city: userObj.city,
-                    }),
-                  });
-                  const data = await res.json();
-                  if (data.user) {
-                    userObj.id = data.user.id;
-                    userObj.name = data.user.name || userObj.name;
-                    userObj.email = data.user.email || userObj.email;
-                    if (data.user.avatar) userObj.avatar = data.user.avatar;
-                  }
-                } catch (err) {
-                  console.error("Error syncing Google user to Postgres:", err);
-                }
-
-                localStorage.setItem("organizer_token", `google-code-${code.substring(0, 8)}`);
-                localStorage.setItem("organizer_profile", JSON.stringify(userObj));
-                setUserLoggedIn(true);
-                setUserProfile(userObj);
-              }
-            }
-          } catch {
-            // Cross-origin while user is on accounts.google.com domain
-          }
-        }, 500);
       }
       return;
     }
