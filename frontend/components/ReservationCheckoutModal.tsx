@@ -18,6 +18,16 @@ interface ReservationCheckoutModalProps {
   onViewMyReservations: () => void;
 }
 
+const getHdImageSrc = (src?: string) => {
+  if (!src) return "/images/now4go-hero-presentation-hd-v3.png";
+  if (src.includes("event_fisher") || src.includes("fisher")) return "/images/now4go-hero-presentation-hd-v3.png";
+  if (src.includes("yan_block") || src.includes("trap-loud")) return "/images/yan_block_artist_1779161408288.png";
+  if (src.includes("anuel")) return "/images/trap_loud_anuel_1778966415162.png";
+  if (src.includes("brent")) return "/images/rnb_loud_brent_1778966427864.png";
+  if (src.includes("bad_bunny")) return "/images/latin_loud_bad_bunny_1778966469259.png";
+  return src;
+};
+
 export default function ReservationCheckoutModal({
   isOpen,
   onClose,
@@ -94,18 +104,17 @@ export default function ReservationCheckoutModal({
         exit={{ opacity: 0 }}
         className="fixed inset-0 z-[500] bg-[#0c0714] overflow-y-auto text-white font-sans flex flex-col justify-between p-4 sm:p-6 md:p-8"
       >
-        {/* Dynamic Ambient Blur Backdrop from Event Poster (Exact match to detail screen) */}
+        {/* Dynamic Ambient Blur Backdrop from Event Poster (100% Identical match to EventDetailOverlay) */}
         <div className="fixed inset-0 pointer-events-none overflow-hidden z-0">
-          {activeEvent.poster && (
-            <Image
-              src={activeEvent.poster}
-              alt="Backdrop ambient blur"
-              fill
-              priority
-              quality={100}
-              className="object-cover object-center scale-150 blur-[90px] opacity-40 brightness-75 transition-all duration-700"
-            />
-          )}
+          <Image
+            src={getHdImageSrc(activeEvent?.poster)}
+            alt="Backdrop ambient blur"
+            fill
+            priority
+            quality={100}
+            sizes="100vw"
+            className="object-cover object-center scale-150 blur-[90px] opacity-40 brightness-75 transition-all duration-700"
+          />
           <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-black/80 to-black" />
         </div>
 
