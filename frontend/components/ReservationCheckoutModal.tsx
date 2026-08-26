@@ -92,15 +92,29 @@ export default function ReservationCheckoutModal({
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        className="fixed inset-0 z-[500] bg-[#0c0714]/95 backdrop-blur-2xl overflow-y-auto text-white font-sans flex flex-col justify-between p-4 sm:p-6 md:p-8"
+        className="fixed inset-0 z-[500] bg-[#0c0714] overflow-y-auto text-white font-sans flex flex-col justify-between p-4 sm:p-6 md:p-8"
       >
+        {/* Dynamic Ambient Blur Backdrop from Event Poster (Exact match to detail screen) */}
+        <div className="fixed inset-0 pointer-events-none overflow-hidden z-0">
+          {activeEvent.poster && (
+            <Image
+              src={activeEvent.poster}
+              alt="Backdrop ambient blur"
+              fill
+              priority
+              className="object-cover object-center scale-150 blur-[110px] opacity-50 brightness-90 transition-all duration-700"
+            />
+          )}
+          <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-[#0c0714]/80 to-black" />
+        </div>
+
         {/* ─── TOP HEADER BAR (MATCHING SCREENSHOT 1) ─── */}
-        <div className="w-full max-w-7xl mx-auto flex items-center justify-between gap-4 pb-4 border-b border-white/10">
+        <div className="relative z-10 w-full max-w-7xl mx-auto flex items-center justify-between gap-4 pb-4 border-b border-white/10">
           {/* Top Left: Back Button */}
           <button
             type="button"
             onClick={onClose}
-            className="px-4 py-2 rounded-full bg-white/10 hover:bg-white/20 border border-white/20 text-xs font-bold uppercase tracking-wider text-white flex items-center gap-2 transition cursor-pointer active:scale-95"
+            className="px-4 py-2 rounded-full bg-black/60 backdrop-blur-md hover:bg-white/20 border border-white/20 text-xs font-bold uppercase tracking-wider text-white flex items-center gap-2 transition cursor-pointer active:scale-95"
           >
             <ArrowLeft className="w-4 h-4" />
             <span>ATRÁS</span>
@@ -117,14 +131,14 @@ export default function ReservationCheckoutModal({
           <div className="flex items-center gap-3">
             <button
               type="button"
-              className="hidden md:inline-flex px-4 py-2 rounded-full bg-white/10 hover:bg-white/20 border border-white/20 text-[11px] font-extrabold uppercase tracking-wider text-zinc-300 transition cursor-pointer"
+              className="hidden md:inline-flex px-4 py-2 rounded-full bg-black/60 backdrop-blur-md hover:bg-white/20 border border-white/20 text-[11px] font-extrabold uppercase tracking-wider text-zinc-300 transition cursor-pointer"
             >
               ¿TIENES UN CÓDIGO?
             </button>
             <button
               type="button"
               onClick={onClose}
-              className="p-2 rounded-full bg-white/10 hover:bg-white/20 border border-white/20 text-white transition cursor-pointer"
+              className="p-2 rounded-full bg-black/60 backdrop-blur-md hover:bg-white/20 border border-white/20 text-white transition cursor-pointer"
               aria-label="Cerrar modal"
             >
               <X className="w-5 h-5" />
@@ -133,13 +147,13 @@ export default function ReservationCheckoutModal({
         </div>
 
         {/* ─── MAIN CONTENT CONTAINER ─── */}
-        <div className="flex-1 w-full max-w-6xl mx-auto py-6 sm:py-10">
+        <div className="relative z-10 flex-1 w-full max-w-6xl mx-auto py-6 sm:py-10">
           {isSuccess ? (
             /* SUCCESS CONFIRMATION PASSHOLDER CARD */
             <motion.div
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
-              className="max-w-xl mx-auto bg-zinc-900 border border-emerald-500/30 rounded-[36px] p-8 text-center space-y-6 shadow-2xl relative overflow-hidden"
+              className="max-w-xl mx-auto bg-zinc-900/90 backdrop-blur-2xl border border-emerald-500/30 rounded-[36px] p-8 text-center space-y-6 shadow-2xl relative overflow-hidden"
             >
               <div className="w-16 h-16 mx-auto rounded-full bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-emerald-400 shadow-lg">
                 <Check className="w-8 h-8 stroke-[3]" />
@@ -158,7 +172,7 @@ export default function ReservationCheckoutModal({
               </div>
 
               {/* Mock QR Access Pass Badge */}
-              <div className="bg-black/60 border border-white/15 rounded-3xl p-6 space-y-3 max-w-xs mx-auto text-center shadow-inner">
+              <div className="bg-black/80 border border-white/15 rounded-3xl p-6 space-y-3 max-w-xs mx-auto text-center shadow-inner">
                 <div className="w-32 h-32 mx-auto bg-white p-2 rounded-2xl flex items-center justify-center">
                   <Image
                     src="/images/qr-banco-pichincha.png"
@@ -182,7 +196,7 @@ export default function ReservationCheckoutModal({
                     onClose();
                     onViewMyReservations();
                   }}
-                  className="w-full sm:w-auto px-8 py-3.5 rounded-full bg-white hover:bg-zinc-200 text-black font-black text-xs uppercase tracking-widest transition shadow-xl cursor-pointer"
+                  className="w-full sm:w-auto px-8 py-3.5 rounded-full bg-[#dfff28] hover:bg-[#cbf01a] text-black font-black text-xs uppercase tracking-widest transition shadow-xl cursor-pointer"
                 >
                   VER MIS RESERVAS
                 </button>
@@ -201,7 +215,7 @@ export default function ReservationCheckoutModal({
               {/* LEFT COLUMN: EVENT BANNER & TIER CARDS */}
               <div className="lg:col-span-7 space-y-6 text-left">
                 {/* Event Summary Header */}
-                <div className="flex items-center gap-4 bg-white/5 border border-white/10 rounded-3xl p-4 shadow-xl">
+                <div className="flex items-center gap-4 bg-black/60 border border-white/15 rounded-3xl p-4 shadow-xl backdrop-blur-xl">
                   <div className="relative w-16 h-16 rounded-2xl overflow-hidden shrink-0 border border-white/20 bg-zinc-950">
                     <Image
                       src={activeEvent.poster || "/images/event_fisher.png"}
@@ -214,7 +228,7 @@ export default function ReservationCheckoutModal({
                     <h2 className="text-xl sm:text-2xl font-black text-white uppercase tracking-tight truncate">
                       {activeEvent.title}
                     </h2>
-                    <p className="text-xs sm:text-sm font-semibold text-zinc-300 truncate">
+                    <p className="text-xs sm:text-sm font-semibold text-[#dfff28] truncate">
                       {activeEvent.dateLabel || "SÁB, 26 SEPT, 22:00 GMT-5"} • {activeEvent.venue || "CUBIC CLUB LOJA"}
                     </p>
                   </div>
@@ -234,7 +248,7 @@ export default function ReservationCheckoutModal({
 
                 {/* Already Reserved Banner */}
                 {isAlreadyReserved && (
-                  <div className="p-4 rounded-3xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 text-xs sm:text-sm font-bold flex items-center justify-between gap-4 shadow-xl">
+                  <div className="p-4 rounded-3xl bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 text-xs sm:text-sm font-bold flex items-center justify-between gap-4 shadow-xl backdrop-blur-md">
                     <div className="flex items-center gap-3">
                       <UserCheck className="w-5 h-5 text-emerald-400 shrink-0" />
                       <span>Ya tienes 1 reserva activa confirmada para este evento.</span>
@@ -254,9 +268,9 @@ export default function ReservationCheckoutModal({
 
                 {/* TIER OPTION 1: GA ACCESO GENERAL */}
                 <div
-                  className={`relative p-6 rounded-3xl border transition-all ${selectedTier === "ga" && quantity > 0
-                    ? "bg-zinc-900 border-white shadow-[0_0_30px_rgba(255,255,255,0.15)]"
-                    : "bg-black/40 border-white/15 hover:border-white/30"
+                  className={`relative p-6 rounded-3xl border transition-all backdrop-blur-xl ${selectedTier === "ga" && quantity > 0
+                    ? "bg-zinc-900/90 border-[#dfff28] shadow-[0_0_30px_rgba(223,255,40,0.2)]"
+                    : "bg-black/60 border-white/15 hover:border-white/30"
                     }`}
                 >
                   <div className="flex items-start justify-between gap-4">
@@ -306,9 +320,9 @@ export default function ReservationCheckoutModal({
 
                 {/* TIER OPTION 2: MESA VIP / ZONA EXCLUSIVA */}
                 <div
-                  className={`relative p-6 rounded-3xl border transition-all ${selectedTier === "vip" && quantity > 0
-                    ? "bg-zinc-900 border-white shadow-[0_0_30px_rgba(255,255,255,0.15)]"
-                    : "bg-black/40 border-white/15 hover:border-white/30"
+                  className={`relative p-6 rounded-3xl border transition-all backdrop-blur-xl ${selectedTier === "vip" && quantity > 0
+                    ? "bg-zinc-900/90 border-[#dfff28] shadow-[0_0_30px_rgba(223,255,40,0.2)]"
+                    : "bg-black/60 border-white/15 hover:border-white/30"
                     }`}
                 >
                   <div className="flex items-start justify-between gap-4">
@@ -383,12 +397,12 @@ export default function ReservationCheckoutModal({
                     </span>
                   </label>
 
-                  {/* Primary Action Button */}
+                  {/* Primary Action Button (Acid yellow/green matching RESERVAR button in screenshot) */}
                   <button
                     type="button"
                     onClick={handleConfirm}
                     disabled={quantity === 0 || !acceptTerms}
-                    className="w-full py-4 rounded-full bg-black hover:bg-zinc-800 disabled:bg-zinc-300 disabled:text-zinc-500 text-white font-black text-xs uppercase tracking-widest transition-all shadow-xl active:scale-95 cursor-pointer disabled:cursor-not-allowed"
+                    className="w-full py-4 rounded-full bg-[#dfff28] hover:bg-[#cbf01a] text-black font-black text-xs uppercase tracking-widest transition-all shadow-xl active:scale-95 cursor-pointer disabled:bg-zinc-300 disabled:text-zinc-500 disabled:cursor-not-allowed"
                   >
                     {isAlreadyReserved
                       ? "YA TIENES 1 RESERVA CONFIRMADA"
@@ -399,7 +413,7 @@ export default function ReservationCheckoutModal({
                 </div>
 
                 {/* Below Box Notice (Matching Screenshot 1 & 2) */}
-                <div className="bg-white/5 border border-white/10 rounded-2xl p-4 flex items-start gap-3 text-zinc-400 text-[11px] leading-relaxed">
+                <div className="bg-black/60 border border-white/15 backdrop-blur-xl rounded-2xl p-4 flex items-start gap-3 text-zinc-300 text-[11px] leading-relaxed">
                   <ShieldCheck className="w-5 h-5 text-zinc-300 shrink-0 mt-0.5" />
                   <p>
                     Reservando esta entrada, abrirás una cuenta o vincularás tu acceso y aceptarás nuestras <span className="underline text-white font-bold cursor-pointer">Condiciones de Uso</span> y <span className="underline text-white font-bold cursor-pointer">Política de Privacidad</span>. Procesamos tus datos de acuerdo con nuestra normativa.
@@ -411,7 +425,7 @@ export default function ReservationCheckoutModal({
         </div>
 
         {/* Bottom Footer Copyright */}
-        <div className="w-full max-w-7xl mx-auto pt-4 border-t border-white/10 text-center sm:text-left flex flex-col sm:flex-row items-center justify-between gap-2 text-[11px] font-bold text-zinc-500">
+        <div className="relative z-10 w-full max-w-7xl mx-auto pt-4 border-t border-white/10 text-center sm:text-left flex flex-col sm:flex-row items-center justify-between gap-2 text-[11px] font-bold text-zinc-400">
           <span>© 4GO 2026, all rights reserved</span>
           <span>Soporte &amp; Ayuda: soporte@4go.app</span>
         </div>
