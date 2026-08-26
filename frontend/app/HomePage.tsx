@@ -261,7 +261,7 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
     setIsAppleAuthModalOpen(false);
   };
 
-  // Listen for Google OAuth callback in main window or handle popup postMessage
+  // Handle Google OAuth callback code in main tab
   useEffect(() => {
     if (typeof window === "undefined") return;
 
@@ -291,7 +291,7 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
           }),
         });
         const data = await res.json();
-        if (data.user) {
+        if (data?.user) {
           userObj.id = data.user.id;
           userObj.name = data.user.name || userObj.name;
           userObj.email = data.user.email || userObj.email;
@@ -307,32 +307,13 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
       setUserProfile(userObj);
     };
 
-    // 1. If inside a popup window, pass code back to main window and close immediately:
     const urlParams = new URLSearchParams(window.location.search);
     const code = urlParams.get("code");
 
-    if (code && window.opener && window.opener !== window) {
-      try {
-        window.opener.postMessage({ type: "GOOGLE_OAUTH_CODE", code }, window.location.origin);
-        window.close();
-      } catch { }
-      return;
-    } else if (code) {
-      // Clean query params from URL
+    if (code) {
       window.history.replaceState({}, document.title, window.location.pathname);
       processLogin(code);
     }
-
-    // 2. Listen for postMessage from popup window in main window:
-    const handlePostMessage = (event: MessageEvent) => {
-      if (event.origin !== window.location.origin) return;
-      if (event.data && event.data.type === "GOOGLE_OAUTH_CODE" && event.data.code) {
-        processLogin(event.data.code);
-      }
-    };
-
-    window.addEventListener("message", handlePostMessage);
-    return () => window.removeEventListener("message", handlePostMessage);
   }, []);
 
   const handleQuickSocialLogin = (provider: 'google' | 'apple') => {
@@ -347,11 +328,7 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
       const googleOAuthUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${encodeURIComponent(clientId)}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=code&scope=email%20profile&prompt=select_account`;
 
       if (typeof window !== 'undefined') {
-        window.open(
-          googleOAuthUrl,
-          'GoogleOAuthWindow',
-          `width=${width},height=${height},top=${top},left=${left},scrollbars=yes,status=yes`
-        );
+        window.location.href = googleOAuthUrl;
       }
       return;
     }
