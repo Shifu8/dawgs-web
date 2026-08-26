@@ -356,8 +356,11 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
   const handleLogout = () => {
     localStorage.removeItem("organizer_token");
     localStorage.removeItem("organizer_profile");
+    localStorage.removeItem("organizer_reservations");
     setUserLoggedIn(false);
     setUserProfile(null);
+    setUserReservations({});
+    setShowUserMenu(false);
     setOrganizerSubView('menu');
   };
 
@@ -3156,13 +3159,7 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                 {userLoggedIn && (
                   <button
                     type="button"
-                    onClick={() => {
-                      localStorage.removeItem("organizer_token");
-                      localStorage.removeItem("organizer_profile");
-                      setUserLoggedIn(false);
-                      setUserProfile(null);
-                      setShowUserMenu(false);
-                    }}
+                    onClick={handleLogout}
                     className="w-full px-4 py-3 rounded-2xl text-left text-xs font-black uppercase tracking-wider text-red-400 hover:bg-red-500/10 hover:text-red-300 transition-all cursor-pointer border border-red-500/20 flex items-center justify-between mt-2"
                   >
                     <span>Cerrar Sesión</span>

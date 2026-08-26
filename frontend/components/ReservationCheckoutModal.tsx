@@ -54,7 +54,7 @@ export default function ReservationCheckoutModal({
     price: 0,
   };
 
-  const isAlreadyReserved = Boolean(activeEvent?.id && userReservations[activeEvent.id]);
+  const isAlreadyReserved = userLoggedIn && Boolean(activeEvent?.id && userReservations[activeEvent.id]);
 
   useEffect(() => {
     if (isOpen) {
@@ -63,7 +63,7 @@ export default function ReservationCheckoutModal({
       // Default to 1 selected if not already reserved
       setQuantity(isAlreadyReserved ? 0 : 1);
     }
-  }, [isOpen, isAlreadyReserved, event?.id]);
+  }, [isOpen, isAlreadyReserved, event?.id, userLoggedIn]);
 
   if (!isOpen) return null;
 
