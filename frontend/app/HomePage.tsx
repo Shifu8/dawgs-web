@@ -1802,7 +1802,7 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                             )}
                           </div>
 
-                          {/* Submit Action Button (Disabled until required fields are filled) */}
+                          {/* Submit Action Button (With Tooltip on hover if invalid) */}
                           {(() => {
                             const isFormValid = Boolean(
                               orgName.trim() &&
@@ -1811,55 +1811,65 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                             );
 
                             return (
-                              <button
-                                type="button"
-                                disabled={!isFormValid}
-                                onClick={async () => {
-                                  if (!isFormValid) return;
-                                  const nameToUse = orgName.trim() || userProfile?.name || "Discoteca Loja";
-                                  const updated = {
-                                    ...userProfile,
-                                    type: orgType,
-                                    venueName: nameToUse,
-                                    city: "Loja",
-                                    avatar: brandLogoUrl || userProfile?.avatar || "",
-                                    instagram: instagramHandle,
-                                    address: clubAddress,
-                                    openingDays,
-                                    hasCompletedOnboarding: true,
-                                  };
+                              <div className="relative group w-full mt-2">
+                                {!isFormValid && (
+                                  <div className="absolute -top-12 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-all duration-200 pointer-events-none z-30 flex flex-col items-center">
+                                    <div className="bg-black text-white text-[11px] font-bold py-1.5 px-3.5 rounded-xl shadow-2xl border border-white/20 whitespace-nowrap text-center">
+                                      Parece que todavía tienes algunos campos por llenar
+                                    </div>
+                                    <div className="w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-t-[6px] border-t-black -mt-[1px]" />
+                                  </div>
+                                )}
+                                <button
+                                  type="button"
+                                  disabled={!isFormValid}
+                                  onClick={async () => {
+                                    if (!isFormValid) return;
+                                    const nameToUse = orgName.trim() || userProfile?.name || "Discoteca Loja";
+                                    const updated = {
+                                      ...userProfile,
+                                      type: orgType,
+                                      venueName: nameToUse,
+                                      city: "Loja",
+                                      avatar: brandLogoUrl || userProfile?.avatar || "",
+                                      instagram: instagramHandle,
+                                      address: clubAddress,
+                                      openingDays,
+                                      hasCompletedOnboarding: true,
+                                    };
 
-                                  try {
-                                    await fetch("/api/users/sync", {
-                                      method: "POST",
-                                      headers: { "Content-Type": "application/json" },
-                                      body: JSON.stringify({
-                                        email: userProfile?.email || "brandon.medina@unl.edu.ec",
-                                        name: nameToUse,
-                                        avatar: brandLogoUrl,
-                                        provider: "google",
-                                        type: orgType,
-                                        venueName: nameToUse,
-                                        city: "Loja",
-                                      }),
-                                    });
-                                  } catch (err) {
-                                    console.error("Error syncing profile:", err);
-                                  }
+                                    try {
+                                      await fetch("/api/users/sync", {
+                                        method: "POST",
+                                        headers: { "Content-Type": "application/json" },
+                                        body: JSON.stringify({
+                                          email: userProfile?.email || "brandon.medina@unl.edu.ec",
+                                          name: nameToUse,
+                                          avatar: brandLogoUrl,
+                                          provider: "google",
+                                          type: orgType,
+                                          venueName: nameToUse,
+                                          city: "Loja",
+                                        }),
+                                      });
+                                    } catch (err) {
+                                      console.error("Error syncing profile:", err);
+                                    }
 
-                                  setUserProfile(updated as any);
-                                  localStorage.setItem("organizer_profile", JSON.stringify(updated));
-                                  setOrganizerSubView("create_event");
-                                }}
-                                className={`w-full py-3.5 rounded-full font-bold text-xs uppercase tracking-widest transition active:scale-95 text-center flex items-center justify-center gap-2 mt-2 ${
-                                  isFormValid
-                                    ? "bg-black hover:bg-zinc-800 text-white cursor-pointer shadow-xl"
-                                    : "bg-zinc-200 text-zinc-400 cursor-not-allowed opacity-60"
-                                }`}
-                              >
-                                <span>Siguiente: Crear Evento</span>
-                                <span>→</span>
-                              </button>
+                                    setUserProfile(updated as any);
+                                    localStorage.setItem("organizer_profile", JSON.stringify(updated));
+                                    setOrganizerSubView("create_event");
+                                  }}
+                                  className={`w-full py-3.5 rounded-full font-bold text-xs uppercase tracking-widest transition active:scale-95 text-center flex items-center justify-center gap-2 ${
+                                    isFormValid
+                                      ? "bg-black hover:bg-zinc-800 text-white cursor-pointer shadow-xl"
+                                      : "bg-zinc-200 text-zinc-400 cursor-not-allowed opacity-60"
+                                  }`}
+                                >
+                                  <span>Siguiente: Crear Evento</span>
+                                  <span>→</span>
+                                </button>
+                              </div>
                             );
                           })()}
                         </div>
