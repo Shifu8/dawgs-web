@@ -1,0 +1,421 @@
+"use client";
+
+import { useState, useEffect } from "react";
+import Image from "next/image";
+import { motion, AnimatePresence } from "framer-motion";
+import { X, ArrowLeft, Ticket, Check, ShieldCheck, Sparkles, UserCheck } from "lucide-react";
+import type { Event } from "@/frontend/types/domain";
+
+interface ReservationCheckoutModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  event: Event | null;
+  userProfile: any;
+  userLoggedIn: boolean;
+  userReservations: Record<string, boolean>;
+  onConfirmReservation: (eventId: string, tierId: string) => void;
+  onOpenAuth: () => void;
+  onViewMyReservations: () => void;
+}
+
+export default function ReservationCheckoutModal({
+  isOpen,
+  onClose,
+  event,
+  userProfile,
+  userLoggedIn,
+  userReservations,
+  onConfirmReservation,
+  onOpenAuth,
+  onViewMyReservations,
+}: ReservationCheckoutModalProps) {
+  const [selectedTier, setSelectedTier] = useState<"ga" | "vip">("ga");
+  const [quantity, setQuantity] = useState<number>(0);
+  const [acceptTerms, setAcceptTerms] = useState(true);
+  const [isSuccess, setIsSuccess] = useState(false);
+  const [showLimitWarning, setShowLimitWarning] = useState(false);
+
+  const activeEvent = event || {
+    id: "fisher-factory-town",
+    title: "FISHER",
+    dateLabel: "SÁB, 26 SEPT, 22:00 GMT-5",
+    venue: "CUBIC CLUB LOJA",
+    poster: "/images/event_fisher.png",
+    price: 0,
+  };
+
+  const isAlreadyReserved = Boolean(activeEvent?.id && userReservations[activeEvent.id]);
+
+  useEffect(() => {
+    if (isOpen) {
+      setIsSuccess(false);
+      setShowLimitWarning(false);
+      // Default to 1 selected if not already reserved
+      setQuantity(isAlreadyReserved ? 0 : 1);
+    }
+  }, [isOpen, isAlreadyReserved, event?.id]);
+
+  if (!isOpen) return null;
+
+  const handleIncreaseQuantity = (tier: "ga" | "vip") => {
+    if (isAlreadyReserved) return;
+    setSelectedTier(tier);
+    if (quantity >= 1) {
+      setShowLimitWarning(true);
+      setTimeout(() => setShowLimitWarning(false), 3000);
+      return;
+    }
+    setQuantity(1);
+  };
+
+  const handleDecreaseQuantity = (tier: "ga" | "vip") => {
+    if (isAlreadyReserved) return;
+    setSelectedTier(tier);
+    setQuantity(0);
+  };
+
+  const handleConfirm = () => {
+    if (!userLoggedIn) {
+      onOpenAuth();
+      return;
+    }
+
+    if (activeEvent?.id) {
+      onConfirmReservation(activeEvent.id, selectedTier);
+      setIsSuccess(true);
+    }
+  };
+
+  return (
+    <AnimatePresence>
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        className="fixed inset-0 z-[500] bg-[#0c0714]/95 backdrop-blur-2xl overflow-y-auto text-white font-sans flex flex-col justify-between p-4 sm:p-6 md:p-8"
+      >
+        {/* ─── TOP HEADER BAR (MATCHING SCREENSHOT 1) ─── */}
+        <div className="w-full max-w-7xl mx-auto flex items-center justify-between gap-4 pb-4 border-b border-white/10">
+          {/* Top Left: Back Button */}
+          <button
+            type="button"
+            onClick={onClose}
+            className="px-4 py-2 rounded-full bg-white/10 hover:bg-white/20 border border-white/20 text-xs font-bold uppercase tracking-wider text-white flex items-center gap-2 transition cursor-pointer active:scale-95"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            <span>ATRÁS</span>
+          </button>
+
+          {/* Center: Step Breadcrumbs */}
+          <div className="hidden sm:flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-zinc-400">
+            <span className={isSuccess ? "text-zinc-500" : "text-white font-black"}>Reserva</span>
+            <span>→</span>
+            <span className={isSuccess ? "text-white font-black" : "text-zinc-500"}>Pase 4GO</span>
+          </div>
+
+          {/* Top Right: Code Promo + Close */}
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              className="hidden md:inline-flex px-4 py-2 rounded-full bg-white/10 hover:bg-white/20 border border-white/20 text-[11px] font-extrabold uppercase tracking-wider text-zinc-300 transition cursor-pointer"
+            >
+              ¿TIENES UN CÓDIGO?
+            </button>
+            <button
+              type="button"
+              onClick={onClose}
+              className="p-2 rounded-full bg-white/10 hover:bg-white/20 border border-white/20 text-white transition cursor-pointer"
+              aria-label="Cerrar modal"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+        </div>
+
+        {/* ─── MAIN CONTENT CONTAINER ─── */}
+        <div className="flex-1 w-full max-w-6xl mx-auto py-6 sm:py-10">
+          {isSuccess ? (
+            /* SUCCESS CONFIRMATION PASSHOLDER CARD */
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              className="max-w-xl mx-auto bg-zinc-900 border border-emerald-500/30 rounded-[36px] p-8 text-center space-y-6 shadow-2xl relative overflow-hidden"
+            >
+              <div className="w-16 h-16 mx-auto rounded-full bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-emerald-400 shadow-lg">
+                <Check className="w-8 h-8 stroke-[3]" />
+              </div>
+
+              <div className="space-y-2">
+                <span className="px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-[10px] font-black uppercase tracking-widest inline-block">
+                  RESERVA CONFIRMADA EN PUERTA
+                </span>
+                <h3 className="text-3xl font-black text-white uppercase tracking-tight">
+                  ¡TU LUGAR ESTÁ ASEGURADO!
+                </h3>
+                <p className="text-sm text-zinc-300 font-medium max-w-sm mx-auto">
+                  Tu reserva para <strong className="text-white">{activeEvent.title}</strong> ha sido guardada exitosamente. Presenta tu identificación en puerta.
+                </p>
+              </div>
+
+              {/* Mock QR Access Pass Badge */}
+              <div className="bg-black/60 border border-white/15 rounded-3xl p-6 space-y-3 max-w-xs mx-auto text-center shadow-inner">
+                <div className="w-32 h-32 mx-auto bg-white p-2 rounded-2xl flex items-center justify-center">
+                  <Image
+                    src="/images/qr-banco-pichincha.png"
+                    alt="QR Pase 4GO"
+                    width={110}
+                    height={110}
+                    className="object-contain"
+                  />
+                </div>
+                <div className="text-left space-y-0.5 pt-2 border-t border-white/10">
+                  <span className="text-[10px] font-extrabold text-zinc-400 uppercase tracking-widest block">TITULAR DEL PASE</span>
+                  <p className="text-xs font-black text-white truncate">{userProfile?.name || "Brandon Medina"}</p>
+                  <p className="text-[11px] font-medium text-zinc-300 truncate">{userProfile?.email || "brandon.medina@unl.edu.ec"}</p>
+                </div>
+              </div>
+
+              <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-3">
+                <button
+                  type="button"
+                  onClick={() => {
+                    onClose();
+                    onViewMyReservations();
+                  }}
+                  className="w-full sm:w-auto px-8 py-3.5 rounded-full bg-white hover:bg-zinc-200 text-black font-black text-xs uppercase tracking-widest transition shadow-xl cursor-pointer"
+                >
+                  VER MIS RESERVAS
+                </button>
+                <button
+                  type="button"
+                  onClick={onClose}
+                  className="w-full sm:w-auto px-6 py-3.5 rounded-full bg-white/10 hover:bg-white/20 text-white font-bold text-xs uppercase tracking-widest transition cursor-pointer"
+                >
+                  CERRAR
+                </button>
+              </div>
+            </motion.div>
+          ) : (
+            /* RESERVA SELECTION GRID (MATCHING SCREENSHOT 1 & 2) */
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+              {/* LEFT COLUMN: EVENT BANNER & TIER CARDS */}
+              <div className="lg:col-span-7 space-y-6 text-left">
+                {/* Event Summary Header */}
+                <div className="flex items-center gap-4 bg-white/5 border border-white/10 rounded-3xl p-4 shadow-xl">
+                  <div className="relative w-16 h-16 rounded-2xl overflow-hidden shrink-0 border border-white/20 bg-zinc-950">
+                    <Image
+                      src={activeEvent.poster || "/images/event_fisher.png"}
+                      alt={activeEvent.title}
+                      fill
+                      className="object-cover"
+                    />
+                  </div>
+                  <div className="space-y-1 min-w-0">
+                    <h2 className="text-xl sm:text-2xl font-black text-white uppercase tracking-tight truncate">
+                      {activeEvent.title}
+                    </h2>
+                    <p className="text-xs sm:text-sm font-semibold text-zinc-300 truncate">
+                      {activeEvent.dateLabel || "SÁB, 26 SEPT, 22:00 GMT-5"} • {activeEvent.venue || "CUBIC CLUB LOJA"}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Limit Warning Alert */}
+                {showLimitWarning && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="p-3.5 rounded-2xl bg-amber-500/20 border border-amber-500/40 text-amber-300 text-xs font-bold flex items-center gap-2 shadow-lg"
+                  >
+                    <ShieldCheck className="w-4 h-4 shrink-0 text-amber-400" />
+                    <span>Control de aforo: Máximo 1 reserva por cuenta de usuario.</span>
+                  </motion.div>
+                )}
+
+                {/* Already Reserved Banner */}
+                {isAlreadyReserved && (
+                  <div className="p-4 rounded-3xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 text-xs sm:text-sm font-bold flex items-center justify-between gap-4 shadow-xl">
+                    <div className="flex items-center gap-3">
+                      <UserCheck className="w-5 h-5 text-emerald-400 shrink-0" />
+                      <span>Ya tienes 1 reserva activa confirmada para este evento.</span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        onClose();
+                        onViewMyReservations();
+                      }}
+                      className="px-4 py-2 rounded-full bg-emerald-400 text-black font-black text-xs uppercase tracking-wider shrink-0 hover:bg-emerald-300 transition cursor-pointer"
+                    >
+                      VER PASE
+                    </button>
+                  </div>
+                )}
+
+                {/* TIER OPTION 1: GA ACCESO GENERAL */}
+                <div
+                  className={`relative p-6 rounded-3xl border transition-all ${selectedTier === "ga" && quantity > 0
+                    ? "bg-zinc-900 border-white shadow-[0_0_30px_rgba(255,255,255,0.15)]"
+                    : "bg-black/40 border-white/15 hover:border-white/30"
+                    }`}
+                >
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="space-y-1.5 min-w-0">
+                      <span className="px-2.5 py-0.5 rounded-full bg-white/10 border border-white/20 text-[9px] font-black uppercase tracking-widest text-zinc-300">
+                        ACCESO INDIVIDUAL
+                      </span>
+                      <h3 className="text-lg sm:text-xl font-black text-white uppercase tracking-tight">
+                        GA - Entrada General
+                      </h3>
+                      <p className="text-base sm:text-lg font-black text-white">
+                        {activeEvent.price === 0 ? "0,00 $" : `${activeEvent.price || 10},00 $`}
+                      </p>
+                    </div>
+
+                    {/* Quantity Counter Box (Matching Screenshot 1 & 2) */}
+                    <div className="flex items-center gap-3 bg-zinc-950/80 border border-white/20 rounded-2xl p-1.5 shrink-0 shadow-lg">
+                      <button
+                        type="button"
+                        onClick={() => handleDecreaseQuantity("ga")}
+                        disabled={isAlreadyReserved || (selectedTier === "ga" && quantity === 0)}
+                        className="w-8 h-8 rounded-xl bg-white/10 hover:bg-white/20 disabled:opacity-30 text-white font-black text-base flex items-center justify-center transition cursor-pointer disabled:cursor-not-allowed"
+                      >
+                        -
+                      </button>
+
+                      <div className="w-10 h-8 rounded-xl bg-white/10 border border-white/20 flex items-center justify-center font-black text-sm text-white">
+                        <Ticket className="w-3.5 h-3.5 mr-1 text-zinc-400" />
+                        <span>{selectedTier === "ga" ? quantity : 0}</span>
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={() => handleIncreaseQuantity("ga")}
+                        disabled={isAlreadyReserved}
+                        className="w-8 h-8 rounded-xl bg-white/10 hover:bg-white/20 disabled:opacity-30 text-white font-black text-base flex items-center justify-center transition cursor-pointer disabled:cursor-not-allowed"
+                      >
+                        +
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="mt-4 pt-3 border-t border-white/10 text-xs font-medium text-zinc-400 leading-relaxed">
+                    - Acceso general individual al evento con reserva confirmada en lista de puerta.
+                  </div>
+                </div>
+
+                {/* TIER OPTION 2: MESA VIP / ZONA EXCLUSIVA */}
+                <div
+                  className={`relative p-6 rounded-3xl border transition-all ${selectedTier === "vip" && quantity > 0
+                    ? "bg-zinc-900 border-white shadow-[0_0_30px_rgba(255,255,255,0.15)]"
+                    : "bg-black/40 border-white/15 hover:border-white/30"
+                    }`}
+                >
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="space-y-1.5 min-w-0">
+                      <span className="px-2.5 py-0.5 rounded-full bg-amber-500/20 border border-amber-500/40 text-[9px] font-black uppercase tracking-widest text-amber-300">
+                        ZONA EXCLUSIVA [21+]
+                      </span>
+                      <h3 className="text-lg sm:text-xl font-black text-white uppercase tracking-tight">
+                        Reserva Mesa VIP / Lounge
+                      </h3>
+                      <p className="text-base sm:text-lg font-black text-white">
+                        Reserva Preferencial VIP
+                      </p>
+                    </div>
+
+                    {/* Quantity Counter Box */}
+                    <div className="flex items-center gap-3 bg-zinc-950/80 border border-white/20 rounded-2xl p-1.5 shrink-0 shadow-lg">
+                      <button
+                        type="button"
+                        onClick={() => handleDecreaseQuantity("vip")}
+                        disabled={isAlreadyReserved || (selectedTier === "vip" && quantity === 0)}
+                        className="w-8 h-8 rounded-xl bg-white/10 hover:bg-white/20 disabled:opacity-30 text-white font-black text-base flex items-center justify-center transition cursor-pointer disabled:cursor-not-allowed"
+                      >
+                        -
+                      </button>
+
+                      <div className="w-10 h-8 rounded-xl bg-white/10 border border-white/20 flex items-center justify-center font-black text-sm text-white">
+                        <Ticket className="w-3.5 h-3.5 mr-1 text-amber-400" />
+                        <span>{selectedTier === "vip" ? quantity : 0}</span>
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={() => handleIncreaseQuantity("vip")}
+                        disabled={isAlreadyReserved}
+                        className="w-8 h-8 rounded-xl bg-white/10 hover:bg-white/20 disabled:opacity-30 text-white font-black text-base flex items-center justify-center transition cursor-pointer disabled:cursor-not-allowed"
+                      >
+                        +
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="mt-4 pt-3 border-t border-white/10 text-xs font-medium text-zinc-400 leading-relaxed">
+                    - Reserva de espacio en zona VIP exclusiva con servicio prioritario en barra y atención personalizada.
+                  </div>
+                </div>
+              </div>
+
+              {/* RIGHT COLUMN: FLOATING SUMMARY BOX (MATCHING SCREENSHOT 1 & 2) */}
+              <div className="lg:col-span-5 space-y-4 text-left">
+                {/* White Summary Card */}
+                <div className="bg-white text-black rounded-[32px] p-6 sm:p-8 shadow-2xl space-y-6 border border-white font-sans">
+                  <div className="space-y-1 border-b border-zinc-200 pb-4">
+                    <h3 className="text-2xl font-black uppercase tracking-tight text-black">
+                      {quantity} {quantity === 1 ? "reserva" : "reservas"}
+                    </h3>
+                    <p className="text-sm font-extrabold text-zinc-700">
+                      Total – {quantity > 0 ? (activeEvent.price === 0 ? "0 $" : `${activeEvent.price || 10} $`) : "0 $"}
+                    </p>
+                  </div>
+
+                  {/* Updates Checkbox (Matching Screenshot 2) */}
+                  <label className="flex items-start gap-3 cursor-pointer select-none">
+                    <input
+                      type="checkbox"
+                      checked={acceptTerms}
+                      onChange={(e) => setAcceptTerms(e.target.checked)}
+                      className="mt-1 w-4 h-4 rounded border-zinc-300 text-black focus:ring-black cursor-pointer"
+                    />
+                    <span className="text-xs font-semibold text-zinc-700 leading-snug">
+                      Deseo recibir correos electrónicos de 4GO con novedades sobre los próximos eventos y lanzamientos exclusivos.
+                    </span>
+                  </label>
+
+                  {/* Primary Action Button */}
+                  <button
+                    type="button"
+                    onClick={handleConfirm}
+                    disabled={quantity === 0 || !acceptTerms}
+                    className="w-full py-4 rounded-full bg-black hover:bg-zinc-800 disabled:bg-zinc-300 disabled:text-zinc-500 text-white font-black text-xs uppercase tracking-widest transition-all shadow-xl active:scale-95 cursor-pointer disabled:cursor-not-allowed"
+                  >
+                    {isAlreadyReserved
+                      ? "YA TIENES 1 RESERVA CONFIRMADA"
+                      : !userLoggedIn
+                      ? "INICIAR SESIÓN Y CONFIRMAR"
+                      : "CONFIRMAR RESERVA EN LISTA"}
+                  </button>
+                </div>
+
+                {/* Below Box Notice (Matching Screenshot 1 & 2) */}
+                <div className="bg-white/5 border border-white/10 rounded-2xl p-4 flex items-start gap-3 text-zinc-400 text-[11px] leading-relaxed">
+                  <ShieldCheck className="w-5 h-5 text-zinc-300 shrink-0 mt-0.5" />
+                  <p>
+                    Reservando esta entrada, abrirás una cuenta o vincularás tu acceso y aceptarás nuestras <span className="underline text-white font-bold cursor-pointer">Condiciones de Uso</span> y <span className="underline text-white font-bold cursor-pointer">Política de Privacidad</span>. Procesamos tus datos de acuerdo con nuestra normativa.
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Bottom Footer Copyright */}
+        <div className="w-full max-w-7xl mx-auto pt-4 border-t border-white/10 text-center sm:text-left flex flex-col sm:flex-row items-center justify-between gap-2 text-[11px] font-bold text-zinc-500">
+          <span>© 4GO 2026, all rights reserved</span>
+          <span>Soporte &amp; Ayuda: soporte@4go.app</span>
+        </div>
+      </motion.div>
+    </AnimatePresence>
+  );
+}

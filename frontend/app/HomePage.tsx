@@ -70,6 +70,7 @@ import OrganizerPublishScreen from "@/frontend/features/organizer/OrganizerPubli
 import VkFest3DCylinderCarousel from "@/frontend/components/VkFest3DCylinderCarousel";
 import EventTicketCarousel, { CAROUSEL_EVENTS } from "@/frontend/components/EventTicketCarousel";
 import EventDetailOverlay from "@/frontend/features/events/EventDetailOverlay";
+import ReservationCheckoutModal from "@/frontend/components/ReservationCheckoutModal";
 import InstallApp from "@/frontend/components/InstallApp";
 import MobileDock from "@/frontend/components/MobileDock";
 import Footer from "@/components/Footer";
@@ -643,6 +644,25 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
       return stored ? JSON.parse(stored) : {};
     } catch { return {}; }
   });
+  const [showReservationModal, setShowReservationModal] = useState(false);
+  const [reservationTargetEvent, setReservationTargetEvent] = useState<Event | null>(null);
+
+  const handleOpenReservationModal = (evt: Event, e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
+    setReservationTargetEvent(evt);
+    setShowReservationModal(true);
+  };
+
+  const handleConfirmReservation = (eventId: string, tierId: string) => {
+    setUserReservations((prev) => {
+      const updated = { ...prev, [eventId]: true };
+      try {
+        localStorage.setItem("organizer_reservations", JSON.stringify(updated));
+      } catch {}
+      return updated;
+    });
+  };
+
   const [followedProfiles, setFollowedProfiles] = useState<Record<string, boolean>>({});
 
   // Dynamic Real-Time Cartelera Events Filter by Category / Tag & Search Query
@@ -2742,13 +2762,22 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                               </div>
 
                               {/* Glassmorphism Info Box Below Poster */}
-                              <div className="w-full bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-3.5 sm:p-5 shadow-2xl space-y-1 transition-colors group-hover:border-white/20">
+                              <div className="w-full bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-3.5 sm:p-5 shadow-2xl space-y-2 transition-colors group-hover:border-white/20">
                                 <h4 className="text-base sm:text-lg font-black text-white tracking-tight font-sans line-clamp-1">
                                   {evt.title}
                                 </h4>
-                                <p className="text-xs sm:text-sm text-zinc-300 font-medium tracking-normal truncate">
-                                  {evt.venue || "CUBIC LOJA"} • {evt.dateLabel || "18 SEP 2026"} - Desde {evt.price === 0 ? "0" : (evt.price || "10")} $
-                                </p>
+                                <div className="flex items-center justify-between gap-2 pt-0.5">
+                                  <p className="text-xs sm:text-sm text-zinc-300 font-medium tracking-normal truncate">
+                                    {evt.venue || "CUBIC LOJA"} • Desde {evt.price === 0 ? "0" : (evt.price || "10")} $
+                                  </p>
+                                  <button
+                                    type="button"
+                                    onClick={(e) => handleOpenReservationModal(evt, e)}
+                                    className="px-3.5 py-1.5 rounded-full bg-white hover:bg-zinc-200 text-black text-[11px] font-black uppercase tracking-wider transition-all shadow-md active:scale-95 shrink-0"
+                                  >
+                                    {userReservations[evt.id] ? "RESERVADO ✓" : "RESERVAR"}
+                                  </button>
+                                </div>
                               </div>
                             </div>
                           ))}
@@ -2814,88 +2843,24 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
         }}
       />
 
-      {/* Purchasing Access Modal Dialog */}
-      <div
-        className={`fixed inset-0 z-[350] flex items-end md:items-center justify-center transition-all duration-300 ${isTicketModalOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
-          }`}
-        style={{
-          backdropFilter: showDetailOverlay ? "none" : "blur(24px)",
-          background: showDetailOverlay
-            ? "transparent"
-            : isTicketModalOpen
-              ? "rgba(0, 0, 0, 0.88)"
-              : "transparent",
+      {/* ─── NEW RESERVATION CHECKOUT MODAL (MATCHING SCREENSHOT 1 & 2) ─── */}
+      <ReservationCheckoutModal
+        isOpen={showReservationModal || isTicketModalOpen}
+        onClose={() => {
+          setShowReservationModal(false);
+          setIsTicketModalOpen(false);
         }}
-      >
-        <motion.div
-          animate={isTicketModalOpen ? { y: 0, opacity: 1 } : { y: 60, opacity: 0 }}
-          transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
-          drag="y"
-          dragControls={checkoutDragControls}
-          dragListener={false}
-          dragConstraints={{ top: 0, bottom: 0 }}
-          dragElastic={{ top: 0.05, bottom: 0.85 }}
-          onDragEnd={(event, info) => {
-            if (info.offset.y > 150 || info.velocity.y > 500) {
-              if (accessDropRef.current?.isSuccess) {
-                setFarewellName(accessDropRef.current.firstName);
-                setShowFarewell(true);
-                accessDropRef.current?.reset();
-                setShowDetailOverlay(false);
-              }
-              setIsTicketModalOpen(false);
-              setCheckoutState("register");
-            }
-          }}
-          className={`relative w-full h-[96dvh] transition-all duration-500 overflow-hidden flex flex-col rounded-t-[32px] md:rounded-[36px] border border-white/[0.07] bg-gradient-to-b from-zinc-900 via-zinc-950 to-black shadow-[0_-20px_80px_rgba(0,0,0,0.8)] md:shadow-[0_40px_120px_rgba(0,0,0,0.9)] md:mx-4 ${checkoutState === "success" || checkoutState === "verifying"
-            ? "md:max-w-[460px] md:h-[580px]"
-            : "md:max-w-[860px] md:h-[96vh]"
-            }`}
-        >
-          {/* Drag handle — mobile only */}
-          <div
-            className="md:hidden flex justify-center pt-3 pb-3 shrink-0 cursor-grab active:cursor-grabbing touch-none"
-            onPointerDown={(e) => checkoutDragControls.start(e)}
-          >
-            <div className="h-1.5 w-12 rounded-full bg-white/20" />
-          </div>
-
-          <button
-            onClick={() => {
-              if (accessDropRef.current?.isSuccess) {
-                setFarewellName(accessDropRef.current.firstName);
-                setShowFarewell(true);
-                accessDropRef.current?.reset();
-                setShowDetailOverlay(false);
-              }
-              setIsTicketModalOpen(false);
-              setCheckoutState("register");
-            }}
-            aria-label="Cerrar compra"
-            className="absolute right-4 top-4 z-50 flex h-9 w-9 items-center justify-center rounded-full border border-white/10 bg-black/70 text-white/60 transition hover:text-white hover:border-white/25"
-          >
-            <X className="h-4 w-4" />
-          </button>
-
-          {/* Scrollable form content */}
-          <div className="flex-1 overflow-y-auto no-scrollbar">
-            <AccessDrop
-              ref={accessDropRef}
-              onFarewell={(name) => {
-                setFarewellName(name);
-                setShowFarewell(true);
-                setShowDetailOverlay(false);
-              }}
-              onClose={() => {
-                setIsTicketModalOpen(false);
-                setCheckoutState("register");
-              }}
-              onStateChange={(state) => setCheckoutState(state)}
-              event={selectedCarouselEvent}
-            />
-          </div>
-        </motion.div>
-      </div>
+        event={reservationTargetEvent || selectedCarouselEvent}
+        userProfile={userProfile}
+        userLoggedIn={userLoggedIn}
+        userReservations={userReservations}
+        onConfirmReservation={handleConfirmReservation}
+        onOpenAuth={() => setShowAuthModalForFavorites(true)}
+        onViewMyReservations={() => {
+          setActiveStoryScreen(2);
+          setSelectedDay("mis_reservas");
+        }}
+      />
 
       {/* Meet2Go Style Glassmorphic Quick Preview Modal */}
       <QuickPreviewModal
@@ -2914,7 +2879,8 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
             onClose={() => setShowDetailOverlay(false)}
             onBuy={(event) => {
               setSelectedCarouselEvent(event);
-              setIsTicketModalOpen(true);
+              setReservationTargetEvent(event);
+              setShowReservationModal(true);
             }}
             onSelectEvent={(event) => {
               setSelectedCarouselEvent(event);
@@ -2924,7 +2890,7 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
               setSelectedOrganizerSlug(slug || "cubic");
               setShowOrganizerOverlay(true);
             }}
-            isCheckoutOpen={isTicketModalOpen}
+            isCheckoutOpen={showReservationModal || isTicketModalOpen}
           />
         )}
       </AnimatePresence>
