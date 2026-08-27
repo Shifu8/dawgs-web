@@ -31,8 +31,13 @@ body {
 }
 
 ::selection {
-  background: rgba(var(--theme-primary-rgb, 255, 0, 24), 0.72);
-  color: white;
+  background-color: #ff3b5c !important;
+  color: #ffffff !important;
+}
+
+::-moz-selection {
+  background-color: #ff3b5c !important;
+  color: #ffffff !important;
 }
 
 @keyframes lightningFast {

@@ -399,6 +399,8 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
   const [isRecoveryPulse, setIsRecoveryPulse] = useState(false);
   const [showEventModal, setShowEventModal] = useState(false);
   const [showDetailOverlay, setShowDetailOverlay] = useState(false);
+  const [showReservationModal, setShowReservationModal] = useState(false);
+  const [reservationTargetEvent, setReservationTargetEvent] = useState<Event | null>(null);
   const [showQuickPreview, setShowQuickPreview] = useState(false);
   const [quickPreviewEvent, setQuickPreviewEvent] = useState<any>(null);
   const [expandedCardId, setExpandedCardId] = useState<string | null>(null);
@@ -533,22 +535,98 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
     };
   }, [storyScreens.length, showDetailOverlay, isTicketModalOpen, showEventModal, showHiddenMenu, showUserMenu]);
 
-  // Auto-open EventDetailOverlay if initialEventSlug is specified
+  const isInitialRestored = useRef(false);
+
+  // Restore active event detail overlay or reservation modal on refresh / initial mount
   useEffect(() => {
-    if (initialEventSlug && Array.isArray(events)) {
-      const targetSlug = String(initialEventSlug).toLowerCase();
+    if (typeof window === "undefined") return;
+    if (!events || events.length === 0) return;
+
+    const params = new URLSearchParams(window.location.search);
+    const urlEventParam = params.get("event");
+    const isReserveParam = params.get("reserve") === "1" || params.get("reserve") === "true";
+
+    let savedView: { eventId?: string; eventSlug?: string; showDetail?: boolean; showReservation?: boolean } | null = null;
+    try {
+      const raw = sessionStorage.getItem("nnz_active_view");
+      if (raw) savedView = JSON.parse(raw);
+    } catch { }
+
+    const targetIdentifier = initialEventSlug || urlEventParam || savedView?.eventSlug || savedView?.eventId;
+    const shouldReserve = isReserveParam || Boolean(savedView?.showReservation);
+    const shouldShowDetail = Boolean(initialEventSlug) || Boolean(urlEventParam) || Boolean(savedView?.showDetail) || shouldReserve;
+
+    if (targetIdentifier) {
+      const targetSlug = String(targetIdentifier).toLowerCase();
       const match = events.find((e) => {
         if (!e) return false;
         const slugMatch = typeof (e as any).slug === "string" && (e as any).slug.toLowerCase() === targetSlug;
         const idMatch = typeof e.id === "string" && e.id.toLowerCase() === targetSlug;
         return slugMatch || idMatch;
       });
+
       if (match) {
         setSelectedCarouselEvent(match);
-        setShowDetailOverlay(true);
+        setReservationTargetEvent(match);
+        const foundIdx = events.findIndex((e) => e.id === match.id);
+        if (foundIdx !== -1) setActiveIndex(foundIdx);
+
+        if (shouldShowDetail) {
+          setShowDetailOverlay(true);
+        }
+        if (shouldReserve) {
+          setShowReservationModal(true);
+        }
       }
     }
-  }, [initialEventSlug, events]);
+
+    isInitialRestored.current = true;
+  }, [events, initialEventSlug]);
+
+  // Persist active event detail overlay or reservation modal state to URL & sessionStorage
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    if (!isInitialRestored.current) return;
+
+    const isCheckoutOpen = showReservationModal || isTicketModalOpen;
+    const activeEvt = reservationTargetEvent || selectedCarouselEvent;
+
+    if ((showDetailOverlay || isCheckoutOpen) && activeEvt) {
+      const eventSlugOrId = (activeEvt as any).slug || activeEvt.id;
+
+      try {
+        sessionStorage.setItem(
+          "nnz_active_view",
+          JSON.stringify({
+            eventId: activeEvt.id,
+            eventSlug: (activeEvt as any).slug || activeEvt.id,
+            showDetail: showDetailOverlay,
+            showReservation: isCheckoutOpen,
+          })
+        );
+      } catch { }
+
+      const url = new URL(window.location.href);
+      url.searchParams.set("event", eventSlugOrId);
+      if (isCheckoutOpen) {
+        url.searchParams.set("reserve", "1");
+      } else {
+        url.searchParams.delete("reserve");
+      }
+      window.history.replaceState({}, "", url.toString());
+    } else {
+      try {
+        sessionStorage.removeItem("nnz_active_view");
+      } catch { }
+
+      const url = new URL(window.location.href);
+      if (url.searchParams.has("event") || url.searchParams.has("reserve")) {
+        url.searchParams.delete("event");
+        url.searchParams.delete("reserve");
+        window.history.replaceState({}, "", url.toString());
+      }
+    }
+  }, [showDetailOverlay, showReservationModal, isTicketModalOpen, selectedCarouselEvent, reservationTargetEvent]);
 
   // Search & Catalog Filter State
   const [searchQuery, setSearchQuery] = useState("");
@@ -568,6 +646,39 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
   const [showAuthModalForFavorites, setShowAuthModalForFavorites] = useState(false);
   const [likedEvents, setLikedEvents] = useState<Record<string, boolean>>({});
   const [userReservations, setUserReservations] = useState<Record<string, boolean>>({});
+
+  // Listen to custom navigation & modal triggers dispatched from Footer
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    const handleFooterNav = (e: any) => {
+      setActiveStoryScreen(2); // Switches to Cartelera / Events screen
+      const filter = e.detail?.filter;
+      if (filter === "dj") {
+        setSelectedDay("dj");
+      }
+    };
+
+    const handleOrgRegister = () => {
+      setShowUserMenu(true);
+      setOrganizerSubView("create_event");
+    };
+
+    const handleOrgLogin = () => {
+      setShowUserMenu(true);
+      setOrganizerSubView("menu");
+    };
+
+    window.addEventListener("footer-navigate", handleFooterNav);
+    window.addEventListener("open-organizer-register", handleOrgRegister);
+    window.addEventListener("open-organizer-login", handleOrgLogin);
+
+    return () => {
+      window.removeEventListener("footer-navigate", handleFooterNav);
+      window.removeEventListener("open-organizer-register", handleOrgRegister);
+      window.removeEventListener("open-organizer-login", handleOrgLogin);
+    };
+  }, []);
 
   // Sync per-user favorites and reservations from localStorage & DB on login
   useEffect(() => {
@@ -666,9 +777,6 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
     });
   };
 
-  const [showReservationModal, setShowReservationModal] = useState(false);
-  const [reservationTargetEvent, setReservationTargetEvent] = useState<Event | null>(null);
-
   const handleOpenReservationModal = (evt: Event, e?: React.MouseEvent) => {
     if (e) e.stopPropagation();
     setReservationTargetEvent(evt);
@@ -738,7 +846,7 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
 
       return matchesCategory && matchesSearch;
     });
-  }, [events, selectedDay, carteleraSearchQuery]);
+  }, [events, selectedDay, carteleraSearchQuery, likedEvents, userReservations]);
 
   // Matching promoter / club profiles for Cartelera search query
   const matchingCarteleraProfiles = useMemo(() => {
@@ -1225,6 +1333,7 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
 
   const onBuy = (event: Event) => {
     setSelectedCarouselEvent(event);
+    setReservationTargetEvent(event);
     setIsTicketModalOpen(true);
   };
 
@@ -2758,7 +2867,7 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
 
                     <div className="w-full">
                       {filteredCarteleraEvents.length > 0 ? (
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 sm:gap-8 max-w-4xl mx-auto">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 max-w-6xl mx-auto">
                           {filteredCarteleraEvents.map((evt) => (
                             <div
                               key={`cartelera-card-${evt.id}`}
@@ -3078,15 +3187,11 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
               transition={{ type: "spring", damping: 25, stiffness: 300 }}
               className="fixed top-16 right-4 z-[370] w-80 rounded-[32px] border border-white/20 bg-zinc-900/60 backdrop-blur-3xl p-5 shadow-[0_25px_60px_rgba(0,0,0,0.7)] space-y-4 text-white font-sans"
             >
-              {/* Header with Green Ring Avatar & Close Button (MI CUENTA) */}
+              {/* Header with Clean Icon & Close Button (MI CUENTA) */}
               <div className="flex items-center justify-between pb-3 border-b border-white/10">
                 <div className="flex items-center gap-3">
-                  <div className="h-10 w-10 rounded-full bg-black border-2 border-emerald-400 text-white font-black flex items-center justify-center p-0.5 shadow-[0_0_12px_rgba(52,211,153,0.4)] shrink-0 overflow-hidden">
-                    {userProfile?.avatar ? (
-                      <img src={userProfile.avatar} alt={userProfile.name || "Perfil"} className="w-full h-full object-cover rounded-full" />
-                    ) : (
-                      <User className="w-5 h-5 text-white" />
-                    )}
+                  <div className="h-10 w-10 rounded-full bg-zinc-800 border border-white/20 text-white flex items-center justify-center shrink-0">
+                    <User className="w-5 h-5 text-white" />
                   </div>
                   <div>
                     <h4 className="text-sm font-black uppercase text-white tracking-wider leading-none">MI CUENTA</h4>
@@ -3104,28 +3209,35 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                 </button>
               </div>
 
-              {/* Logged Out Social Login Action Buttons */}
+              {/* Logged Out Actions: Google & Email Login */}
               {!userLoggedIn && (
-                <div className="grid grid-cols-2 gap-2.5">
+                <div className="space-y-2">
                   <button
                     type="button"
                     onClick={() => {
                       setShowUserMenu(false);
                       handleQuickSocialLogin('google');
                     }}
-                    className="w-full py-3 px-3 rounded-2xl bg-white text-black font-black text-xs uppercase tracking-wider text-center hover:bg-zinc-100 transition-all shadow-lg active:scale-95 cursor-pointer"
+                    className="w-full py-3 px-4 rounded-2xl bg-white text-black font-black text-xs uppercase tracking-wider flex items-center justify-center hover:bg-zinc-100 transition-all shadow-md active:scale-95 cursor-pointer"
                   >
-                    Iniciar Sesión
+                    <svg className="w-4 h-4 mr-2" viewBox="0 0 24 24">
+                      <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
+                      <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
+                      <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z" />
+                      <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z" />
+                    </svg>
+                    <span>Entrar con Google</span>
                   </button>
+
                   <button
                     type="button"
                     onClick={() => {
                       setShowUserMenu(false);
                       handleQuickSocialLogin('google');
                     }}
-                    className="w-full py-3 px-3 rounded-2xl bg-[#8b5cf6] hover:bg-[#7c3aed] text-white font-black text-xs uppercase tracking-wider text-center transition-all shadow-[0_4px_20px_rgba(139,92,246,0.4)] active:scale-95 cursor-pointer"
+                    className="w-full py-2.5 px-4 rounded-2xl bg-zinc-800 hover:bg-zinc-700 text-white font-bold text-xs uppercase tracking-wider text-center border border-white/10 transition-all active:scale-95 cursor-pointer"
                   >
-                    Registrarse
+                    Iniciar Sesión con Correo
                   </button>
                 </div>
               )}
@@ -3184,7 +3296,7 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                       setShowUserMenu(false);
                       setOrganizerSubView("my_events");
                     }}
-                    className="w-full px-4 py-3 rounded-2xl text-left text-xs font-black uppercase tracking-wider text-emerald-400 hover:bg-white/10 transition-all cursor-pointer border border-emerald-500/20 block"
+                    className="w-full px-4 py-3 rounded-2xl text-left text-xs font-black uppercase tracking-wider text-white hover:bg-white/10 transition-all cursor-pointer border border-white/10 block"
                   >
                     Mis Eventos
                   </button>

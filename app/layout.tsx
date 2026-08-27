@@ -30,9 +30,9 @@ const quicksand = Quicksand({
 });
 
 export const metadata: Metadata = {
-  title: "4GO",
+  title: "4GO | Eventos, Conciertos y Fiestas Exclusivas",
   description:
-    "Descubre los mejores eventos, conciertos y experiencias en Ecuador con 4GO.",
+    "Descubre los mejores eventos, conciertos y experiencias en Ecuador con 4GO. Entradas 100% seguras y acceso directo.",
   manifest: "/manifest.json",
   icons: {
     icon: [
@@ -40,6 +40,26 @@ export const metadata: Metadata = {
     ],
     shortcut: "/images/alien_green_hands_white.jpg?v=3",
     apple: "/images/alien_green_hands_white.jpg?v=3",
+  },
+  openGraph: {
+    title: "4GO | Eventos & Entradas Exclusivas",
+    description: "Descubre los mejores eventos, conciertos y experiencias en Ecuador con 4GO.",
+    siteName: "4GO",
+    images: [
+      {
+        url: "/images/nenez_merch_official_couch_hero.png",
+        width: 1200,
+        height: 630,
+        alt: "4GO Eventos",
+      },
+    ],
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "4GO | Eventos & Entradas Exclusivas",
+    description: "Descubre los mejores eventos, conciertos y experiencias en Ecuador con 4GO.",
+    images: ["/images/nenez_merch_official_couch_hero.png"],
   },
   appleWebApp: { capable: true, title: "4GO", statusBarStyle: "black-translucent" },
   other: {

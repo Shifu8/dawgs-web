@@ -2,6 +2,7 @@
 
 import React from "react";
 import Image from "next/image";
+import Link from "next/link";
 import {
   Globe,
   ExternalLink,
@@ -16,7 +17,7 @@ export default function Footer() {
       <div className="max-w-[1400px] mx-auto space-y-16 relative z-10">
         {/* ─── TOP SECTION: NAVIGATION COLUMNS ─── */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-8 items-start lg:items-center">
-          {/* Left Column: Logo + Description (Vertically Centered & Larger) */}
+          {/* Left Column: Logo + Description */}
           <div className="lg:col-span-5 lg:self-center flex items-center gap-5 sm:gap-6 h-full">
             <div className="relative w-24 h-24 sm:w-32 sm:h-32 shrink-0">
               <Image
@@ -33,100 +34,64 @@ export default function Footer() {
 
           {/* Right Columns: Links (Nuestra empresa, Fan Support, Recursos) */}
           <div className="lg:col-span-7 grid grid-cols-1 sm:grid-cols-3 gap-8 sm:gap-6 pt-2">
-            {/* Column 1 */}
+            {/* Column 1: Nuestra Empresa */}
             <div className="space-y-4">
               <h4 className="text-sm sm:text-base font-black uppercase tracking-widest text-zinc-900">
                 Nuestra empresa
               </h4>
               <ul className="space-y-3 text-xs sm:text-sm text-zinc-600 font-medium">
                 <li>
-                  <a href="#explore" className="hover:text-black transition-colors">
+                  <Link href="/about" className="hover:text-black transition-colors block">
                     Sobre 4GO
-                  </a>
+                  </Link>
                 </li>
                 <li>
-                  <a href="/organizer/register" className="hover:text-black transition-colors">
+                  <Link href="/work" className="hover:text-black transition-colors block">
                     Trabaja con nosotrxs
-                  </a>
+                  </Link>
                 </li>
                 <li>
-                  <a href="#explore" className="hover:text-black transition-colors">
+                  <Link href="/dei" className="hover:text-black transition-colors block">
                     Diversidad, Equidad e Inclusión
-                  </a>
+                  </Link>
                 </li>
               </ul>
             </div>
 
-            {/* Column 2 */}
+            {/* Column 2: Fan Support */}
             <div className="space-y-4">
               <h4 className="text-sm sm:text-base font-black uppercase tracking-widest text-zinc-900">
                 Fan Support
               </h4>
               <ul className="space-y-3 text-xs sm:text-sm text-zinc-600 font-medium">
                 <li>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      if (typeof window !== "undefined") {
-                        window.dispatchEvent(new CustomEvent("open-ai-chatbot"));
-                      }
-                    }}
-                    className="hover:text-black transition-colors text-left cursor-pointer"
-                  >
+                  <Link href="/help" className="hover:text-black transition-colors block">
                     Recibir ayuda
-                  </button>
+                  </Link>
                 </li>
                 <li>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      if (typeof window !== "undefined") {
-                        window.dispatchEvent(new CustomEvent("open-ai-chatbot"));
-                      }
-                    }}
-                    className="hover:text-black transition-colors text-left cursor-pointer"
-                  >
+                  <Link href="/faq" className="hover:text-black transition-colors block">
                     Preguntas frecuentes
-                  </button>
-                </li>
-                <li>
-                  <a href="https://wa.me/593999999999" target="_blank" rel="noopener noreferrer" className="hover:text-black transition-colors">
-                    Soporte de reserva
-                  </a>
+                  </Link>
                 </li>
               </ul>
             </div>
 
-            {/* Column 3 */}
+            {/* Column 3: Recursos (Únicamente Blog y Partners) */}
             <div className="space-y-4">
               <h4 className="text-sm sm:text-base font-black uppercase tracking-widest text-zinc-900">
                 Recursos
               </h4>
               <ul className="space-y-3 text-xs sm:text-sm text-zinc-600 font-medium">
                 <li>
-                  <a href="#explore" className="hover:text-black transition-colors">
-                    Artistas
-                  </a>
-                </li>
-                <li>
-                  <a href="#explore" className="hover:text-black transition-colors">
-                    Salas & Venues
-                  </a>
-                </li>
-                <li>
-                  <a href="#explore" className="hover:text-black transition-colors">
+                  <Link href="/blog" className="hover:text-black transition-colors block">
                     Blog
-                  </a>
+                  </Link>
                 </li>
                 <li>
-                  <a href="#explore" className="hover:text-black transition-colors">
-                    Prensa
-                  </a>
-                </li>
-                <li>
-                  <a href="/organizer/login" className="hover:text-black transition-colors inline-flex items-center gap-1.5">
+                  <Link href="/partners" className="hover:text-black transition-colors inline-flex items-center gap-1.5">
                     Partners <ExternalLink className="w-3.5 h-3.5 text-zinc-400" />
-                  </a>
+                  </Link>
                 </li>
               </ul>
             </div>

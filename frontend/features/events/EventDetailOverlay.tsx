@@ -73,9 +73,58 @@ export default function EventDetailOverlay({
   const [isScrolledDown, setIsScrolledDown] = useState(false);
   const [followedIds, setFollowedIds] = useState<Record<string, boolean>>({});
   const [isAddressCopied, setIsAddressCopied] = useState(false);
+  const [showShareMenu, setShowShareMenu] = useState(false);
+  const [copiedLink, setCopiedLink] = useState(false);
 
   const mainContainerRef = useRef<HTMLDivElement>(null);
   const infoSectionRef = useRef<HTMLDivElement>(null);
+
+  const getShareableUrl = () => {
+    if (typeof window === "undefined") return "https://4go.ec";
+    const origin = window.location.origin;
+    const eventSlug = (event as any).slug || event.id;
+    const isLocal = origin.includes("localhost") || origin.includes("127.0.0.1");
+    const baseUrl = isLocal ? "https://4go.ec" : origin;
+    return `${baseUrl}/events/${eventSlug}`;
+  };
+
+  const handleCopyLink = (e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
+    const shareUrl = typeof window !== "undefined" ? window.location.href : getShareableUrl();
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(shareUrl);
+      setCopiedLink(true);
+      setTimeout(() => {
+        setCopiedLink(false);
+        setShowShareMenu(false);
+      }, 1800);
+    }
+  };
+
+  const handleShareWhatsApp = (e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
+    const shareUrl = getShareableUrl();
+    const text = `¡Mira este evento en 4GO! 🎉\n\n📌 *${event.title}*\n🗓️ ${event.dateLabel || ''}\n📍 ${event.venue || event.city || ''}\n\n👉 ${shareUrl}`;
+    window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`, "_blank");
+    setShowShareMenu(false);
+  };
+
+  const handleShareFacebook = (e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
+    const shareUrl = getShareableUrl();
+    const text = `${event.title} | 4GO`;
+    const fbUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}&quote=${encodeURIComponent(text)}`;
+    window.open(fbUrl, "_blank", "width=650,height=600");
+    setShowShareMenu(false);
+  };
+
+  const handleShareX = (e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
+    const shareUrl = getShareableUrl();
+    const text = `¡Mira este evento en 4GO!: ${event.title}`;
+    window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(shareUrl)}`, "_blank", "width=600,height=500");
+    setShowShareMenu(false);
+  };
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -163,11 +212,7 @@ export default function EventDetailOverlay({
         <div className="pointer-events-auto flex items-center gap-2">
           <button
             type="button"
-            onClick={() => {
-              if (navigator.share) {
-                navigator.share({ title: event.title, url: window.location.href });
-              }
-            }}
+            onClick={() => setShowShareMenu(!showShareMenu)}
             className="flex items-center justify-center w-11 h-11 rounded-full bg-black/60 border border-white/20 text-white hover:bg-white/20 backdrop-blur-md transition-all cursor-pointer shadow-2xl active:scale-95"
             aria-label="Compartir"
           >
@@ -188,8 +233,6 @@ export default function EventDetailOverlay({
           </button>
         </div>
       </header>
-
-
 
       {/* ─── FULL-PAGE MAIN SCROLLABLE CONTAINER ─── */}
       <div
@@ -218,8 +261,8 @@ export default function EventDetailOverlay({
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-60" />
 
-              {/* Overlaid Action Buttons Bottom Right */}
-              <div className="absolute bottom-3 right-3 flex items-center gap-2 z-10">
+              {/* Overlaid Action Buttons Bottom Right (Heart & Share Popover) */}
+              <div className="absolute bottom-3 right-3 flex items-center gap-2 z-20">
                 <button
                   type="button"
                   onClick={(e) => {
@@ -235,24 +278,98 @@ export default function EventDetailOverlay({
                 >
                   <Heart className={`w-4 h-4 ${isFavorite ? "fill-red-400 text-red-400" : ""}`} />
                 </button>
+
+                <div className="relative">
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setShowShareMenu(!showShareMenu);
+                    }}
+                    className="w-9 h-9 rounded-full backdrop-blur-md border flex items-center justify-center transition-transform active:scale-95 bg-black/70 border-white/20 text-white hover:bg-black/90"
+                    aria-label="Compartir evento"
+                  >
+                    <Share2 className="w-4 h-4" />
+                  </button>
+
+                  {/* Share Popover Menu (Glassmorphism Oscuro Matching User Request) */}
+                  <AnimatePresence>
+                    {showShareMenu && (
+                      <>
+                        <div
+                          className="fixed inset-0 z-[95] bg-transparent cursor-default pointer-events-auto"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setShowShareMenu(false);
+                          }}
+                        />
+                        <motion.div
+                          initial={{ opacity: 0, scale: 0.9, y: 10 }}
+                          animate={{ opacity: 1, scale: 1, y: 0 }}
+                          exit={{ opacity: 0, scale: 0.9, y: 10 }}
+                          onClick={(e) => e.stopPropagation()}
+                          className="absolute bottom-12 right-0 z-[100] w-52 bg-zinc-950/90 backdrop-blur-2xl text-white shadow-[0_25px_60px_rgba(0,0,0,0.85)] rounded-2xl p-1.5 border border-white/20 flex flex-col divide-y divide-white/10 select-none"
+                        >
+                          {/* Copiar link */}
+                          <button
+                            type="button"
+                            onClick={(e) => handleCopyLink(e)}
+                            className="w-full flex items-center justify-between px-3.5 py-3 hover:bg-white/15 transition-colors cursor-pointer text-xs font-semibold text-white rounded-xl"
+                          >
+                            <span>{copiedLink ? "¡Link copiado!" : "Copiar link"}</span>
+                            {copiedLink ? (
+                              <Check className="w-4 h-4 text-emerald-400" />
+                            ) : (
+                              <Copy className="w-4 h-4 text-zinc-300" />
+                            )}
+                          </button>
+
+                          {/* WhatsApp */}
+                          <button
+                            type="button"
+                            onClick={(e) => handleShareWhatsApp(e)}
+                            className="w-full flex items-center justify-between px-3.5 py-3 hover:bg-white/15 transition-colors cursor-pointer text-xs font-semibold text-white rounded-xl"
+                          >
+                            <span>WhatsApp</span>
+                            <svg className="w-4 h-4 fill-current text-white" viewBox="0 0 24 24">
+                              <path d="M12.012 2c-5.506 0-9.989 4.478-9.99 9.984 0 1.76.459 3.477 1.33 4.987l-1.412 5.16 5.281-1.385c1.455.794 3.1 1.213 4.787 1.214h.004c5.505 0 9.987-4.479 9.988-9.986 0-2.668-1.038-5.176-2.925-7.062a9.924 9.924 0 0 0-7.063-2.916zm5.952 14.225c-.247.697-1.439 1.332-1.996 1.411-.512.072-1.176.103-3.69-.933-3.218-1.327-5.282-4.604-5.442-4.819-.159-.214-1.303-1.734-1.303-3.308 0-1.574.821-2.348 1.112-2.668.291-.32.635-.4.846-.4.212 0 .423.002.608.01.196.009.463-.075.725.555.264.634.9 2.195.979 2.355.079.16.132.348.026.56-.106.213-.159.347-.317.533-.159.187-.333.418-.476.561-.159.159-.325.333-.14.65.186.317.825 1.36 1.77 2.202 1.215 1.082 2.24 1.418 2.557 1.576.317.159.503.133.688-.079.185-.213.793-.925 1.005-1.243.212-.317.423-.264.714-.159.291.106 1.849.872 2.166 1.03.317.159.529.238.608.37.079.133.079.771-.168 1.468z"/>
+                            </svg>
+                          </button>
+
+                          {/* Facebook */}
+                          <button
+                            type="button"
+                            onClick={(e) => handleShareFacebook(e)}
+                            className="w-full flex items-center justify-between px-3.5 py-3 hover:bg-white/15 transition-colors cursor-pointer text-xs font-semibold text-white rounded-xl"
+                          >
+                            <span>Facebook</span>
+                            <svg className="w-4 h-4 fill-current text-white" viewBox="0 0 24 24">
+                              <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+                            </svg>
+                          </button>
+
+                          {/* X */}
+                          <button
+                            type="button"
+                            onClick={(e) => handleShareX(e)}
+                            className="w-full flex items-center justify-between px-3.5 py-3 hover:bg-white/15 transition-colors cursor-pointer text-xs font-semibold text-white rounded-xl"
+                          >
+                            <span>X</span>
+                            <svg className="w-4 h-4 fill-current text-white" viewBox="0 0 24 24">
+                              <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+                            </svg>
+                          </button>
+                        </motion.div>
+                      </>
+                    )}
+                  </AnimatePresence>
+                </div>
               </div>
             </div>
 
-            {/* "Tema más popular" (Box without play icon) */}
-            <div className="bg-white/5 border border-white/10 rounded-2xl p-4 flex items-center justify-between shadow-lg backdrop-blur-md">
-              <div className="flex flex-col space-y-0.5">
-                <span className="text-xs font-black text-white tracking-wide">
-                  Tema más popular
-                </span>
-                <span className="text-xs text-zinc-300 font-medium truncate">
-                  {(event as any).artistTrack || `${event.title} - Forever Young`}
-                </span>
-              </div>
-            </div>
-
-            {/* 4GO Anti-Scalping Protection Badge */}
-            <div className="space-y-2 pt-1">
-              <p className="text-xs text-zinc-400 leading-relaxed font-medium">
+            {/* 4GO Anti-Scalping Protection Badge (Exact Match to Photo 1) */}
+            <div className="space-y-3 pt-1">
+              <p className="text-xs text-zinc-300 leading-relaxed font-medium">
                 4GO protege a fans y artistas de la reventa ilegal. Tus entradas se guardarán de forma segura en la app.
               </p>
 
@@ -296,9 +413,9 @@ export default function EventDetailOverlay({
           {/* ─── RIGHT COLUMN (EVENT INFO + YELLOW COMPRAR TICKET BOX + CARTEL + SALA) ─── */}
           <div className="lg:col-span-7 flex flex-col space-y-6">
             
-            {/* Title & Subtitle */}
+            {/* Title & Subtitle (Bold exact font weight matching Photo 1) */}
             <div className="space-y-2">
-              <h1 className="text-4xl sm:text-6xl font-black text-white tracking-tight leading-none font-sans drop-shadow-md">
+              <h1 className="text-3xl sm:text-5xl lg:text-6xl font-bold text-white tracking-tight leading-[1.1] font-sans">
                 {event.title}
               </h1>
               <p className="text-xl sm:text-2xl font-bold text-zinc-200 tracking-tight">
