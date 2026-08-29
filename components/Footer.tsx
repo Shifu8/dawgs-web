@@ -113,11 +113,6 @@ export default function Footer({ showTopBanner = false }: FooterProps) {
                       Preguntas frecuentes
                     </Link>
                   </li>
-                  <li>
-                    <Link href="/ticket_reservation_terms" className="hover:text-black transition-colors block">
-                      Solicitar un reembolso
-                    </Link>
-                  </li>
                 </ul>
               </div>
 
@@ -128,11 +123,6 @@ export default function Footer({ showTopBanner = false }: FooterProps) {
                 </h4>
                 <ul className="space-y-3 text-xs sm:text-sm text-zinc-600 font-medium">
                   <li>
-                    <Link href="/artists" className="hover:text-black transition-colors block">
-                      Artistas
-                    </Link>
-                  </li>
-                  <li>
                     <Link href="/venues" className="hover:text-black transition-colors block">
                       Salas
                     </Link>
@@ -140,11 +130,6 @@ export default function Footer({ showTopBanner = false }: FooterProps) {
                   <li>
                     <Link href="/blog" className="hover:text-black transition-colors block">
                       Blog
-                    </Link>
-                  </li>
-                  <li>
-                    <Link href="/press" className="hover:text-black transition-colors block">
-                      Prensa
                     </Link>
                   </li>
                   <li>
