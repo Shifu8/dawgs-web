@@ -377,20 +377,30 @@ export default function EventPurchaseCheckoutModal({
       transition={{ duration: 0.35, ease: "easeInOut" }}
       className="fixed inset-0 z-[500] bg-[#0c0714] text-white flex flex-col select-none overflow-y-auto"
     >
-      {/* ─── AMBIENT POSTER COLOR BLUR BACKDROP (INSTANT GPU RENDER) ─── */}
-      <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden bg-[#0c0714] transform-gpu">
-        <Image
-          src={event.poster || DEFAULT_HD_EVENT_POSTER}
-          alt=""
-          aria-hidden="true"
-          fill
-          priority
-          quality={20}
-          sizes="120px"
-          className="object-cover object-center scale-150 blur-[90px] saturate-200 brightness-110 opacity-80 transform-gpu will-change-transform"
-        />
-        <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/20 to-[#0c0714]/95" />
-        <div className="absolute top-0 inset-x-0 h-36 bg-gradient-to-b from-black/80 via-black/30 to-transparent pointer-events-none" />
+      {/* ─── AMBIENT POSTER COLOR BLUR (AUTHENTIC GRADIENT FADE TO DEEP BLACK) ─── */}
+      <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden bg-black transform-gpu">
+        {/* Blurred Image with Smooth Mask-Image Gradient Fade to Black */}
+        <div
+          className="absolute top-0 inset-x-0 h-[85vh] max-h-[850px] overflow-hidden"
+          style={{
+            WebkitMaskImage: "linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,0.9) 25%, rgba(0,0,0,0.45) 60%, rgba(0,0,0,0) 100%)",
+            maskImage: "linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,0.9) 25%, rgba(0,0,0,0.45) 60%, rgba(0,0,0,0) 100%)",
+          }}
+        >
+          <Image
+            src={event.poster || DEFAULT_HD_EVENT_POSTER}
+            alt=""
+            aria-hidden="true"
+            fill
+            priority
+            quality={20}
+            sizes="120px"
+            className="object-cover object-top scale-150 blur-[90px] saturate-200 brightness-110 opacity-85 transform-gpu will-change-transform"
+          />
+        </div>
+
+        {/* Global Smooth Gradient Overlay */}
+        <div className="absolute inset-0 bg-gradient-to-b from-black/10 via-black/25 via-40% to-black pointer-events-none" />
       </div>
 
       {/* ─── TOP NAVIGATION HEADER BAR (MATCHES PHOTO 2: BACK ARROW + BREADCRUMBS) ─── */}
