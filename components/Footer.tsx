@@ -23,13 +23,14 @@ export default function Footer({ showTopBanner = false }: FooterProps) {
         <section className="w-full bg-black text-white py-16 sm:py-20 px-4 sm:px-8 border-t border-white/10 relative z-20 font-sans">
           <div className="max-w-2xl mx-auto flex flex-col items-center text-center space-y-6">
             {/* Dark Mascot Logo */}
-            <div className="relative w-28 h-28 sm:w-32 sm:h-32 flex items-center justify-center">
+            <div className="relative w-32 h-32 sm:w-36 sm:h-36 flex items-center justify-center">
               <Image
-                src="/images/logo_4go_dark_mascot.png"
-                alt="Reserva en segundos"
-                width={128}
-                height={128}
+                src="/images/logo_4go_vertical_eye_dark.png"
+                alt="4GO"
+                width={144}
+                height={144}
                 className="object-contain"
+                priority
               />
             </div>
 
