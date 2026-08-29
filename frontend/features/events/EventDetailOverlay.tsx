@@ -183,16 +183,17 @@ export default function EventDetailOverlay({
       transition={{ duration: 0.35, ease: "easeInOut" }}
       className="fixed inset-0 z-[300] bg-[#0c0714] text-white flex flex-col select-none overflow-hidden"
     >
-      {/* ─── ULTRA-VIVID AMBIENT POSTER COLOR BLUR BACKDROP ─── */}
-      <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden bg-[#0c0714]">
+      {/* ─── ULTRA-VIVID AMBIENT POSTER COLOR BLUR BACKDROP (INSTANT GPU RENDER) ─── */}
+      <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden bg-[#0c0714] transform-gpu">
         <Image
-          src={getHdImageSrc(event.poster || DEFAULT_HD_EVENT_POSTER)}
-          alt={event.title}
+          src={event.poster || DEFAULT_HD_EVENT_POSTER}
+          alt=""
+          aria-hidden="true"
           fill
           priority
-          quality={100}
-          sizes="100vw"
-          className="object-cover object-center scale-150 blur-[110px] saturate-200 brightness-110 opacity-75"
+          quality={20}
+          sizes="120px"
+          className="object-cover object-center scale-150 blur-[90px] saturate-200 brightness-110 opacity-80 transform-gpu will-change-transform"
         />
         {/* Subtle Dark Gradient Overlay */}
         <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-black/40 to-[#0c0714]/95" />
