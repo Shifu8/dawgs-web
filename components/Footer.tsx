@@ -79,7 +79,7 @@ export default function Footer() {
           <div className="lg:col-span-4 flex justify-start lg:justify-end">
             <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-3xl bg-white flex items-center justify-center p-3 shadow-2xl overflow-hidden border border-white/20">
               <Image
-                src="/images/alien_green_hands_white.png"
+                src="/images/logo_4go_black_white.png"
                 alt="4GO Logo"
                 width={84}
                 height={84}
@@ -102,7 +102,7 @@ export default function Footer() {
             <div className="lg:col-span-5 lg:self-center flex items-center gap-5 sm:gap-6 h-full">
               <div className="relative w-20 h-20 sm:w-24 sm:h-24 shrink-0 rounded-2xl overflow-hidden bg-zinc-50 border border-zinc-200 flex items-center justify-center p-2 shadow-sm">
                 <Image
-                  src="/images/alien_green_hands_white.png"
+                  src="/images/logo_4go_black_white.png"
                   alt="4GO Logo"
                   width={72}
                   height={72}

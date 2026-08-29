@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Autor: Brandon Medina
  * Fecha: 11/05/2026
  * DescripciÃ³n: Layout raÃ­z de Next.js para NENEZ.
@@ -39,10 +39,10 @@ export const metadata: Metadata = {
   manifest: "/manifest.json",
   icons: {
     icon: [
-      { url: "/images/alien_green_hands_white.png?v=4", type: "image/png" },
+      { url: "/images/logo_4go_black_white.png?v=4", type: "image/png" },
     ],
-    shortcut: "/images/alien_green_hands_white.png?v=4",
-    apple: "/images/alien_green_hands_white.png?v=4",
+    shortcut: "/images/logo_4go_black_white.png?v=4",
+    apple: "/images/logo_4go_black_white.png?v=4",
   },
   openGraph: {
     title: "4GO | Eventos & Entradas Exclusivas",
@@ -85,13 +85,13 @@ export default function RootLayout({
     >
       <head>
         <link rel="manifest" href="/manifest.json" />
-        <link rel="icon" href="/images/alien_green_hands_white.png?v=4" type="image/png" />
-        <link rel="shortcut icon" href="/images/alien_green_hands_white.png?v=4" type="image/png" />
+        <link rel="icon" href="/images/logo_4go_black_white.png?v=4" type="image/png" />
+        <link rel="shortcut icon" href="/images/logo_4go_black_white.png?v=4" type="image/png" />
         <meta name="theme-color" content="#ffffff" />
         <meta name="mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-        <link rel="apple-touch-icon" href="/images/alien_green_hands_white.png?v=4" />
+        <link rel="apple-touch-icon" href="/images/logo_4go_black_white.png?v=4" />
       </head>
       <body className="min-h-full flex flex-col">
         {children}
@@ -99,3 +99,4 @@ export default function RootLayout({
     </html>
   );
 }
+

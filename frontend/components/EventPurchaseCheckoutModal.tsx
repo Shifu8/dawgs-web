@@ -351,7 +351,7 @@ export default function EventPurchaseCheckoutModal({
     <div className="flex items-start gap-3.5 pt-2 text-left">
       <div className="w-10 h-10 rounded-2xl bg-white flex items-center justify-center shrink-0 shadow-md overflow-hidden p-1 border border-white/20">
         <Image
-          src="/images/alien_green_hands_white.png"
+          src="/images/logo_4go_black_white.png"
           alt="4GO Favicon"
           width={34}
           height={34}

@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState, useEffect } from "react";
 import Image from "next/image";
@@ -452,7 +452,7 @@ export default function ReservationCheckoutModal({
                   <div className="flex items-center gap-4 text-zinc-300 text-[11px] leading-relaxed pt-2">
                     <div className="w-12 h-12 rounded-2xl bg-black flex items-center justify-center shrink-0 shadow-lg overflow-hidden border border-white/20">
                       <Image
-                        src="/images/alien_green_hands_white.jpg"
+                        src="/images/logo_4go_black_white.png"
                         alt="4GO Favicon Logo"
                         width={48}
                         height={48}
@@ -470,3 +470,4 @@ export default function ReservationCheckoutModal({
         </motion.div>
   );
 }
+

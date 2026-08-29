@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import React from "react";
 import Image from "next/image";
@@ -20,7 +20,7 @@ export default function BlogPage() {
         </Link>
         <Link href="/" className="relative w-10 h-10 shrink-0">
           <Image
-            src="/images/alien_green_hands_white.jpg"
+            src="/images/logo_4go_black_white.png"
             alt="4GO Logo"
             fill
             className="object-contain rounded-xl"
@@ -43,7 +43,7 @@ export default function BlogPage() {
         <article className="border border-zinc-200 rounded-3xl p-6 sm:p-8 bg-zinc-50 space-y-6 text-left">
           <div className="w-full aspect-[21/9] relative rounded-2xl overflow-hidden bg-zinc-950">
             <Image
-              src="/images/alien_green_hands_white.jpg"
+              src="/images/logo_4go_black_white.png"
               alt="Portada Blog 4GO"
               fill
               className="object-cover"
@@ -81,7 +81,7 @@ export default function BlogPage() {
           <article className="border border-zinc-200 rounded-3xl p-6 bg-zinc-50 space-y-4">
             <div className="w-full aspect-video relative rounded-2xl overflow-hidden bg-zinc-950">
               <Image
-                src="/images/alien_green_hands_white.jpg"
+                src="/images/logo_4go_black_white.png"
                 alt="Comunidad 4GO"
                 fill
                 className="object-cover"
@@ -102,3 +102,4 @@ export default function BlogPage() {
     </div>
   );
 }
+

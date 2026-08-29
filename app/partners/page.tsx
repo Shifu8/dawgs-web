@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import React from "react";
 import Image from "next/image";
@@ -8,11 +8,11 @@ import { ArrowLeft } from "lucide-react";
 
 export default function PartnersPage() {
   const sponsors = [
-    { name: "CUBIC Club", type: "Venue Aliado", logo: "/images/alien_green_hands_white.jpg" },
-    { name: "Paradox", type: "Venue Aliado", logo: "/images/alien_green_hands_white.jpg" },
-    { name: "Colegio de Ingenieros Civiles", type: "Escenario Oficial", logo: "/images/alien_green_hands_white.jpg" },
-    { name: "Punnzara", type: "Venue Campestre", logo: "/images/alien_green_hands_white.jpg" },
-    { name: "SATA Club", type: "Venue Aliado", logo: "/images/alien_green_hands_white.jpg" },
+    { name: "CUBIC Club", type: "Venue Aliado", logo: "/images/logo_4go_black_white.png" },
+    { name: "Paradox", type: "Venue Aliado", logo: "/images/logo_4go_black_white.png" },
+    { name: "Colegio de Ingenieros Civiles", type: "Escenario Oficial", logo: "/images/logo_4go_black_white.png" },
+    { name: "Punnzara", type: "Venue Campestre", logo: "/images/logo_4go_black_white.png" },
+    { name: "SATA Club", type: "Venue Aliado", logo: "/images/logo_4go_black_white.png" },
     { name: "Patrocinador Oficial", type: "Marca Aliada", logo: null },
     { name: "Patrocinador Oficial", type: "Marca Aliada", logo: null },
     { name: "Patrocinador Oficial", type: "Marca Aliada", logo: null },
@@ -31,7 +31,7 @@ export default function PartnersPage() {
         </Link>
         <Link href="/" className="relative w-10 h-10 shrink-0">
           <Image
-            src="/images/alien_green_hands_white.jpg"
+            src="/images/logo_4go_black_white.png"
             alt="4GO Logo"
             fill
             className="object-contain rounded-xl"
@@ -97,3 +97,4 @@ export default function PartnersPage() {
     </div>
   );
 }
+

@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import React from "react";
 import Image from "next/image";
@@ -20,7 +20,7 @@ export default function WorkPage() {
         </Link>
         <Link href="/" className="relative w-10 h-10 shrink-0">
           <Image
-            src="/images/alien_green_hands_white.jpg"
+            src="/images/logo_4go_black_white.png"
             alt="4GO Logo"
             fill
             className="object-contain rounded-xl"
@@ -89,3 +89,4 @@ export default function WorkPage() {
     </div>
   );
 }
+

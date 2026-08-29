@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import React, { useState } from "react";
 import Link from "next/link";
@@ -51,7 +51,7 @@ export default function LegalLayout({ title, subtitle, activeTab, children }: Le
             <div className="flex items-center gap-6">
               <Link href="/" className="flex items-center gap-3 group">
                 <img
-                  src="/images/alien_green_hands_white.jpg?v=3"
+                  src="/images/logo_4go_black_white.png?v=3"
                   alt="4GO Favicon Logo"
                   className="w-10 h-10 rounded-2xl object-cover group-hover:scale-105 transition-transform shadow-sm"
                 />
@@ -164,4 +164,5 @@ export default function LegalLayout({ title, subtitle, activeTab, children }: Le
     </div>
   );
 }
+
 

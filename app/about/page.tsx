@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import React from "react";
 import Image from "next/image";
@@ -20,7 +20,7 @@ export default function AboutPage() {
         </Link>
         <Link href="/" className="relative w-10 h-10 shrink-0">
           <Image
-            src="/images/alien_green_hands_white.jpg"
+            src="/images/logo_4go_black_white.png"
             alt="4GO Logo"
             fill
             className="object-contain rounded-xl"
@@ -43,7 +43,7 @@ export default function AboutPage() {
         {/* Prominent Hero Showcase: Alien Green Hands Artwork */}
         <div className="w-full aspect-[21/10] sm:aspect-[16/7] relative rounded-3xl overflow-hidden border border-zinc-200 bg-white shadow-sm">
           <Image
-            src="/images/alien_green_hands_white.jpg"
+            src="/images/logo_4go_black_white.png"
             alt="Arte 4GO Manos Verdes"
             fill
             className="object-contain p-4"
@@ -81,3 +81,4 @@ export default function AboutPage() {
     </div>
   );
 }
+

@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import React from "react";
 import Image from "next/image";
@@ -8,11 +8,11 @@ import { ArrowLeft } from "lucide-react";
 
 export default function VenuesPage() {
   const venues = [
-    { name: "CUBIC Club", city: "Loja", desc: "El centro neurálgico de la música electrónica y fiestas urbanas en Loja.", img: "/images/alien_green_hands_white.jpg" },
-    { name: "Paradox", city: "Loja", desc: "Escenario principal de eventos en vivo, DJs y experiencias temáticas.", img: "/images/alien_green_hands_white.jpg" },
-    { name: "Colegio de Ingenieros Civiles", city: "Loja", desc: "Espacio amplio para grandes conciertos y festivales al aire libre.", img: "/images/alien_green_hands_white.jpg" },
-    { name: "Punnzara", city: "Loja", desc: "Venue campestre para eventos exclusivos y sunsets en Loja.", img: "/images/alien_green_hands_white.jpg" },
-    { name: "SATA Club", city: "Loja", desc: "Club de alta potencia de sonido e iluminación para noches inolvidables.", img: "/images/alien_green_hands_white.jpg" },
+    { name: "CUBIC Club", city: "Loja", desc: "El centro neurálgico de la música electrónica y fiestas urbanas en Loja.", img: "/images/logo_4go_black_white.png" },
+    { name: "Paradox", city: "Loja", desc: "Escenario principal de eventos en vivo, DJs y experiencias temáticas.", img: "/images/logo_4go_black_white.png" },
+    { name: "Colegio de Ingenieros Civiles", city: "Loja", desc: "Espacio amplio para grandes conciertos y festivales al aire libre.", img: "/images/logo_4go_black_white.png" },
+    { name: "Punnzara", city: "Loja", desc: "Venue campestre para eventos exclusivos y sunsets en Loja.", img: "/images/logo_4go_black_white.png" },
+    { name: "SATA Club", city: "Loja", desc: "Club de alta potencia de sonido e iluminación para noches inolvidables.", img: "/images/logo_4go_black_white.png" },
   ];
 
   return (
@@ -24,7 +24,7 @@ export default function VenuesPage() {
         </Link>
         <Link href="/" className="relative w-10 h-10 shrink-0">
           <Image
-            src="/images/alien_green_hands_white.jpg"
+            src="/images/logo_4go_black_white.png"
             alt="4GO Logo"
             fill
             className="object-contain rounded-xl"
@@ -73,3 +73,4 @@ export default function VenuesPage() {
     </div>
   );
 }
+
