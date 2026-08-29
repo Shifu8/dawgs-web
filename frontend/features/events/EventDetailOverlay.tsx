@@ -30,6 +30,7 @@ import {
 } from "lucide-react";
 import type { Event } from "@/frontend/types/domain";
 import { DEFAULT_HD_EVENT_POSTER, getHdImageSrc } from "@/frontend/utils/hdImages";
+import AppFooterAndDownloadBanner from "@/frontend/components/AppFooterAndDownloadBanner";
 
 interface EventDetailOverlayProps {
   event: Event;
@@ -568,6 +569,11 @@ export default function EventDetailOverlay({
             </div>
 
           </div>
+        </div>
+
+        {/* ─── APP DOWNLOAD BANNER & WHITE FOOTER DIRECTORY (MATCHES SCREENSHOT) ─── */}
+        <div className="mt-20">
+          <AppFooterAndDownloadBanner />
         </div>
       </div>
 
