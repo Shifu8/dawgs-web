@@ -18,74 +18,30 @@ interface FooterProps {
 export default function Footer({ showTopBanner = false }: FooterProps) {
   return (
     <div className="w-full font-sans">
-      {/* ─── SECTION 1: RESERVAR ENTRADAS NUNCA FUE TAN FÁCIL (ONLY ON EVENT DETAILS) ─── */}
+      {/* ─── SECTION 1: RESERVA EN SEGUNDOS (ONLY ON EVENT DETAILS) ─── */}
       {showTopBanner && (
-        <section className="w-full bg-black text-white py-16 sm:py-24 px-4 sm:px-8 border-t border-white/10 relative z-20 font-sans">
-          <div className="max-w-6xl mx-auto text-center space-y-12 sm:space-y-16">
-            {/* Main Title */}
-            <h2 className="text-2xl sm:text-4xl lg:text-5xl font-black text-white tracking-tight uppercase font-sans">
-              RESERVAR ENTRADAS NUNCA FUE TAN FÁCIL
+        <section className="w-full bg-black text-white py-16 sm:py-20 px-4 sm:px-8 border-t border-white/10 relative z-20 font-sans">
+          <div className="max-w-2xl mx-auto flex flex-col items-center text-center space-y-6">
+            {/* Dark Mascot Logo */}
+            <div className="relative w-28 h-28 sm:w-32 sm:h-32 flex items-center justify-center">
+              <Image
+                src="/images/logo_4go_dark_mascot.png"
+                alt="Reserva en segundos"
+                width={128}
+                height={128}
+                className="object-contain"
+              />
+            </div>
+
+            {/* Title */}
+            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-black text-white uppercase tracking-tight">
+              RESERVA EN SEGUNDOS
             </h2>
 
-            {/* 3 Columns Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-10 sm:gap-12 max-w-5xl mx-auto">
-              {/* Column 1: Reserva en Segundos */}
-              <div className="flex flex-col items-center text-center space-y-4">
-                <div className="relative w-24 h-24 sm:w-28 sm:h-28 flex items-center justify-center">
-                  <Image
-                    src="/images/logo_4go_dark_mascot.png"
-                    alt="Reserva en segundos"
-                    width={110}
-                    height={110}
-                    className="object-contain"
-                  />
-                </div>
-                <h3 className="text-base sm:text-lg font-black text-white uppercase tracking-wider">
-                  RESERVA EN SEGUNDOS
-                </h3>
-                <p className="text-xs sm:text-sm text-zinc-400 font-medium leading-relaxed max-w-xs">
-                  Obtén tus entradas en menos tiempo del que te tomó leer esto.
-                </p>
-              </div>
-
-              {/* Column 2: Precios Transparentes */}
-              <div className="flex flex-col items-center text-center space-y-4">
-                <div className="relative w-24 h-24 sm:w-28 sm:h-28 flex items-center justify-center">
-                  <Image
-                    src="/images/logo_4go_dark_mascot.png"
-                    alt="Precios transparentes"
-                    width={110}
-                    height={110}
-                    className="object-contain"
-                  />
-                </div>
-                <h3 className="text-base sm:text-lg font-black text-white uppercase tracking-wider">
-                  PRECIOS TRANSPARENTES
-                </h3>
-                <p className="text-xs sm:text-sm text-zinc-400 font-medium leading-relaxed max-w-xs">
-                  Mira el precio total desde el inicio, sin cargos ocultos ni sorpresas al pagar.
-                </p>
-              </div>
-
-              {/* Column 3: Recomendaciones Personalizadas */}
-              <div className="flex flex-col items-center text-center space-y-4">
-                <div className="relative w-24 h-24 sm:w-28 sm:h-28 flex items-center justify-center">
-                  <Image
-                    src="/images/logo_4go_dark_mascot.png"
-                    alt="Recomendaciones personalizadas"
-                    width={110}
-                    height={110}
-                    className="object-contain"
-                  />
-                </div>
-                <h3 className="text-base sm:text-lg font-black text-white uppercase tracking-wider">
-                  RECOMENDACIONES PERSONALIZADAS
-                </h3>
-                <p className="text-xs sm:text-sm text-zinc-400 font-medium leading-relaxed max-w-xs">
-                  Descubre los eventos hechos a tu medida directamente en tu inicio.
-                </p>
-              </div>
-            </div>
+            {/* Comprehensive Description */}
+            <p className="text-sm sm:text-base text-zinc-300 font-medium leading-relaxed max-w-xl">
+              Obtén tus entradas oficiales y reservas de mesa al instante con confirmación directa, precios 100% transparentes sin recargos ocultos y acceso digital garantizado para tus eventos favoritos.
+            </p>
           </div>
         </section>
       )}
