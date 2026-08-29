@@ -393,75 +393,39 @@ export default function EventPurchaseCheckoutModal({
         <div className="absolute top-0 inset-x-0 h-36 bg-gradient-to-b from-black/80 via-black/30 to-transparent pointer-events-none" />
       </div>
 
-      {/* ─── TOP NAVIGATION HEADER BAR (MATCHES EXACT POSITION OF EVENT DETAIL) ─── */}
-      <header className="fixed top-0 inset-x-0 z-[520] flex items-center justify-between px-4 sm:px-8 py-4 bg-gradient-to-b from-[#0c0714]/90 via-[#0c0714]/50 to-transparent pointer-events-none">
-        {/* Left: Circular Back Arrow Button (Exact matching position & size) */}
-        <button
-          type="button"
-          onClick={() => {
-            if (currentStep === "payment") {
-              setCurrentStep("select");
-            } else {
-              onClose();
-            }
-          }}
-          className="pointer-events-auto flex items-center justify-center w-11 h-11 rounded-full bg-black/60 border border-white/20 text-white hover:bg-white/20 backdrop-blur-md transition-all cursor-pointer shadow-2xl active:scale-95 shrink-0"
-          aria-label="Volver"
-        >
-          <ArrowLeft className="w-5 h-5" />
-        </button>
-
-        {/* Center: Breadcrumbs (Desktop full steps, Mobile compact step badge) */}
-        <div className="hidden md:flex items-center gap-2 sm:gap-3 text-xs sm:text-sm font-black uppercase tracking-wider text-zinc-400">
-          <span className={currentStep === "select" ? "text-white font-black" : "text-zinc-500"}>
-            Entrada
-          </span>
-          <span className="text-zinc-600">→</span>
-          <span className={currentStep === "payment" ? "text-white font-black" : "text-zinc-500"}>
-            Pago
-          </span>
-          <span className="text-zinc-600">→</span>
-          <span className={currentStep === "confirmed" ? "text-white font-black" : "text-zinc-500"}>
-            Confirmación
-          </span>
-        </div>
-
-        {/* Mobile-only Step indicator (clean, centered, perfectly spaced) */}
-        <div className="md:hidden flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-black/60 border border-white/20 text-[11px] font-black uppercase tracking-wider text-white backdrop-blur-md">
-          {currentStep === "select" && <span>1/3 Entrada</span>}
-          {currentStep === "payment" && <span>2/3 Pago</span>}
-          {currentStep === "confirmed" && <span>3/3 Confirmado</span>}
-        </div>
-
-        {/* Right Actions: White ¿TIENES UN CÓDIGO? + Close X */}
-        <div className="pointer-events-auto flex items-center gap-2 shrink-0">
+      {/* ─── TOP NAVIGATION HEADER BAR (MATCHES PHOTO 2: BACK ARROW + BREADCRUMBS) ─── */}
+      <header className="fixed top-0 inset-x-0 z-[520] flex items-center px-4 sm:px-8 py-4 bg-gradient-to-b from-[#0c0714]/90 via-[#0c0714]/50 to-transparent pointer-events-none">
+        <div className="pointer-events-auto flex items-center gap-4 sm:gap-6">
+          {/* Left: Circular Back Arrow Button */}
           <button
             type="button"
-            onClick={() => setShowPromoModal(true)}
-            className={`flex items-center gap-1 px-3 sm:px-4 py-2 sm:py-2.5 rounded-full transition-all cursor-pointer shadow-xl active:scale-95 text-[10px] sm:text-xs font-black uppercase tracking-wider ${
-              appliedPromo
-                ? "bg-emerald-500 text-black shadow-[0_5px_15px_rgba(16,185,129,0.4)]"
-                : "bg-white hover:bg-zinc-200 text-black"
-            }`}
+            onClick={() => {
+              if (currentStep === "payment") {
+                setCurrentStep("select");
+              } else {
+                onClose();
+              }
+            }}
+            className="flex items-center justify-center w-11 h-11 rounded-full bg-black/60 border border-white/20 text-white hover:bg-white/20 backdrop-blur-md transition-all cursor-pointer shadow-2xl active:scale-95 shrink-0"
+            aria-label="Volver"
           >
-            {appliedPromo ? (
-              <span>-{appliedPromo.discount}$ ({appliedPromo.code})</span>
-            ) : (
-              <>
-                <span className="sm:hidden">CÓDIGO</span>
-                <span className="hidden sm:inline">¿TIENES UN CÓDIGO?</span>
-              </>
-            )}
+            <ArrowLeft className="w-5 h-5" />
           </button>
 
-          <button
-            type="button"
-            onClick={onClose}
-            className="flex items-center justify-center w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-black/60 border border-white/20 text-white hover:bg-white/20 backdrop-blur-md transition-all cursor-pointer shadow-2xl active:scale-95 shrink-0"
-            aria-label="Cerrar modal"
-          >
-            <X className="w-5 h-5" />
-          </button>
+          {/* Breadcrumbs matching Photo 2 */}
+          <div className="flex items-center gap-2 sm:gap-3 text-xs sm:text-sm font-semibold tracking-normal text-zinc-400">
+            <span className={currentStep === "select" ? "text-white font-bold" : "text-zinc-400"}>
+              Entrada
+            </span>
+            <span className="text-zinc-500">→</span>
+            <span className={currentStep === "payment" ? "text-white font-bold" : "text-zinc-400"}>
+              Pago
+            </span>
+            <span className="text-zinc-500">→</span>
+            <span className={currentStep === "confirmed" ? "text-white font-bold" : "text-zinc-400"}>
+              Confirmación
+            </span>
+          </div>
         </div>
       </header>
 
@@ -660,6 +624,21 @@ export default function EventPurchaseCheckoutModal({
                     </div>
                   );
                 })}
+                {/* Promo Code Link (Photo 3 Styling) */}
+                <div className="pt-2 pb-1 text-left">
+                  <button
+                    type="button"
+                    onClick={() => setShowPromoModal(true)}
+                    className="text-base sm:text-lg font-black text-white hover:text-[#dfff28] transition-colors cursor-pointer text-left inline-flex items-center gap-2"
+                  >
+                    <span>¿Tienes un código?</span>
+                    {appliedPromo && (
+                      <span className="text-xs bg-emerald-500 text-black px-2.5 py-0.5 rounded-full font-bold">
+                        -{appliedPromo.discount}$ ({appliedPromo.code})
+                      </span>
+                    )}
+                  </button>
+                </div>
               </div>
 
               {/* Mobile Only Legal Notice below Tiers List (Screenshot 3) */}
@@ -686,6 +665,21 @@ export default function EventPurchaseCheckoutModal({
                       </span>
                     )}
                   </div>
+                </div>
+
+                <div className="pt-1">
+                  <button
+                    type="button"
+                    onClick={() => setShowPromoModal(true)}
+                    className="text-xs sm:text-sm font-black text-black hover:text-zinc-700 transition-colors cursor-pointer text-left inline-flex items-center gap-1.5"
+                  >
+                    <span>¿Tienes un código?</span>
+                    {appliedPromo && (
+                      <span className="text-[10px] bg-emerald-500 text-black px-2 py-0.5 rounded-full font-bold">
+                        -{appliedPromo.discount}$
+                      </span>
+                    )}
+                  </button>
                 </div>
 
                 <button
