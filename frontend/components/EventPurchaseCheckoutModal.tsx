@@ -51,6 +51,8 @@ const BANK_ACCOUNTS = [
     holder: "4GO PRODUCTIONS S.A.S",
     idNumber: "1104589234001",
     email: "pagos@4go.ec",
+    qrImage: "/images/qr-banco-pichincha.png",
+    qrSubtitle: "Escanea con Pichincha o DeUna!",
   },
   {
     id: "loja",
@@ -60,15 +62,8 @@ const BANK_ACCOUNTS = [
     holder: "4GO PRODUCTIONS S.A.S",
     idNumber: "1104589234001",
     email: "pagos@4go.ec",
-  },
-  {
-    id: "deuna",
-    bank: "Deuna! / Pichincha QR",
-    type: "Pago Directo QR",
-    accountNumber: "0995123456",
-    holder: "4GO Producciones",
-    idNumber: "1104589234001",
-    email: "pagos@4go.ec",
+    qrImage: "/images/qr-banco-loja.png",
+    qrSubtitle: "Escanea con Banco de Loja Móvil",
   },
 ];
 
@@ -744,87 +739,113 @@ export default function EventPurchaseCheckoutModal({
               </div>
             </div>
 
-            {/* Select Bank for Transfer */}
+            {/* Select Bank for Transfer (Only Pichincha & Loja) */}
             <div className="space-y-3">
               <label className="text-xs font-black uppercase tracking-wider text-zinc-400 block">
                 1. Selecciona la Cuenta Bancaria para Transferir
               </label>
 
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+              <div className="grid grid-cols-2 gap-3">
                 {BANK_ACCOUNTS.map((b) => (
                   <button
                     key={b.id}
                     type="button"
                     onClick={() => setSelectedBankId(b.id)}
-                    className={`p-3.5 rounded-2xl border text-left transition-all cursor-pointer flex flex-col justify-between ${
+                    className={`p-4 rounded-2xl border text-left transition-all cursor-pointer flex flex-col justify-between ${
                       selectedBankId === b.id
-                        ? "bg-[#dfff28]/10 border-[#dfff28] text-white shadow-lg"
+                        ? "bg-[#dfff28]/10 border-[#dfff28] text-white shadow-lg ring-1 ring-[#dfff28]/30"
                         : "bg-black/40 border-white/10 hover:bg-black/60 text-zinc-400"
                     }`}
                   >
-                    <span className="text-xs font-black text-white">{b.bank}</span>
-                    <span className="text-[10px] text-zinc-400 mt-1">{b.type}</span>
+                    <span className="text-sm font-black text-white">{b.bank}</span>
+                    <span className="text-xs text-zinc-400 mt-1">{b.type}</span>
                   </button>
                 ))}
               </div>
 
-              {/* Selected Bank Details Box */}
-              <div className="p-5 rounded-3xl bg-black/60 border border-white/15 backdrop-blur-xl space-y-3 font-sans">
-                <div className="flex items-center justify-between">
+              {/* Selected Bank Details & QR Code Box */}
+              <div className="p-5 sm:p-6 rounded-3xl bg-black/60 border border-white/15 backdrop-blur-xl space-y-4 font-sans">
+                <div className="flex items-center justify-between border-b border-white/10 pb-3">
                   <div className="space-y-0.5">
                     <span className="text-[11px] font-bold text-zinc-400 uppercase">Banco</span>
-                    <h4 className="text-sm font-black text-white">{selectedBank.bank}</h4>
+                    <h4 className="text-base font-black text-white">{selectedBank.bank}</h4>
                   </div>
-                  <span className="text-xs px-2.5 py-1 rounded-full bg-white/10 font-bold text-zinc-300">
+                  <span className="text-xs px-3 py-1 rounded-full bg-white/10 font-bold text-zinc-300">
                     {selectedBank.type}
                   </span>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 border-t border-white/10">
-                  <div className="space-y-1">
-                    <span className="text-[10px] font-bold text-zinc-400 uppercase block">
-                      Número de Cuenta
-                    </span>
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm font-mono font-black text-white">
-                        {selectedBank.accountNumber}
+                <div className="grid grid-cols-1 sm:grid-cols-12 gap-5 items-center">
+                  {/* Left Column: Account Details */}
+                  <div className="sm:col-span-7 space-y-3">
+                    <div className="space-y-1">
+                      <span className="text-[10px] font-bold text-zinc-400 uppercase block">
+                        Número de Cuenta
                       </span>
-                      <button
-                        type="button"
-                        onClick={() => handleCopyText(selectedBank.accountNumber, "acc")}
-                        className="p-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-zinc-300 hover:text-white transition cursor-pointer"
-                        title="Copiar número"
-                      >
-                        {copiedBankField === "acc" ? (
-                          <Check className="w-3.5 h-3.5 text-emerald-400" />
-                        ) : (
-                          <Copy className="w-3.5 h-3.5" />
-                        )}
-                      </button>
+                      <div className="flex items-center gap-2">
+                        <span className="text-base sm:text-lg font-mono font-black text-white">
+                          {selectedBank.accountNumber}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => handleCopyText(selectedBank.accountNumber, "acc")}
+                          className="p-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-zinc-300 hover:text-white transition cursor-pointer"
+                          title="Copiar número"
+                        >
+                          {copiedBankField === "acc" ? (
+                            <Check className="w-3.5 h-3.5 text-emerald-400" />
+                          ) : (
+                            <Copy className="w-3.5 h-3.5" />
+                          )}
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className="space-y-1">
+                      <span className="text-[10px] font-bold text-zinc-400 uppercase block">
+                        Titular / RUC
+                      </span>
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs font-bold text-white truncate max-w-[170px]">
+                          {selectedBank.holder}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => handleCopyText(selectedBank.idNumber, "ruc")}
+                          className="p-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-zinc-300 hover:text-white transition cursor-pointer shrink-0"
+                          title="Copiar RUC"
+                        >
+                          {copiedBankField === "ruc" ? (
+                            <Check className="w-3.5 h-3.5 text-emerald-400" />
+                          ) : (
+                            <Copy className="w-3.5 h-3.5" />
+                          )}
+                        </button>
+                      </div>
+                      <p className="text-xs font-mono text-zinc-400">{selectedBank.idNumber}</p>
+                    </div>
+
+                    <div className="space-y-1">
+                      <span className="text-[10px] font-bold text-zinc-400 uppercase block">
+                        Correo de Notificación
+                      </span>
+                      <p className="text-xs font-bold text-zinc-300">{selectedBank.email}</p>
                     </div>
                   </div>
 
-                  <div className="space-y-1">
-                    <span className="text-[10px] font-bold text-zinc-400 uppercase block">
-                      Titular / RUC
-                    </span>
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs font-bold text-white truncate max-w-[140px]">
-                        {selectedBank.holder}
-                      </span>
-                      <button
-                        type="button"
-                        onClick={() => handleCopyText(selectedBank.idNumber, "ruc")}
-                        className="p-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-zinc-300 hover:text-white transition cursor-pointer shrink-0"
-                        title="Copiar RUC"
-                      >
-                        {copiedBankField === "ruc" ? (
-                          <Check className="w-3.5 h-3.5 text-emerald-400" />
-                        ) : (
-                          <Copy className="w-3.5 h-3.5" />
-                        )}
-                      </button>
+                  {/* Right Column: Official Bank QR Code */}
+                  <div className="sm:col-span-5 flex flex-col items-center justify-center p-3.5 rounded-2xl bg-white text-black text-center shadow-xl space-y-2">
+                    <div className="relative w-36 h-36 rounded-xl overflow-hidden bg-white p-1">
+                      <Image
+                        src={selectedBank.qrImage}
+                        alt={`QR ${selectedBank.bank}`}
+                        fill
+                        className="object-contain"
+                      />
                     </div>
+                    <span className="text-[10px] font-black text-zinc-800 leading-tight uppercase">
+                      {selectedBank.qrSubtitle}
+                    </span>
                   </div>
                 </div>
               </div>
