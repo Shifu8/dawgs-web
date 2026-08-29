@@ -20,7 +20,7 @@ import {
   Tag,
 } from "lucide-react";
 import type { Event } from "@/frontend/types/domain";
-import { getHdImageSrc } from "@/frontend/utils/hdImages";
+import { getHdImageSrc, DEFAULT_HD_EVENT_POSTER } from "@/frontend/utils/hdImages";
 
 interface EventPurchaseCheckoutModalProps {
   isOpen: boolean;
@@ -377,16 +377,17 @@ export default function EventPurchaseCheckoutModal({
       transition={{ duration: 0.35, ease: "easeInOut" }}
       className="fixed inset-0 z-[500] bg-[#0c0714] text-white flex flex-col select-none overflow-y-auto"
     >
-      {/* ─── AMBIENT POSTER COLOR BLUR BACKDROP ─── */}
-      <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden bg-[#0c0714]">
+      {/* ─── AMBIENT POSTER COLOR BLUR BACKDROP (INSTANT GPU RENDER) ─── */}
+      <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden bg-[#0c0714] transform-gpu">
         <Image
-          src={getHdImageSrc(event.poster)}
-          alt={event.title}
+          src={event.poster || DEFAULT_HD_EVENT_POSTER}
+          alt=""
+          aria-hidden="true"
           fill
           priority
-          quality={100}
-          sizes="100vw"
-          className="object-cover object-center scale-150 blur-[110px] saturate-200 brightness-110 opacity-75"
+          quality={20}
+          sizes="120px"
+          className="object-cover object-center scale-150 blur-[90px] saturate-200 brightness-110 opacity-80 transform-gpu will-change-transform"
         />
         <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/20 to-[#0c0714]/95" />
         <div className="absolute top-0 inset-x-0 h-36 bg-gradient-to-b from-black/80 via-black/30 to-transparent pointer-events-none" />

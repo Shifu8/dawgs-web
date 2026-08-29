@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useState, useEffect } from "react";
 import Image from "next/image";
@@ -170,16 +170,17 @@ export default function ReservationCheckoutModal({
       transition={{ duration: 0.35, ease: "easeInOut" }}
       className="fixed inset-0 z-[500] bg-[#0c0714] text-white flex flex-col select-none overflow-y-auto p-4 sm:p-6 md:p-8"
     >
-          {/* ─── AMBIENT POSTER COLOR BLUR BACKDROP ─── */}
-          <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden bg-[#0c0714]">
+          {/* ─── AMBIENT POSTER COLOR BLUR BACKDROP (INSTANT GPU RENDER) ─── */}
+          <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden bg-[#0c0714] transform-gpu">
             <Image
-              src={getHdImageSrc(activeEvent.poster)}
-              alt={activeEvent.title}
+              src={activeEvent.poster || "/images/now4go-hero-presentation-hd-v3.png"}
+              alt=""
+              aria-hidden="true"
               fill
               priority
-              quality={100}
-              sizes="100vw"
-              className="object-cover object-center scale-150 blur-[110px] saturate-200 brightness-110 opacity-75"
+              quality={20}
+              sizes="120px"
+              className="object-cover object-center scale-150 blur-[90px] saturate-200 brightness-110 opacity-80 transform-gpu will-change-transform"
             />
             <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/20 to-[#0c0714]/95" />
             <div className="absolute top-0 inset-x-0 h-36 bg-gradient-to-b from-black/80 via-black/30 to-transparent pointer-events-none" />
