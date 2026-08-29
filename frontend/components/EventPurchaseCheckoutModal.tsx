@@ -375,7 +375,7 @@ export default function EventPurchaseCheckoutModal({
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       transition={{ duration: 0.35, ease: "easeInOut" }}
-      className="fixed inset-0 z-[500] bg-[#0c0714] text-white flex flex-col select-none overflow-y-auto"
+      className="fixed inset-0 z-[500] bg-black text-white flex flex-col select-none overflow-y-auto"
     >
       {/* ─── AMBIENT POSTER COLOR BLUR (AUTHENTIC GRADIENT FADE TO DEEP BLACK) ─── */}
       <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden bg-black transform-gpu">
@@ -403,11 +403,11 @@ export default function EventPurchaseCheckoutModal({
         <div className="absolute inset-0 bg-gradient-to-b from-black/10 via-black/25 via-40% to-black pointer-events-none" />
       </div>
 
-      {/* ─── TOP NAVIGATION HEADER BAR (MATCHES USER REQUEST) ─── */}
-      <header className="fixed top-0 inset-x-0 z-[520] px-4 sm:px-8 py-3.5 sm:py-4 bg-gradient-to-b from-[#0c0714]/95 via-[#0c0714]/70 to-transparent pointer-events-none">
+      {/* ─── TOP NAVIGATION HEADER BAR (NATURALLY PLACED AT TOP OF PAGE) ─── */}
+      <header className="relative z-20 w-full max-w-5xl mx-auto px-4 sm:px-6 pt-5 pb-2">
         <div className="relative w-full flex flex-col md:flex-row md:items-center">
           {/* Left: Circular Back Arrow Button */}
-          <div className="pointer-events-auto flex items-center justify-start">
+          <div className="flex items-center justify-start">
             <button
               type="button"
               onClick={() => {
@@ -425,7 +425,7 @@ export default function EventPurchaseCheckoutModal({
           </div>
 
           {/* Breadcrumbs: Centered with the page (Under arrow on mobile, same row on PC) */}
-          <div className="pointer-events-auto w-full md:absolute md:left-1/2 md:-translate-x-1/2 flex items-center justify-center gap-2 sm:gap-3 text-xs sm:text-sm font-semibold tracking-normal text-zinc-400 pt-2.5 md:pt-0">
+          <div className="w-full md:absolute md:left-1/2 md:-translate-x-1/2 flex items-center justify-center gap-2 sm:gap-3 text-xs sm:text-sm font-semibold tracking-normal text-zinc-400 pt-2.5 md:pt-0">
             <span className={currentStep === "select" ? "text-white font-bold" : "text-zinc-500"}>
               Entrada
             </span>
@@ -507,8 +507,8 @@ export default function EventPurchaseCheckoutModal({
         )}
       </AnimatePresence>
 
-      {/* ─── SCROLLABLE CONTENT BODY ─── */}
-      <div className="relative z-10 w-full max-w-5xl mx-auto px-4 sm:px-6 pt-28 md:pt-24 pb-36 lg:pb-20 flex flex-col space-y-5">
+      {/* ─── SCROLLABLE CONTENT BODY (NATURAL SCROLL FLOW WITH HEADER) ─── */}
+      <div className="relative z-10 w-full max-w-5xl mx-auto px-4 sm:px-6 pt-3 pb-36 lg:pb-20 flex flex-col space-y-5">
 
         {/* ══════════════════════════════════════════════════════════════ */}
         {/* PASO 1: SELECCIÓN DE ENTRADAS Y MESAS                         */}
