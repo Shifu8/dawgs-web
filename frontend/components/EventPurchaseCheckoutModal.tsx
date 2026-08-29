@@ -399,6 +399,9 @@ export default function EventPurchaseCheckoutModal({
           />
         </div>
 
+        {/* Top Edge Smooth Black Shadow Gradient */}
+        <div className="absolute top-0 inset-x-0 h-36 sm:h-44 bg-gradient-to-b from-black/80 via-black/35 to-transparent pointer-events-none" />
+
         {/* Global Smooth Gradient Overlay */}
         <div className="absolute inset-0 bg-gradient-to-b from-black/10 via-black/25 via-40% to-black pointer-events-none" />
       </div>
