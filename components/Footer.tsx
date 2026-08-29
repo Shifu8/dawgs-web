@@ -7,71 +7,71 @@ import {
   Globe,
   ExternalLink,
   Music,
-  Heart,
+  ShieldCheck,
   Ticket,
 } from "lucide-react";
 
 export default function Footer() {
   return (
     <div className="w-full font-sans">
-      {/* ─── SECTION 1: DESCARGA LA APP DE 4GO (MATCHES SCREENSHOT) ─── */}
+      {/* ─── SECTION 1: ACCESO OFICIAL Y SEGURO 4GO ─── */}
       <section className="w-full bg-[#0c0714] text-white py-16 px-4 sm:px-8 border-t border-white/10 relative z-20">
         <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8 items-center text-left">
-          {/* Left Column: Title + Feature List + Store Buttons */}
+          {/* Left Column: Title + Feature List + Action Buttons */}
           <div className="lg:col-span-8 space-y-6">
             <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black text-white tracking-tight font-sans">
-              Descarga la app de 4GO
+              Acceso Oficial y Seguro con 4GO
             </h2>
 
             <div className="space-y-4 text-zinc-300 text-xs sm:text-sm font-medium leading-relaxed max-w-2xl">
               <div className="flex items-start gap-3">
                 <Music className="w-5 h-5 text-zinc-400 shrink-0 mt-0.5" />
                 <p>
-                  Descubre las mejores fiestas en tu ciudad. Nos sincronizamos con tu biblioteca de
-                  música para ofrecerte recomendaciones personalizadas.
+                  Descubre las mejores fiestas, festivales y clubes con disponibilidad en tiempo real
+                  y precios transparentes sin cargos sorpresa al pagar.
                 </p>
               </div>
 
               <div className="flex items-start gap-3">
-                <Heart className="w-5 h-5 text-zinc-400 shrink-0 mt-0.5" />
+                <ShieldCheck className="w-5 h-5 text-zinc-400 shrink-0 mt-0.5" />
                 <p>
-                  Guarda tus eventos, compártelos con colegas o, incluso, escucha nueva música en la
-                  app. Todo, para estar siempre al tanto de lo que pasa.
+                  Protección anti-reventa garantizada. Cada entrada y reserva de mesa es oficial,
+                  verificada directamente con la cuenta bancaria del organizador.
                 </p>
               </div>
 
               <div className="flex items-start gap-3">
                 <Ticket className="w-5 h-5 text-zinc-400 shrink-0 mt-0.5" />
                 <p>
-                  Te lo ponemos fácil para cambiar tu entrada con la de algún colega o devolverla a
-                  la lista de espera. Cero estrés.
+                  Acceso digital directo. Tu entrada y código QR quedan guardados en tu perfil y
+                  enviados a tu correo electrónico para ingresar rápidamente.
                 </p>
               </div>
             </div>
 
-            {/* Store Download Buttons (iOS & Android) */}
+            {/* Clean Action Buttons */}
             <div className="flex items-center gap-3 pt-2">
               <button
                 type="button"
-                onClick={() => alert("Próximamente disponible en el App Store")}
-                className="px-5 py-3 rounded-full bg-white/10 hover:bg-white/20 border border-white/20 text-white font-black text-xs uppercase tracking-wider flex items-center gap-2 transition cursor-pointer active:scale-95 shadow-md"
+                onClick={() => {
+                  const exploreEl = document.getElementById("explore");
+                  if (exploreEl) {
+                    exploreEl.scrollIntoView({ behavior: "smooth" });
+                  } else {
+                    window.scrollTo({ top: 0, behavior: "smooth" });
+                  }
+                }}
+                className="px-6 py-3 rounded-full bg-white hover:bg-zinc-200 text-black font-black text-xs uppercase tracking-wider transition cursor-pointer active:scale-95 shadow-md"
               >
-                <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
-                  <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M15.97 6.37c.62-.75 1.04-1.8 0.92-2.85-.9.04-1.99.6-2.64 1.35-.58.67-.99 1.74-.87 2.76 1 .08 2.03-.51 2.59-1.26z" />
-                </svg>
-                <span>iOS</span>
+                EXPLORAR CARTELERA
               </button>
 
-              <button
-                type="button"
-                onClick={() => alert("Próximamente disponible en Google Play Store")}
-                className="px-5 py-3 rounded-full bg-white/10 hover:bg-white/20 border border-white/20 text-white font-black text-xs uppercase tracking-wider flex items-center gap-2 transition cursor-pointer active:scale-95 shadow-md"
+              <Link
+                href="/about"
+                className="px-6 py-3 rounded-full bg-white/10 hover:bg-white/20 border border-white/20 text-white font-black text-xs uppercase tracking-wider transition cursor-pointer active:scale-95 shadow-md inline-flex items-center justify-center"
               >
-                <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
-                  <path d="M3.609 1.814L13.792 12 3.61 22.186a2.05 2.05 0 0 1-.22-.303V2.117c.07-.11.144-.212.22-.303zm11.235 11.238l2.58 2.58-12.016 6.94 9.436-9.52zm0-2.104L5.408 1.428l12.016 6.94-2.58 2.58zm1.485 1.052l3.418 1.974c.74.427.74 1.123 0 1.55l-3.418 1.974-2.127-2.127 2.127-2.371z" />
-                </svg>
-                <span>ANDROID</span>
-              </button>
+                CONOCE MÁS SOBRE 4GO
+              </Link>
             </div>
           </div>
 
@@ -80,7 +80,7 @@ export default function Footer() {
             <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-3xl bg-white flex items-center justify-center p-3 shadow-2xl overflow-hidden border border-white/20">
               <Image
                 src="/images/alien_green_hands_white.png"
-                alt="4GO App Logo"
+                alt="4GO Logo"
                 width={84}
                 height={84}
                 className="object-contain rounded-2xl"
