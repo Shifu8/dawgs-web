@@ -572,7 +572,7 @@ export default function EventDetailOverlay({
         </div>
 
         {/* ─── FOOTER WITH EVENT ACCESS BANNER (ONLY ON EVENT DETAILS) ─── */}
-        <div className="mt-20 pb-28 lg:pb-0">
+        <div className="mt-20">
           <Footer showTopBanner={true} />
         </div>
       </div>
