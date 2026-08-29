@@ -403,36 +403,38 @@ export default function EventPurchaseCheckoutModal({
         <div className="absolute inset-0 bg-gradient-to-b from-black/10 via-black/25 via-40% to-black pointer-events-none" />
       </div>
 
-      {/* ─── TOP NAVIGATION HEADER BAR (MATCHES PHOTO 2: BACK ARROW + BREADCRUMBS) ─── */}
-      <header className="fixed top-0 inset-x-0 z-[520] flex items-center px-4 sm:px-8 py-4 bg-gradient-to-b from-[#0c0714]/90 via-[#0c0714]/50 to-transparent pointer-events-none">
-        <div className="pointer-events-auto flex items-center gap-4 sm:gap-6">
+      {/* ─── TOP NAVIGATION HEADER BAR (MATCHES USER REQUEST) ─── */}
+      <header className="fixed top-0 inset-x-0 z-[520] px-4 sm:px-8 py-3.5 sm:py-4 bg-gradient-to-b from-[#0c0714]/95 via-[#0c0714]/70 to-transparent pointer-events-none">
+        <div className="relative w-full flex flex-col md:flex-row md:items-center">
           {/* Left: Circular Back Arrow Button */}
-          <button
-            type="button"
-            onClick={() => {
-              if (currentStep === "payment") {
-                setCurrentStep("select");
-              } else {
-                onClose();
-              }
-            }}
-            className="flex items-center justify-center w-11 h-11 rounded-full bg-black/60 border border-white/20 text-white hover:bg-white/20 backdrop-blur-md transition-all cursor-pointer shadow-2xl active:scale-95 shrink-0"
-            aria-label="Volver"
-          >
-            <ArrowLeft className="w-5 h-5" />
-          </button>
+          <div className="pointer-events-auto flex items-center justify-start">
+            <button
+              type="button"
+              onClick={() => {
+                if (currentStep === "payment") {
+                  setCurrentStep("select");
+                } else {
+                  onClose();
+                }
+              }}
+              className="flex items-center justify-center w-11 h-11 rounded-full bg-black/60 border border-white/20 text-white hover:bg-white/20 backdrop-blur-md transition-all cursor-pointer shadow-2xl active:scale-95 shrink-0"
+              aria-label="Volver"
+            >
+              <ArrowLeft className="w-5 h-5" />
+            </button>
+          </div>
 
-          {/* Breadcrumbs matching Photo 2 */}
-          <div className="flex items-center gap-2 sm:gap-3 text-xs sm:text-sm font-semibold tracking-normal text-zinc-400">
-            <span className={currentStep === "select" ? "text-white font-bold" : "text-zinc-400"}>
+          {/* Breadcrumbs: Centered with the page (Under arrow on mobile, same row on PC) */}
+          <div className="pointer-events-auto w-full md:absolute md:left-1/2 md:-translate-x-1/2 flex items-center justify-center gap-2 sm:gap-3 text-xs sm:text-sm font-semibold tracking-normal text-zinc-400 pt-2.5 md:pt-0">
+            <span className={currentStep === "select" ? "text-white font-bold" : "text-zinc-500"}>
               Entrada
             </span>
-            <span className="text-zinc-500">→</span>
-            <span className={currentStep === "payment" ? "text-white font-bold" : "text-zinc-400"}>
+            <span className="text-zinc-600">→</span>
+            <span className={currentStep === "payment" ? "text-white font-bold" : "text-zinc-500"}>
               Pago
             </span>
-            <span className="text-zinc-500">→</span>
-            <span className={currentStep === "confirmed" ? "text-white font-bold" : "text-zinc-400"}>
+            <span className="text-zinc-600">→</span>
+            <span className={currentStep === "confirmed" ? "text-white font-bold" : "text-zinc-500"}>
               Confirmación
             </span>
           </div>
@@ -506,7 +508,7 @@ export default function EventPurchaseCheckoutModal({
       </AnimatePresence>
 
       {/* ─── SCROLLABLE CONTENT BODY ─── */}
-      <div className="relative z-10 w-full max-w-5xl mx-auto px-4 sm:px-6 pt-24 pb-36 lg:pb-20 flex flex-col space-y-5">
+      <div className="relative z-10 w-full max-w-5xl mx-auto px-4 sm:px-6 pt-28 md:pt-24 pb-36 lg:pb-20 flex flex-col space-y-5">
 
         {/* ══════════════════════════════════════════════════════════════ */}
         {/* PASO 1: SELECCIÓN DE ENTRADAS Y MESAS                         */}

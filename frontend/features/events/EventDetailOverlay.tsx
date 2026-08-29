@@ -258,10 +258,10 @@ export default function EventDetailOverlay({
           
           {/* ─── LEFT COLUMN (POSTER + AUDIO PLAYER + PROTECTION BADGES - STICKY ON PC) ─── */}
           <div className="lg:col-span-5 flex flex-col space-y-6 lg:sticky lg:top-24">
-            {/* Poster Artwork Container (Full width on mobile, max-w-[440px] on desktop) */}
+            {/* Poster Artwork Container (Full width on mobile, max-w-[440px] on desktop, aligned with title) */}
             <div
               onClick={() => setIsLightboxOpen(true)}
-              className="relative w-full aspect-square max-w-full lg:max-w-[440px] mx-auto rounded-3xl overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.85)] border border-white/20 bg-zinc-950 cursor-pointer group"
+              className="relative w-full aspect-square max-w-full lg:max-w-[440px] mx-auto lg:mx-0 rounded-3xl overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.85)] border border-white/20 bg-zinc-950 cursor-pointer group"
             >
               <Image
                 src={getHdImageSrc(event.poster || DEFAULT_HD_EVENT_POSTER)}
