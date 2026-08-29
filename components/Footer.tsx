@@ -90,8 +90,8 @@ export default function Footer() {
         </div>
       </section>
 
-      {/* ─── SECTION 2: WHITE FOOTER DIRECTORY (MATCHES SCREENSHOT) ─── */}
-      <footer className="w-full bg-white text-zinc-900 border-t border-zinc-200 pt-16 sm:pt-20 pb-20 px-4 sm:px-8 relative z-20 overflow-hidden font-sans">
+      {/* ─── SECTION 2: WHITE FOOTER DIRECTORY (MATCHES EXACT HOME FOOTER) ─── */}
+      <footer className="w-full bg-white text-zinc-900 border-t border-zinc-200 pt-16 sm:pt-20 pb-16 px-4 sm:px-8 relative z-20 overflow-hidden font-sans">
         {/* Background ambient lighting */}
         <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-full max-w-7xl h-64 bg-gradient-to-t from-purple-500/5 via-transparent to-transparent pointer-events-none blur-3xl" />
 

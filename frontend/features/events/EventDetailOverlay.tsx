@@ -30,7 +30,7 @@ import {
 } from "lucide-react";
 import type { Event } from "@/frontend/types/domain";
 import { DEFAULT_HD_EVENT_POSTER, getHdImageSrc } from "@/frontend/utils/hdImages";
-import AppFooterAndDownloadBanner from "@/frontend/components/AppFooterAndDownloadBanner";
+import Footer from "@/components/Footer";
 
 interface EventDetailOverlayProps {
   event: Event;
@@ -240,7 +240,7 @@ export default function EventDetailOverlay({
       <div
         ref={mainContainerRef}
         onScroll={handleScroll}
-        className="relative z-10 w-full h-full overflow-y-auto no-scrollbar pt-24 pb-36"
+        className="relative z-10 w-full h-full overflow-y-auto no-scrollbar pt-24 pb-0 flex flex-col justify-between"
       >
         {/* ─── MAIN 2-COLUMN GRID (DICE EXACT MATCHING SCREENSHOT) ─── */}
         <div className="max-w-6xl mx-auto px-3 sm:px-8 w-full grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-14 items-start">
@@ -571,9 +571,9 @@ export default function EventDetailOverlay({
           </div>
         </div>
 
-        {/* ─── APP DOWNLOAD BANNER & WHITE FOOTER DIRECTORY (MATCHES SCREENSHOT) ─── */}
+        {/* ─── WHITE FOOTER DIRECTORY (MATCHES EXACT HOME FOOTER) ─── */}
         <div className="mt-20">
-          <AppFooterAndDownloadBanner />
+          <Footer />
         </div>
       </div>
 
