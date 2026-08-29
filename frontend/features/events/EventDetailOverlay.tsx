@@ -257,7 +257,7 @@ export default function EventDetailOverlay({
         <div className="max-w-6xl mx-auto px-3 sm:px-8 w-full grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-14 items-start">
           
           {/* ─── LEFT COLUMN (POSTER + AUDIO PLAYER + PROTECTION BADGES - STICKY ON PC) ─── */}
-          <div className="lg:col-span-5 flex flex-col space-y-6 lg:sticky lg:top-24">
+          <div className="lg:col-span-5 flex flex-col space-y-6 lg:sticky lg:top-20 lg:-mt-2.5">
             {/* Poster Artwork Container (Full width on mobile, max-w-[440px] on desktop, aligned with title) */}
             <div
               onClick={() => setIsLightboxOpen(true)}
