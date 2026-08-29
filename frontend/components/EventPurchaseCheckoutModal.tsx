@@ -411,8 +411,8 @@ export default function EventPurchaseCheckoutModal({
           <ArrowLeft className="w-5 h-5" />
         </button>
 
-        {/* Center: Breadcrumb Steps in the SAME ROW (PC & Mobile) */}
-        <div className="flex items-center gap-2 sm:gap-3 text-xs sm:text-sm font-black uppercase tracking-wider text-zinc-400">
+        {/* Center: Breadcrumbs (Desktop full steps, Mobile compact step badge) */}
+        <div className="hidden md:flex items-center gap-2 sm:gap-3 text-xs sm:text-sm font-black uppercase tracking-wider text-zinc-400">
           <span className={currentStep === "select" ? "text-white font-black" : "text-zinc-500"}>
             Entrada
           </span>
@@ -426,12 +426,19 @@ export default function EventPurchaseCheckoutModal({
           </span>
         </div>
 
+        {/* Mobile-only Step indicator (clean, centered, perfectly spaced) */}
+        <div className="md:hidden flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-black/60 border border-white/20 text-[11px] font-black uppercase tracking-wider text-white backdrop-blur-md">
+          {currentStep === "select" && <span>1/3 Entrada</span>}
+          {currentStep === "payment" && <span>2/3 Pago</span>}
+          {currentStep === "confirmed" && <span>3/3 Confirmado</span>}
+        </div>
+
         {/* Right Actions: White ¿TIENES UN CÓDIGO? + Close X */}
-        <div className="pointer-events-auto flex items-center gap-2.5 shrink-0">
+        <div className="pointer-events-auto flex items-center gap-2 shrink-0">
           <button
             type="button"
             onClick={() => setShowPromoModal(true)}
-            className={`flex items-center gap-1.5 px-4 py-2.5 rounded-full transition-all cursor-pointer shadow-xl active:scale-95 text-[11px] sm:text-xs font-black uppercase tracking-wider ${
+            className={`flex items-center gap-1 px-3 sm:px-4 py-2 sm:py-2.5 rounded-full transition-all cursor-pointer shadow-xl active:scale-95 text-[10px] sm:text-xs font-black uppercase tracking-wider ${
               appliedPromo
                 ? "bg-emerald-500 text-black shadow-[0_5px_15px_rgba(16,185,129,0.4)]"
                 : "bg-white hover:bg-zinc-200 text-black"
@@ -440,14 +447,17 @@ export default function EventPurchaseCheckoutModal({
             {appliedPromo ? (
               <span>-{appliedPromo.discount}$ ({appliedPromo.code})</span>
             ) : (
-              <span>¿TIENES UN CÓDIGO?</span>
+              <>
+                <span className="sm:hidden">CÓDIGO</span>
+                <span className="hidden sm:inline">¿TIENES UN CÓDIGO?</span>
+              </>
             )}
           </button>
 
           <button
             type="button"
             onClick={onClose}
-            className="flex items-center justify-center w-11 h-11 rounded-full bg-black/60 border border-white/20 text-white hover:bg-white/20 backdrop-blur-md transition-all cursor-pointer shadow-2xl active:scale-95"
+            className="flex items-center justify-center w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-black/60 border border-white/20 text-white hover:bg-white/20 backdrop-blur-md transition-all cursor-pointer shadow-2xl active:scale-95 shrink-0"
             aria-label="Cerrar modal"
           >
             <X className="w-5 h-5" />
