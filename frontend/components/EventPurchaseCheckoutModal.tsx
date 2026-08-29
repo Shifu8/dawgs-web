@@ -406,41 +406,37 @@ export default function EventPurchaseCheckoutModal({
         <div className="absolute inset-0 bg-gradient-to-b from-black/10 via-black/25 via-40% to-black pointer-events-none" />
       </div>
 
-      {/* ─── TOP NAVIGATION HEADER BAR (NATURALLY PLACED AT TOP OF PAGE) ─── */}
-      <header className="relative z-20 w-full max-w-5xl mx-auto px-4 sm:px-6 pt-5 pb-2">
-        <div className="relative w-full flex flex-col md:flex-row md:items-center">
-          {/* Left: Circular Back Arrow Button */}
-          <div className="flex items-center justify-start">
-            <button
-              type="button"
-              onClick={() => {
-                if (currentStep === "payment") {
-                  setCurrentStep("select");
-                } else {
-                  onClose();
-                }
-              }}
-              className="flex items-center justify-center w-11 h-11 rounded-full bg-black/60 border border-white/20 text-white hover:bg-white/20 backdrop-blur-md transition-all cursor-pointer shadow-2xl active:scale-95 shrink-0"
-              aria-label="Volver"
-            >
-              <ArrowLeft className="w-5 h-5" />
-            </button>
-          </div>
+      {/* ─── TOP NAVIGATION HEADER BAR (EXACT MATCHING POSITION AS EVENT DETAIL) ─── */}
+      <header className="fixed top-0 inset-x-0 z-[550] flex items-center justify-between px-4 sm:px-8 py-4 bg-gradient-to-b from-black/90 via-black/40 to-transparent pointer-events-none">
+        {/* Left: Circular Back Arrow Button (Exact position & size as Event Detail) */}
+        <button
+          type="button"
+          onClick={() => {
+            if (currentStep === "payment") {
+              setCurrentStep("select");
+            } else {
+              onClose();
+            }
+          }}
+          className="pointer-events-auto flex items-center justify-center w-11 h-11 rounded-full bg-black/60 border border-white/20 text-white hover:bg-white/20 backdrop-blur-md transition-all cursor-pointer shadow-2xl active:scale-95 shrink-0"
+          aria-label="Volver"
+        >
+          <ArrowLeft className="w-5 h-5" />
+        </button>
 
-          {/* Breadcrumbs: Centered with the page (Under arrow on mobile, same row on PC) */}
-          <div className="w-full md:absolute md:left-1/2 md:-translate-x-1/2 flex items-center justify-center gap-2 sm:gap-3 text-xs sm:text-sm font-semibold tracking-normal text-zinc-400 pt-2.5 md:pt-0">
-            <span className={currentStep === "select" ? "text-white font-bold" : "text-zinc-500"}>
-              Entrada
-            </span>
-            <span className="text-zinc-600">→</span>
-            <span className={currentStep === "payment" ? "text-white font-bold" : "text-zinc-500"}>
-              Pago
-            </span>
-            <span className="text-zinc-600">→</span>
-            <span className={currentStep === "confirmed" ? "text-white font-bold" : "text-zinc-500"}>
-              Confirmación
-            </span>
-          </div>
+        {/* Center: Breadcrumbs (Desktop Centered in same row) */}
+        <div className="pointer-events-auto hidden md:flex absolute left-1/2 -translate-x-1/2 items-center gap-3 text-xs sm:text-sm font-semibold tracking-normal text-zinc-400">
+          <span className={currentStep === "select" ? "text-white font-bold" : "text-zinc-500"}>
+            Entrada
+          </span>
+          <span className="text-zinc-600">→</span>
+          <span className={currentStep === "payment" ? "text-white font-bold" : "text-zinc-500"}>
+            Pago
+          </span>
+          <span className="text-zinc-600">→</span>
+          <span className={currentStep === "confirmed" ? "text-white font-bold" : "text-zinc-500"}>
+            Confirmación
+          </span>
         </div>
       </header>
 
@@ -510,8 +506,22 @@ export default function EventPurchaseCheckoutModal({
         )}
       </AnimatePresence>
 
-      {/* ─── SCROLLABLE CONTENT BODY (NATURAL SCROLL FLOW WITH HEADER) ─── */}
-      <div className="relative z-10 w-full max-w-5xl mx-auto px-4 sm:px-6 pt-3 pb-36 lg:pb-20 flex flex-col space-y-5">
+      {/* ─── SCROLLABLE CONTENT BODY ─── */}
+      <div className="relative z-10 w-full max-w-5xl mx-auto px-4 sm:px-6 pt-20 md:pt-24 pb-36 lg:pb-20 flex flex-col space-y-5">
+        {/* Mobile Centered Breadcrumbs (Only on mobile, below fixed back arrow) */}
+        <div className="md:hidden flex items-center justify-center gap-2 text-xs font-semibold tracking-normal text-zinc-400 pb-1">
+          <span className={currentStep === "select" ? "text-white font-bold" : "text-zinc-500"}>
+            Entrada
+          </span>
+          <span className="text-zinc-600">→</span>
+          <span className={currentStep === "payment" ? "text-white font-bold" : "text-zinc-500"}>
+            Pago
+          </span>
+          <span className="text-zinc-600">→</span>
+          <span className={currentStep === "confirmed" ? "text-white font-bold" : "text-zinc-500"}>
+            Confirmación
+          </span>
+        </div>
 
         {/* ══════════════════════════════════════════════════════════════ */}
         {/* PASO 1: SELECCIÓN DE ENTRADAS Y MESAS                         */}
