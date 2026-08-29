@@ -90,7 +90,7 @@ export default function MobileCookieConsent() {
 
             {/* Description */}
             <p className="text-xs sm:text-sm text-zinc-600 font-normal leading-relaxed">
-              Usamos cookies para recolectar y analizar información relacionada con el uso y desempeño de nuestro sitio web para poder proveer funcionalidades relacionadas con las redes sociales, y para mejorar y personalizar adecuadamente el contenido y publicidad en nuestro sitio web.{" "}
+              Usamos cookies para recolectar y analizar información sobre el uso y desempeño de nuestro sitio web, garantizar el acceso seguro a tus entradas digitales y personalizar el contenido y la experiencia de eventos en nuestra plataforma.{" "}
               <button
                 type="button"
                 onClick={() => setView("settings")}
@@ -198,7 +198,7 @@ export default function MobileCookieConsent() {
                 </div>
 
                 <p className="text-xs text-zinc-600 leading-relaxed pl-1">
-                  Estas son cookies que se requieren para el funcionamiento de nuestra web. Incluyen, por ejemplo, cookies que le permiten acceder a áreas seguras de nuestra web, utilizar la cesta de la compra o utilizar servicios de facturación electrónica.
+                  Estas son cookies que se requieren para el funcionamiento de nuestra web. Incluyen, por ejemplo, cookies que le permiten acceder a áreas seguras de nuestra web, gestionar la compra de entradas o utilizar servicios de pago seguro.
                 </p>
 
                 {/* Sub-providers accordion items */}
@@ -216,7 +216,7 @@ export default function MobileCookieConsent() {
                   </div>
                   {expandedSections["cookiehub"] && (
                     <div className="pl-6 text-[11px] text-zinc-500 font-normal pb-1">
-                      Gestiona la autenticación segura, tokens de sesión y prevención de ataques CSRF.
+                      Gestiona la autenticación segura, tokens de sesión y prevención de accesos no autorizados.
                     </div>
                   )}
 
@@ -262,7 +262,7 @@ export default function MobileCookieConsent() {
                 </div>
 
                 <p className="text-xs text-zinc-600 leading-relaxed pl-1">
-                  Nos permiten reconocer y contar el número de visitantes y ver cómo se mueven los usuarios por nuestra web cuando la utilizan. Esto nos ayuda a mejorar el funcionamiento de los eventos y la rapidez del sistema.
+                  Nos permiten reconocer y contar el número de visitantes y ver cómo se mueven los usuarios por nuestra web para optimizar la velocidad y funcionamiento de los eventos.
                 </p>
               </div>
 
@@ -284,12 +284,12 @@ export default function MobileCookieConsent() {
                     <div className="w-5.5 h-5.5 rounded-full bg-white shadow-md transition-all" />
                   </button>
                   <h4 className="text-xs sm:text-sm font-black text-zinc-950">
-                    Cookies de personalización
+                    Cookies de personalización y marketing
                   </h4>
                 </div>
 
                 <p className="text-xs text-zinc-600 leading-relaxed pl-1">
-                  Se utilizan para registrar sus visitas a nuestro sitio web, las entradas consultadas y las discotecas seguidas para ofrecerle recomendaciones relevantes.
+                  Se utilizan para recordar sus preferencias de eventos y discotecas seguidas para ofrecerle recomendaciones relevantes en su ciudad.
                 </p>
               </div>
             </div>
