@@ -29,7 +29,10 @@ const quicksand = Quicksand({
   subsets: ["latin"],
 });
 
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
+
 export const metadata: Metadata = {
+  metadataBase: new URL(siteUrl),
   title: "4GO | Eventos, Conciertos y Fiestas Exclusivas",
   description:
     "Descubre los mejores eventos, conciertos y experiencias en Ecuador con 4GO. Entradas 100% seguras y acceso directo.",

@@ -71,6 +71,7 @@ import VkFest3DCylinderCarousel from "@/frontend/components/VkFest3DCylinderCaro
 import EventTicketCarousel, { CAROUSEL_EVENTS } from "@/frontend/components/EventTicketCarousel";
 import EventDetailOverlay from "@/frontend/features/events/EventDetailOverlay";
 import ReservationCheckoutModal from "@/frontend/components/ReservationCheckoutModal";
+import EventPurchaseCheckoutModal from "@/frontend/components/EventPurchaseCheckoutModal";
 import InstallApp from "@/frontend/components/InstallApp";
 import MobileDock from "@/frontend/components/MobileDock";
 import Footer from "@/components/Footer";
@@ -704,7 +705,7 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
         if (storedFav) {
           setLikedEvents(JSON.parse(storedFav));
         }
-      } catch {}
+      } catch { }
 
       // 2. Load reservations from account-specific localStorage
       try {
@@ -713,7 +714,7 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
         if (storedRes) {
           setUserReservations(JSON.parse(storedRes));
         }
-      } catch {}
+      } catch { }
 
       // 3. Fetch favorites from backend DB
       fetch(`/api/users/favorites?email=${encodeURIComponent(emailToUse)}`)
@@ -726,7 +727,7 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
               try {
                 localStorage.setItem(`user_favorites_${emailToUse}`, JSON.stringify(merged));
                 localStorage.setItem("organizer_favorites", JSON.stringify(merged));
-              } catch {}
+              } catch { }
               return merged;
             });
           }
@@ -759,7 +760,7 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
           localStorage.setItem(`user_favorites_${emailToUse}`, JSON.stringify(updated));
         }
         localStorage.setItem("organizer_favorites", JSON.stringify(updated));
-      } catch {}
+      } catch { }
 
       if (emailToUse) {
         fetch("/api/users/favorites", {
@@ -799,7 +800,7 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
           localStorage.setItem(`user_reservations_${emailToUse}`, JSON.stringify(updated));
         }
         localStorage.setItem("organizer_reservations", JSON.stringify(updated));
-      } catch {}
+      } catch { }
       return updated;
     });
   };
@@ -2026,8 +2027,8 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                                             }
                                           }}
                                           className={`px-2.5 py-0.5 rounded-lg text-[10px] font-bold transition cursor-pointer ${isSelected
-                                              ? "bg-black text-white"
-                                              : "bg-zinc-100 text-zinc-700 border border-zinc-300 hover:bg-zinc-200"
+                                            ? "bg-black text-white"
+                                            : "bg-zinc-100 text-zinc-700 border border-zinc-300 hover:bg-zinc-200"
                                             }`}
                                         >
                                           {day}
@@ -2099,8 +2100,8 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                                     setOrganizerSubView("create_event");
                                   }}
                                   className={`w-full py-3.5 rounded-full font-bold text-xs uppercase tracking-widest transition active:scale-95 text-center flex items-center justify-center gap-2 ${isFormValid
-                                      ? "bg-black hover:bg-zinc-800 text-white cursor-pointer shadow-xl"
-                                      : "bg-zinc-200 text-zinc-400 cursor-not-allowed opacity-60"
+                                    ? "bg-black hover:bg-zinc-800 text-white cursor-pointer shadow-xl"
+                                    : "bg-zinc-200 text-zinc-400 cursor-not-allowed opacity-60"
                                     }`}
                                 >
                                   <span>Siguiente: Crear Evento</span>
@@ -2777,7 +2778,6 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                         Eventos populares <span className="text-[#dfff28] font-black">en Loja</span>
                       </h2>
                       <p className="text-xs sm:text-sm text-zinc-300 font-medium">
-                        Disfruta de las mejores fiestas, conciertos y experiencias en Loja con entradas oficiales
                       </p>
                     </div>
                   </div>
@@ -2915,9 +2915,9 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                                   <button
                                     type="button"
                                     onClick={(e) => handleOpenReservationModal(evt, e)}
-                                    className="px-3.5 py-1.5 rounded-full bg-white hover:bg-zinc-200 text-black text-[11px] font-black uppercase tracking-wider transition-all shadow-md active:scale-95 shrink-0"
+                                    className="px-4 py-1.5 rounded-full bg-white hover:bg-zinc-200 text-black text-[11px] font-black uppercase tracking-wider transition-all shadow-md active:scale-95 shrink-0"
                                   >
-                                    {userLoggedIn && userReservations[evt.id] ? "RESERVADO ✓" : "RESERVAR"}
+                                    {userLoggedIn && userReservations[evt.id] ? "COMPRADO ✓" : "COMPRAR"}
                                   </button>
                                 </div>
                               </div>
@@ -2930,8 +2930,8 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                             {selectedDay === "favoritos"
                               ? "Aún no tienes eventos guardados en tus favoritos. Toca el corazón en cualquier evento para guardarlo aquí."
                               : selectedDay === "mis_reservas"
-                              ? "Aún no tienes reservas activas. Explora los eventos de la cartelera y asegura tu lugar en puerta gratis."
-                              : `No hay eventos que coincidan con la búsqueda "${carteleraSearchQuery || selectedDay}"`}
+                                ? "Aún no tienes reservas activas. Explora los eventos de la cartelera y asegura tu lugar en puerta gratis."
+                                : `No hay eventos que coincidan con la búsqueda "${carteleraSearchQuery || selectedDay}"`}
                           </p>
                           <button
                             type="button"
@@ -2985,10 +2985,10 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
         }}
       />
 
-      {/* ─── NEW RESERVATION CHECKOUT MODAL (WITH EXIT ANIMATION MATCHING ENTRANCE) ─── */}
+      {/* ─── NEW COMPREHENSIVE TICKET & TABLE PURCHASE CHECKOUT MODAL (WITH OCR VERIFICATION) ─── */}
       <AnimatePresence>
         {(showReservationModal || isTicketModalOpen) && (
-          <ReservationCheckoutModal
+          <EventPurchaseCheckoutModal
             isOpen={showReservationModal || isTicketModalOpen}
             onClose={() => {
               setShowReservationModal(false);
@@ -2997,12 +2997,11 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
             event={reservationTargetEvent || selectedCarouselEvent}
             userProfile={userProfile}
             userLoggedIn={userLoggedIn}
-            userReservations={userReservations}
-            onConfirmReservation={handleConfirmReservation}
             onOpenAuth={() => setShowAuthModalForFavorites(true)}
-            onViewMyReservations={() => {
-              setActiveStoryScreen(2);
-              setSelectedDay("mis_reservas");
+            onSuccessPurchase={(orderId) => {
+              if (selectedCarouselEvent?.id) {
+                handleConfirmReservation(selectedCarouselEvent.id, "general");
+              }
             }}
           />
         )}
@@ -3408,14 +3407,14 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[600] bg-black/80 backdrop-blur-xl flex items-center justify-center p-4"
+            className="fixed inset-0 z-[600] bg-black/65 backdrop-blur-md flex items-center justify-center p-4"
             onClick={() => setShowAuthModalForFavorites(false)}
           >
             <motion.div
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
-              className="relative w-full max-w-md bg-zinc-900 border border-white/20 rounded-[32px] p-8 text-center text-white shadow-2xl space-y-6 font-sans overflow-hidden"
+              className="relative w-full max-w-md bg-zinc-900/60 backdrop-blur-2xl border border-white/20 rounded-[32px] p-8 pt-10 text-center text-white shadow-[0_25px_60px_rgba(0,0,0,0.7)] space-y-5 font-sans overflow-hidden"
               onClick={(e) => e.stopPropagation()}
             >
               {/* Top Close Button */}
@@ -3427,11 +3426,6 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
               >
                 <X className="w-4 h-4" />
               </button>
-
-              {/* Header Icon */}
-              <div className="w-16 h-16 mx-auto rounded-2xl bg-white/10 border border-white/20 flex items-center justify-center text-white shadow-xl">
-                <Ticket className="w-8 h-8 text-white" />
-              </div>
 
               {/* Title & Subtitle */}
               <div className="space-y-2">
@@ -3451,7 +3445,7 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                     setShowAuthModalForFavorites(false);
                     handleQuickSocialLogin("google");
                   }}
-                  className="w-full py-4 rounded-full bg-white hover:bg-zinc-200 text-black font-black text-xs uppercase tracking-widest transition-all shadow-xl hover:scale-[1.02] active:scale-95 cursor-pointer flex items-center justify-center gap-3"
+                  className="w-full py-4 rounded-full bg-white hover:bg-zinc-200 text-black font-black text-xs uppercase tracking-widest transition-colors shadow-xl cursor-pointer flex items-center justify-center gap-3"
                 >
                   <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24">
                     <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />

@@ -26,6 +26,7 @@ import {
   Check,
   ExternalLink,
   DoorOpen,
+  ArrowRight,
 } from "lucide-react";
 import type { Event } from "@/frontend/types/domain";
 import { DEFAULT_HD_EVENT_POSTER, getHdImageSrc } from "@/frontend/utils/hdImages";
@@ -171,14 +172,14 @@ export default function EventDetailOverlay({
     }
   };
 
-  const displayPrice = event.price === 0 ? "Gratis" : `${event.price || "79,99"} $`;
+  const displayPrice = event.price === 0 ? "Gratis" : `${Math.round(event.price || 65)} $`;
 
   return (
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      transition={{ duration: 0.2 }}
+      transition={{ duration: 0.35, ease: "easeInOut" }}
       className="fixed inset-0 z-[300] bg-[#0c0714] text-white flex flex-col select-none overflow-hidden"
     >
       {/* ─── ULTRA-VIVID AMBIENT POSTER COLOR BLUR BACKDROP ─── */}
@@ -241,14 +242,14 @@ export default function EventDetailOverlay({
         className="relative z-10 w-full h-full overflow-y-auto no-scrollbar pt-24 pb-36"
       >
         {/* ─── MAIN 2-COLUMN GRID (DICE EXACT MATCHING SCREENSHOT) ─── */}
-        <div className="max-w-6xl mx-auto px-4 sm:px-8 w-full grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-14 items-start">
+        <div className="max-w-6xl mx-auto px-3 sm:px-8 w-full grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-14 items-start">
           
           {/* ─── LEFT COLUMN (POSTER + AUDIO PLAYER + PROTECTION BADGES) ─── */}
           <div className="lg:col-span-5 flex flex-col space-y-6">
-            {/* Poster Artwork Container */}
+            {/* Poster Artwork Container (Full width on mobile, max-w-[440px] on desktop) */}
             <div
               onClick={() => setIsLightboxOpen(true)}
-              className="relative w-full aspect-square max-w-[380px] mx-auto rounded-3xl overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.85)] border border-white/20 bg-zinc-950 cursor-pointer group"
+              className="relative w-full aspect-square max-w-full lg:max-w-[440px] mx-auto rounded-3xl overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.85)] border border-white/20 bg-zinc-950 cursor-pointer group"
             >
               <Image
                 src={getHdImageSrc(event.poster || DEFAULT_HD_EVENT_POSTER)}
@@ -256,23 +257,23 @@ export default function EventDetailOverlay({
                 fill
                 priority
                 quality={100}
-                sizes="(max-width: 768px) 100vw, 380px"
+                sizes="(max-width: 768px) 100vw, 440px"
                 className="object-cover object-center brightness-105"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-60" />
 
               {/* Overlaid Action Buttons Bottom Right (Heart & Share Popover) */}
-              <div className="absolute bottom-3 right-3 flex items-center gap-2 z-20">
+              <div className="absolute bottom-4 right-4 flex items-center gap-2.5 z-20">
                 <button
                   type="button"
                   onClick={(e) => {
                     e.stopPropagation();
                     setIsFavorite(!isFavorite);
                   }}
-                  className={`w-9 h-9 rounded-full backdrop-blur-md border flex items-center justify-center transition-transform active:scale-95 ${
+                  className={`w-10 h-10 rounded-full backdrop-blur-md border flex items-center justify-center transition-transform active:scale-95 ${
                     isFavorite
                       ? "bg-red-500/40 border-red-400 text-red-400"
-                      : "bg-black/70 border-white/20 text-white hover:bg-black/90"
+                      : "bg-black/75 border-white/25 text-white hover:bg-black/90"
                   }`}
                   aria-label="Guardar favorito"
                 >
@@ -368,45 +369,10 @@ export default function EventDetailOverlay({
             </div>
 
             {/* 4GO Anti-Scalping Protection Badge (Exact Match to Photo 1) */}
-            <div className="space-y-3 pt-1">
-              <p className="text-xs text-zinc-300 leading-relaxed font-medium">
+            <div className="space-y-3 pt-1 text-center">
+              <p className="text-xs text-zinc-300 leading-relaxed font-medium text-center">
                 4GO protege a fans y artistas de la reventa ilegal. Tus entradas se guardarán de forma segura en la app.
               </p>
-
-              {/* ¿Tienes un código? Link */}
-              <div>
-                <button
-                  type="button"
-                  onClick={() => setShowPromoCodeInput(!showPromoCodeInput)}
-                  className="text-xs font-bold text-white hover:underline cursor-pointer transition-colors"
-                >
-                  ¿Tienes un código?
-                </button>
-
-                {showPromoCodeInput && (
-                  <div className="mt-2 flex items-center gap-2">
-                    <input
-                      type="text"
-                      value={promoCodeText}
-                      onChange={(e) => setPromoCodeText(e.target.value)}
-                      placeholder="Ingresa tu código promo"
-                      className="px-3.5 py-2 rounded-xl bg-white/10 border border-white/20 text-xs text-white placeholder-zinc-400 focus:outline-none focus:border-yellow-400 flex-1"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => {
-                        if (promoCodeText.trim()) {
-                          alert(`Código "${promoCodeText}" aplicado exitosamente.`);
-                          setShowPromoCodeInput(false);
-                        }
-                      }}
-                      className="px-4 py-2 rounded-xl bg-yellow-400 text-black text-xs font-black uppercase hover:bg-yellow-300 transition cursor-pointer"
-                    >
-                      Aplicar
-                    </button>
-                  </div>
-                )}
-              </div>
             </div>
           </div>
 
@@ -440,14 +406,14 @@ export default function EventDetailOverlay({
               </div>
             </div>
 
-            {/* ─── DARK TICKET PRICE BOX WITH YELLOW COMPRAR BUTTON ─── */}
-            <div className="bg-zinc-900/90 border border-zinc-800 rounded-3xl p-6 sm:p-7 flex flex-col sm:flex-row sm:items-center justify-between gap-5 shadow-2xl backdrop-blur-2xl">
-              <div className="space-y-1">
-                <div className="text-2xl sm:text-3xl font-black text-white tracking-tight">
+            {/* ─── WHITE TICKET PRICE BOX WITH YELLOW COMPRAR BUTTON (DESKTOP) ─── */}
+            <div className="hidden lg:flex bg-white text-black rounded-3xl p-6 sm:p-7 flex-row items-center justify-between gap-5 shadow-[0_20px_50px_rgba(0,0,0,0.5)]">
+              <div className="space-y-1 text-left">
+                <div className="text-2xl sm:text-3xl font-black text-black tracking-tight font-sans">
                   Desde {displayPrice}
                 </div>
-                <p className="text-xs text-zinc-400 font-medium leading-normal">
-                  Este es el precio que pagarás. Sin sorpresas de última hora.
+                <p className="text-xs text-zinc-600 font-medium leading-normal">
+                  Precio final con acceso asegurado. Sin cargos sorpresa al pagar.
                 </p>
               </div>
 
@@ -456,7 +422,7 @@ export default function EventDetailOverlay({
                 onClick={() => onBuy(event)}
                 className="px-9 py-4 rounded-full bg-[#dfff28] hover:bg-[#cbf01a] text-black font-black text-xs uppercase tracking-widest transition-all hover:scale-105 active:scale-95 cursor-pointer shrink-0 text-center shadow-md"
               >
-                RESERVAR
+                COMPRAR
               </button>
             </div>
 
@@ -606,6 +572,26 @@ export default function EventDetailOverlay({
       </div>
 
 
+
+      {/* ─── MOBILE FIXED BOTTOM COMPRAR BAR (WHITE CARD STYLE) ─── */}
+      <div className="fixed bottom-0 inset-x-0 z-[360] bg-white text-black rounded-t-3xl border-t border-zinc-200 px-5 py-4 flex items-center justify-between shadow-[0_-15px_40px_rgba(0,0,0,0.6)] lg:hidden">
+        <div className="flex flex-col text-left space-y-0.5">
+          <div className="text-xl sm:text-2xl font-black text-black leading-tight font-sans">
+            Desde {displayPrice}
+          </div>
+          <span className="text-[11px] font-bold text-zinc-600 leading-none">
+            Precio final garantizado
+          </span>
+        </div>
+
+        <button
+          type="button"
+          onClick={() => onBuy(event)}
+          className="px-8 py-3.5 rounded-full bg-[#dfff28] hover:bg-[#d4f522] text-black font-black text-xs uppercase tracking-widest transition-all active:scale-95 cursor-pointer shadow-md shrink-0"
+        >
+          COMPRAR
+        </button>
+      </div>
 
       {/* Full Poster Lightbox */}
       <AnimatePresence>
