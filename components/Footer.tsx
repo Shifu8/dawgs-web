@@ -11,84 +11,90 @@ import {
   Ticket,
 } from "lucide-react";
 
-export default function Footer() {
+interface FooterProps {
+  showTopBanner?: boolean;
+}
+
+export default function Footer({ showTopBanner = false }: FooterProps) {
   return (
     <div className="w-full font-sans">
-      {/* ─── SECTION 1: ACCESO OFICIAL Y SEGURO 4GO ─── */}
-      <section className="w-full bg-[#0c0714] text-white py-16 px-4 sm:px-8 border-t border-white/10 relative z-20">
-        <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8 items-center text-left">
-          {/* Left Column: Title + Feature List + Action Buttons */}
-          <div className="lg:col-span-8 space-y-6">
-            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black text-white tracking-tight font-sans">
-              Acceso Oficial y Seguro con 4GO
-            </h2>
+      {/* ─── SECTION 1: ACCESO OFICIAL Y SEGURO 4GO (ONLY WHEN showTopBanner IS TRUE) ─── */}
+      {showTopBanner && (
+        <section className="w-full bg-[#0c0714] text-white py-16 px-4 sm:px-8 border-t border-white/10 relative z-20">
+          <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8 items-center text-left">
+            {/* Left Column: Title + Feature List + Action Buttons */}
+            <div className="lg:col-span-8 space-y-6">
+              <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black text-white tracking-tight font-sans">
+                Acceso Oficial y Seguro con 4GO
+              </h2>
 
-            <div className="space-y-4 text-zinc-300 text-xs sm:text-sm font-medium leading-relaxed max-w-2xl">
-              <div className="flex items-start gap-3">
-                <Music className="w-5 h-5 text-zinc-400 shrink-0 mt-0.5" />
-                <p>
-                  Descubre las mejores fiestas, festivales y clubes con disponibilidad en tiempo real
-                  y precios transparentes sin cargos sorpresa al pagar.
-                </p>
+              <div className="space-y-4 text-zinc-300 text-xs sm:text-sm font-medium leading-relaxed max-w-2xl">
+                <div className="flex items-start gap-3">
+                  <Music className="w-5 h-5 text-zinc-400 shrink-0 mt-0.5" />
+                  <p>
+                    Descubre las mejores fiestas, festivales y clubes con disponibilidad en tiempo real
+                    y precios transparentes sin cargos sorpresa al pagar.
+                  </p>
+                </div>
+
+                <div className="flex items-start gap-3">
+                  <ShieldCheck className="w-5 h-5 text-zinc-400 shrink-0 mt-0.5" />
+                  <p>
+                    Protección anti-reventa garantizada. Cada entrada y reserva de mesa es oficial,
+                    verificada directamente con la cuenta bancaria del organizador.
+                  </p>
+                </div>
+
+                <div className="flex items-start gap-3">
+                  <Ticket className="w-5 h-5 text-zinc-400 shrink-0 mt-0.5" />
+                  <p>
+                    Acceso digital directo. Tu entrada y código QR quedan guardados en tu perfil y
+                    enviados a tu correo electrónico para ingresar rápidamente.
+                  </p>
+                </div>
               </div>
 
-              <div className="flex items-start gap-3">
-                <ShieldCheck className="w-5 h-5 text-zinc-400 shrink-0 mt-0.5" />
-                <p>
-                  Protección anti-reventa garantizada. Cada entrada y reserva de mesa es oficial,
-                  verificada directamente con la cuenta bancaria del organizador.
-                </p>
-              </div>
+              {/* Clean Action Buttons */}
+              <div className="flex items-center gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    const exploreEl = document.getElementById("explore");
+                    if (exploreEl) {
+                      exploreEl.scrollIntoView({ behavior: "smooth" });
+                    } else {
+                      window.scrollTo({ top: 0, behavior: "smooth" });
+                    }
+                  }}
+                  className="px-6 py-3 rounded-full bg-white hover:bg-zinc-200 text-black font-black text-xs uppercase tracking-wider transition cursor-pointer active:scale-95 shadow-md"
+                >
+                  EXPLORAR CARTELERA
+                </button>
 
-              <div className="flex items-start gap-3">
-                <Ticket className="w-5 h-5 text-zinc-400 shrink-0 mt-0.5" />
-                <p>
-                  Acceso digital directo. Tu entrada y código QR quedan guardados en tu perfil y
-                  enviados a tu correo electrónico para ingresar rápidamente.
-                </p>
+                <Link
+                  href="/about"
+                  className="px-6 py-3 rounded-full bg-white/10 hover:bg-white/20 border border-white/20 text-white font-black text-xs uppercase tracking-wider transition cursor-pointer active:scale-95 shadow-md inline-flex items-center justify-center"
+                >
+                  CONOCE MÁS SOBRE 4GO
+                </Link>
               </div>
             </div>
 
-            {/* Clean Action Buttons */}
-            <div className="flex items-center gap-3 pt-2">
-              <button
-                type="button"
-                onClick={() => {
-                  const exploreEl = document.getElementById("explore");
-                  if (exploreEl) {
-                    exploreEl.scrollIntoView({ behavior: "smooth" });
-                  } else {
-                    window.scrollTo({ top: 0, behavior: "smooth" });
-                  }
-                }}
-                className="px-6 py-3 rounded-full bg-white hover:bg-zinc-200 text-black font-black text-xs uppercase tracking-wider transition cursor-pointer active:scale-95 shadow-md"
-              >
-                EXPLORAR CARTELERA
-              </button>
-
-              <Link
-                href="/about"
-                className="px-6 py-3 rounded-full bg-white/10 hover:bg-white/20 border border-white/20 text-white font-black text-xs uppercase tracking-wider transition cursor-pointer active:scale-95 shadow-md inline-flex items-center justify-center"
-              >
-                CONOCE MÁS SOBRE 4GO
-              </Link>
+            {/* Right Column: Mascot Icon in White Box */}
+            <div className="lg:col-span-4 flex justify-start lg:justify-end">
+              <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-3xl bg-white flex items-center justify-center p-3 shadow-2xl overflow-hidden border border-white/20">
+                <Image
+                  src="/images/logo_4go_black_white.png"
+                  alt="4GO Logo"
+                  width={84}
+                  height={84}
+                  className="object-contain rounded-2xl"
+                />
+              </div>
             </div>
           </div>
-
-          {/* Right Column: Mascot Icon in White Box */}
-          <div className="lg:col-span-4 flex justify-start lg:justify-end">
-            <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-3xl bg-white flex items-center justify-center p-3 shadow-2xl overflow-hidden border border-white/20">
-              <Image
-                src="/images/logo_4go_black_white.png"
-                alt="4GO Logo"
-                width={84}
-                height={84}
-                className="object-contain rounded-2xl"
-              />
-            </div>
-          </div>
-        </div>
-      </section>
+        </section>
+      )}
 
       {/* ─── SECTION 2: WHITE FOOTER DIRECTORY (MATCHES EXACT HOME FOOTER) ─── */}
       <footer className="w-full bg-white text-zinc-900 border-t border-zinc-200 pt-16 sm:pt-20 pb-16 px-4 sm:px-8 relative z-20 overflow-hidden font-sans">

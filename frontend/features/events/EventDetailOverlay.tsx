@@ -571,9 +571,9 @@ export default function EventDetailOverlay({
           </div>
         </div>
 
-        {/* ─── WHITE FOOTER DIRECTORY (MATCHES EXACT HOME FOOTER) ─── */}
+        {/* ─── FOOTER WITH EVENT ACCESS BANNER (ONLY ON EVENT DETAILS) ─── */}
         <div className="mt-20">
-          <Footer />
+          <Footer showTopBanner={true} />
         </div>
       </div>
 
