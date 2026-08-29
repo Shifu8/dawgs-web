@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Autor: Brandon Medina
  * Fecha: 11/05/2026
  * DescripciÃ³n: Layout raÃ­z de Next.js para NENEZ.
@@ -8,6 +8,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono, Comfortaa, Quicksand } from "next/font/google";
 
 import "./globals.css";
+import MobileCookieConsent from "@/components/MobileCookieConsent";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -95,6 +96,7 @@ export default function RootLayout({
       </head>
       <body className="min-h-full flex flex-col">
         {children}
+        <MobileCookieConsent />
       </body>
     </html>
   );
