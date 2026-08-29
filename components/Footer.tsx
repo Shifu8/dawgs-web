@@ -100,13 +100,13 @@ export default function Footer() {
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-8 items-start lg:items-center">
             {/* Left Column: Logo + Description */}
             <div className="lg:col-span-5 lg:self-center flex items-center gap-5 sm:gap-6 h-full">
-              <div className="relative w-20 h-20 sm:w-24 sm:h-24 shrink-0 rounded-2xl overflow-hidden bg-zinc-50 border border-zinc-200 flex items-center justify-center p-2 shadow-sm">
+              <div className="relative w-20 h-20 sm:w-24 sm:h-24 shrink-0 flex items-center justify-center">
                 <Image
                   src="/images/logo_4go_black_white.png"
                   alt="4GO Logo"
-                  width={72}
-                  height={72}
-                  className="object-contain rounded-xl"
+                  width={96}
+                  height={96}
+                  className="object-contain"
                 />
               </div>
               <p className="text-sm sm:text-base text-zinc-600 font-medium max-w-md leading-relaxed">
