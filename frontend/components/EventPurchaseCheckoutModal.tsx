@@ -409,14 +409,29 @@ export default function EventPurchaseCheckoutModal({
               onClose();
             }
           }}
-          className="pointer-events-auto flex items-center justify-center w-11 h-11 rounded-full bg-black/60 border border-white/20 text-white hover:bg-white/20 backdrop-blur-md transition-all cursor-pointer shadow-2xl active:scale-95"
+          className="pointer-events-auto flex items-center justify-center w-11 h-11 rounded-full bg-black/60 border border-white/20 text-white hover:bg-white/20 backdrop-blur-md transition-all cursor-pointer shadow-2xl active:scale-95 shrink-0"
           aria-label="Volver"
         >
           <ArrowLeft className="w-5 h-5" />
         </button>
 
+        {/* Center: Breadcrumb Steps in the SAME ROW (PC & Mobile) */}
+        <div className="flex items-center gap-2 sm:gap-3 text-xs sm:text-sm font-black uppercase tracking-wider text-zinc-400">
+          <span className={currentStep === "select" ? "text-white font-black" : "text-zinc-500"}>
+            Entrada
+          </span>
+          <span className="text-zinc-600">→</span>
+          <span className={currentStep === "payment" ? "text-white font-black" : "text-zinc-500"}>
+            Pago
+          </span>
+          <span className="text-zinc-600">→</span>
+          <span className={currentStep === "confirmed" ? "text-white font-black" : "text-zinc-500"}>
+            Confirmación
+          </span>
+        </div>
+
         {/* Right Actions: White ¿TIENES UN CÓDIGO? + Close X */}
-        <div className="pointer-events-auto flex items-center gap-2.5">
+        <div className="pointer-events-auto flex items-center gap-2.5 shrink-0">
           <button
             type="button"
             onClick={() => setShowPromoModal(true)}
@@ -511,21 +526,7 @@ export default function EventPurchaseCheckoutModal({
       </AnimatePresence>
 
       {/* ─── SCROLLABLE CONTENT BODY ─── */}
-      <div className="relative z-10 w-full max-w-5xl mx-auto px-4 sm:px-6 pt-20 pb-36 lg:pb-20 flex flex-col space-y-5">
-        {/* Breadcrumb Steps (Visible on both PC and Mobile) */}
-        <div className="flex items-center justify-center gap-2.5 sm:gap-3 text-xs sm:text-sm font-black uppercase tracking-wider text-zinc-400 py-1">
-          <span className={currentStep === "select" ? "text-white font-black" : "text-zinc-500"}>
-            Entrada
-          </span>
-          <span className="text-zinc-600">→</span>
-          <span className={currentStep === "payment" ? "text-white font-black" : "text-zinc-500"}>
-            Pago
-          </span>
-          <span className="text-zinc-600">→</span>
-          <span className={currentStep === "confirmed" ? "text-white font-black" : "text-zinc-500"}>
-            Confirmación
-          </span>
-        </div>
+      <div className="relative z-10 w-full max-w-5xl mx-auto px-4 sm:px-6 pt-24 pb-36 lg:pb-20 flex flex-col space-y-5">
 
         {/* ══════════════════════════════════════════════════════════════ */}
         {/* PASO 1: SELECCIÓN DE ENTRADAS Y MESAS                         */}
