@@ -55,6 +55,7 @@ import {
   Building2,
   UserCheck,
   Users,
+  Check,
 } from "lucide-react";
 import { AnimatePresence, motion, useDragControls } from "framer-motion";
 import Atmosphere from "@/frontend/components/Atmosphere";
@@ -187,7 +188,18 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
   const [isMounted, setIsMounted] = useState(false);
   const [userLoggedIn, setUserLoggedIn] = useState<boolean>(false);
   const [userProfile, setUserProfile] = useState<{ id: string; name: string; email: string; avatar?: string; type?: string; venueName?: string; city?: string; instagram?: string; address?: string; openingHours?: string; openingDays?: string[]; hasCompletedOnboarding?: boolean } | null>(null);
-  const [organizerSubView, setOrganizerSubView] = useState<'menu' | 'profile' | 'create_event' | 'my_events' | 'favorites'>('menu');
+  const [organizerSubView, setOrganizerSubView] = useState<'menu' | 'profile' | 'create_event' | 'published' | 'my_events' | 'favorites'>('menu');
+  const [lastPublishedEvent, setLastPublishedEvent] = useState<any>(null);
+  const [showEventPublishedToast, setShowEventPublishedToast] = useState(false);
+
+  useEffect(() => {
+    if (showEventPublishedToast) {
+      const timer = setTimeout(() => {
+        setShowEventPublishedToast(false);
+      }, 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [showEventPublishedToast]);
 
   const [newEventPoster, setNewEventPoster] = useState('/images/4go_red_girl_showcase.jpg');
   const [newEventTitle, setNewEventTitle] = useState('Kaskade: ORIGIN //');
@@ -217,59 +229,212 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
   const [openingDays, setOpeningDays] = useState<string[]>(['Jueves', 'Viernes', 'Sábado']);
 
   useEffect(() => {
+    if (userProfile) {
+      if (userProfile.avatar) setBrandLogoUrl(userProfile.avatar);
+      if (userProfile.venueName || userProfile.name) setOrgName(userProfile.venueName || userProfile.name);
+      if (userProfile.type) setOrgType(userProfile.type);
+      if (userProfile.instagram) setInstagramHandle(userProfile.instagram.replace(/^@/, ''));
+      if (userProfile.address) setClubAddress(userProfile.address);
+      if (userProfile.city) setOrgCity(userProfile.city);
+      if (userProfile.openingDays && userProfile.openingDays.length > 0) setOpeningDays(userProfile.openingDays);
+    }
+  }, [userProfile]);
+
+  useEffect(() => {
     setIsMounted(true);
     if (typeof window !== "undefined") {
-      const token = localStorage.getItem("organizer_token");
-      const profile = localStorage.getItem("organizer_profile");
-      if (token || profile) {
-        try {
-          const parsed = profile ? JSON.parse(profile) : { email: "mrshifu879@gmail.com" };
-          const isCubic = parsed.email === "mrshifu879@gmail.com";
-          const isSata = parsed.email === "brandon.medina@unl.edu.ec";
-          if (isCubic) {
-            parsed.id = "cubic";
-            parsed.venueName = "CUBIC LOJA";
-            parsed.type = "Discoteca / Club Nocturno";
-            parsed.avatar = "/images/cubic-official-logo.png";
-            parsed.hasCompletedOnboarding = true;
-          } else if (isSata) {
-            parsed.id = "sata";
-            parsed.venueName = "SATA MUSIC";
-            parsed.type = "Organizador";
-            parsed.avatar = "/images/sata-official-logo.jpg";
-            parsed.hasCompletedOnboarding = true;
-          }
-          setUserProfile(parsed);
-          setUserLoggedIn(true);
-        } catch { }
-      }
+      // Helper function to build dynamic profile for any logged in email
+      const resolveProfileForEmail = (
+        email: string,
+        name?: string,
+        avatar?: string,
+        sub?: string
+      ) => {
+        const cleanEmail = (email || "").trim().toLowerCase();
+        const isCubic = cleanEmail === "mrshifu879@gmail.com";
+        const isSata = cleanEmail === "brandon.medina@unl.edu.ec";
 
-      // 1. Detectar Google OAuth Callback (code, access_token, id_token o redirección exitosa)
+        let savedPerEmail: any = null;
+        try {
+          const stored = localStorage.getItem(`organizer_profile_${cleanEmail}`);
+          if (stored) savedPerEmail = JSON.parse(stored);
+        } catch { }
+
+        if (isCubic) {
+          return {
+            id: "cubic",
+            name: name || "Brandon Medina",
+            email: cleanEmail,
+            avatar: "/images/cubic-official-logo.png",
+            type: "Discoteca / Club Nocturno",
+            venueName: "CUBIC LOJA",
+            city: "Loja",
+            hasCompletedOnboarding: true,
+          };
+        }
+
+        if (isSata) {
+          return {
+            id: "sata",
+            name: name || "Brandon Medina",
+            email: cleanEmail,
+            avatar: "/images/sata-official-logo.jpg",
+            type: "Organizador",
+            venueName: "SATA MUSIC",
+            city: "Loja",
+            hasCompletedOnboarding: true,
+          };
+        }
+
+        if (savedPerEmail && savedPerEmail.hasCompletedOnboarding) {
+          return {
+            ...savedPerEmail,
+            email: cleanEmail,
+            name: savedPerEmail.name || name || cleanEmail.split("@")[0],
+            avatar: savedPerEmail.avatar || avatar || "",
+            hasCompletedOnboarding: true,
+          };
+        }
+
+        const fallbackName = cleanEmail ? cleanEmail.split("@")[0] : "Usuario";
+        return {
+          id: sub ? `usr_${sub}` : `usr_${Date.now()}`,
+          name: name || fallbackName,
+          email: cleanEmail,
+          avatar: avatar || "",
+          type: "Usuario",
+          venueName: "",
+          city: "Loja",
+          hasCompletedOnboarding: false,
+        };
+      };
+
+      // 1. Detect Google OAuth Callback (hash: id_token / access_token or url query: code)
+      const hash = window.location.hash ? window.location.hash.replace(/^#/, '') : '';
+      const hashParams = new URLSearchParams(hash);
+      const idToken = hashParams.get("id_token");
+      const accessToken = hashParams.get("access_token");
+
       const urlParams = new URLSearchParams(window.location.search);
       const code = urlParams.get("code");
-      const hash = window.location.hash;
-      const hashParams = new URLSearchParams(hash.replace(/^#/, ''));
-      const accessToken = hashParams.get("access_token") || hashParams.get("id_token");
 
-      if (code || accessToken) {
+      if (idToken || accessToken || code) {
         window.history.replaceState({}, document.title, window.location.pathname);
-        const cubicProfile = {
-          id: "cubic",
-          name: "Brandon Medina",
-          email: "mrshifu879@gmail.com",
-          avatar: "/images/cubic-official-logo.png",
-          type: "Discoteca / Club Nocturno",
-          venueName: "CUBIC LOJA",
-          city: "Loja",
-          hasCompletedOnboarding: true,
+
+        let userEmail = "";
+        let userName = "";
+        let userAvatar = "";
+        let userSub = "";
+
+        if (idToken) {
+          try {
+            const base64Url = idToken.split('.')[1];
+            const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+            const jsonPayload = decodeURIComponent(
+              atob(base64)
+                .split('')
+                .map((c) => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+                .join('')
+            );
+            const parsedToken = JSON.parse(jsonPayload);
+            userEmail = (parsedToken.email || "").trim().toLowerCase();
+            userName = parsedToken.name || parsedToken.given_name || "";
+            userAvatar = parsedToken.picture || "";
+            userSub = parsedToken.sub || "";
+          } catch (e) {
+            console.error("Error decoding id_token:", e);
+          }
+        }
+
+        const completeLogin = (email: string, name: string, avatar: string, sub: string) => {
+          if (!email) return;
+          const userObj = resolveProfileForEmail(email, name, avatar, sub);
+
+          localStorage.setItem("organizer_token", `google-auth-${email}-${Date.now()}`);
+          localStorage.setItem("organizer_profile", JSON.stringify(userObj));
+          localStorage.setItem(`organizer_profile_${email}`, JSON.stringify(userObj));
+
+          setUserProfile(userObj);
+          setUserLoggedIn(true);
+          setOrganizerSubView("menu");
+          setShowAuthModalForFavorites(false);
+          setShowUserMenu(false);
+
+          fetch("/api/users/sync", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              email,
+              name: userObj.name,
+              avatar: userObj.avatar,
+              provider: "google",
+              providerId: sub,
+              type: userObj.type,
+              venueName: userObj.venueName,
+              city: userObj.city,
+            }),
+          }).catch((err) => console.error("Error syncing user to DB:", err));
         };
-        localStorage.setItem("organizer_token", `google-auth-${Date.now()}`);
-        localStorage.setItem("organizer_profile", JSON.stringify(cubicProfile));
-        setUserProfile(cubicProfile);
-        setUserLoggedIn(true);
-        setOrganizerSubView("menu");
-        setShowAuthModalForFavorites(false);
-        setShowUserMenu(false);
+
+        if (accessToken) {
+          fetch("https://www.googleapis.com/oauth2/v3/userinfo", {
+            headers: { Authorization: `Bearer ${accessToken}` },
+          })
+            .then((res) => (res.ok ? res.json() : null))
+            .then((info) => {
+              if (info && info.email) {
+                completeLogin(
+                  info.email,
+                  info.name || userName,
+                  info.picture || userAvatar,
+                  info.sub || userSub
+                );
+              } else if (userEmail) {
+                completeLogin(userEmail, userName, userAvatar, userSub);
+              }
+            })
+            .catch(() => {
+              if (userEmail) {
+                completeLogin(userEmail, userName, userAvatar, userSub);
+              }
+            });
+        } else if (userEmail) {
+          completeLogin(userEmail, userName, userAvatar, userSub);
+        }
+      } else {
+        // 2. Normal LocalStorage Session Restore
+        const token = localStorage.getItem("organizer_token");
+        const profile = localStorage.getItem("organizer_profile");
+        if (token && profile) {
+          try {
+            const parsed = JSON.parse(profile);
+            if (parsed && parsed.email) {
+              const cleanEmail = parsed.email.trim().toLowerCase();
+              const isCubic = cleanEmail === "mrshifu879@gmail.com";
+              const isSata = cleanEmail === "brandon.medina@unl.edu.ec";
+
+              if (isCubic) {
+                parsed.id = "cubic";
+                parsed.venueName = parsed.venueName || "CUBIC LOJA";
+                parsed.type = parsed.type || "Discoteca / Club Nocturno";
+                parsed.avatar = parsed.avatar || "/images/cubic-official-logo.png";
+                parsed.hasCompletedOnboarding = true;
+              } else if (isSata) {
+                parsed.id = "sata";
+                parsed.venueName = parsed.venueName || "SATA MUSIC";
+                parsed.type = parsed.type || "Organizador";
+                parsed.avatar = parsed.avatar || "/images/sata-official-logo.jpg";
+                parsed.hasCompletedOnboarding = true;
+              }
+
+              setUserProfile(parsed);
+              setUserLoggedIn(true);
+            }
+          } catch {
+            localStorage.removeItem("organizer_token");
+            localStorage.removeItem("organizer_profile");
+          }
+        }
       }
     }
   }, []);
@@ -280,19 +445,22 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
 
   const handleConfirmAppleLogin = () => {
     if (!appleInputEmail.trim()) return;
-    const isCubic = appleInputEmail.trim().toLowerCase() === "mrshifu879@gmail.com";
+    const cleanEmail = appleInputEmail.trim().toLowerCase();
+    const isCubic = cleanEmail === "mrshifu879@gmail.com";
+    const isSata = cleanEmail === "brandon.medina@unl.edu.ec";
     const mockProfile = {
-      id: isCubic ? "cubic" : "sata",
-      name: appleInputName.trim() || "Usuario Apple",
-      email: appleInputEmail.trim(),
-      type: isCubic ? "Discoteca / Club Nocturno" : "Organizador",
-      venueName: isCubic ? "CUBIC LOJA" : "SATA MUSIC",
-      avatar: isCubic ? "/images/cubic-official-logo.png" : "/images/sata-official-logo.jpg",
+      id: isCubic ? "cubic" : isSata ? "sata" : `usr_${Date.now()}`,
+      name: appleInputName.trim() || cleanEmail.split('@')[0] || "Usuario Apple",
+      email: cleanEmail,
+      type: isCubic ? "Discoteca / Club Nocturno" : isSata ? "Organizador" : "Usuario",
+      venueName: isCubic ? "CUBIC LOJA" : isSata ? "SATA MUSIC" : "",
+      avatar: isCubic ? "/images/cubic-official-logo.png" : isSata ? "/images/sata-official-logo.jpg" : "",
       city: "Loja",
-      hasCompletedOnboarding: true,
+      hasCompletedOnboarding: isCubic || isSata,
     };
-    localStorage.setItem("organizer_token", `apple-token-${Date.now()}`);
+    localStorage.setItem("organizer_token", `apple-token-${cleanEmail}-${Date.now()}`);
     localStorage.setItem("organizer_profile", JSON.stringify(mockProfile));
+    localStorage.setItem(`organizer_profile_${cleanEmail}`, JSON.stringify(mockProfile));
     setUserLoggedIn(true);
     setUserProfile(mockProfile);
     setOrganizerSubView("menu");
@@ -301,26 +469,13 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
 
   const handleQuickSocialLogin = (provider: 'google' | 'apple') => {
     if (provider === 'google') {
-      const cubicProfile = {
-        id: "cubic",
-        name: "Brandon Medina",
-        email: "mrshifu879@gmail.com",
-        avatar: "/images/cubic-official-logo.png",
-        type: "Discoteca / Club Nocturno",
-        venueName: "CUBIC LOJA",
-        city: "Loja",
-        hasCompletedOnboarding: true,
-      };
-      localStorage.setItem("organizer_token", `google-auth-mrshifu879@gmail.com`);
-      localStorage.setItem("organizer_profile", JSON.stringify(cubicProfile));
-      setUserProfile(cubicProfile);
-      setUserLoggedIn(true);
       setShowAuthModalForFavorites(false);
       setShowUserMenu(false);
 
       const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || '461941866446-kfh7r6aqq5p3g09g0iau4m597eppv69i.apps.googleusercontent.com';
       const redirectUri = typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000';
-      const googleOAuthUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${encodeURIComponent(clientId)}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=code&scope=email%20profile%20openid&prompt=select_account`;
+      const nonce = Math.random().toString(36).substring(2);
+      const googleOAuthUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${encodeURIComponent(clientId)}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=token%20id_token&scope=email%20profile%20openid&prompt=select_account&nonce=${encodeURIComponent(nonce)}`;
 
       if (typeof window !== 'undefined') {
         window.location.href = googleOAuthUrl;
@@ -341,6 +496,7 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
     setShowUserMenu(false);
     setOrganizerSubView('menu');
     if (typeof window !== "undefined") {
+      window.history.replaceState({}, document.title, window.location.pathname);
       window.location.reload();
     }
   };
@@ -358,6 +514,44 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
     if (typeof window !== "undefined") {
       window.scrollTo({ top: 0, behavior: "smooth" });
     }
+  };
+
+  const handleCompleteOnboarding = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!orgName.trim() || !userProfile?.email) return;
+
+    const email = userProfile.email.trim().toLowerCase();
+    const updatedUser = {
+      ...userProfile,
+      venueName: orgName.trim(),
+      type: orgType,
+      city: orgCity,
+      instagram: instagramHandle.trim(),
+      address: clubAddress.trim(),
+      avatar: brandLogoUrl || userProfile.avatar || "",
+      hasCompletedOnboarding: true,
+    };
+
+    localStorage.setItem("organizer_token", `token-${email}-${Date.now()}`);
+    localStorage.setItem("organizer_profile", JSON.stringify(updatedUser));
+    localStorage.setItem(`organizer_profile_${email}`, JSON.stringify(updatedUser));
+
+    setUserProfile(updatedUser);
+    setOrganizerSubView("create_event");
+
+    fetch("/api/users/sync", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        email,
+        name: updatedUser.name || orgName.trim(),
+        avatar: updatedUser.avatar,
+        provider: "google",
+        type: orgType,
+        venueName: orgName.trim(),
+        city: orgCity,
+      }),
+    }).catch((err) => console.error("Error updating organizer profile:", err));
   };
 
   // Simulated user session (replace with real auth later)
@@ -1447,8 +1641,8 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
       <Atmosphere />
 
       {/* --- APPLE ARCADE FULL-BLEED TRANSPARENT TOP HEADER WITH STORIES LINES OVERLAY --- */}
-      <header className={`absolute inset-x-0 top-0 ${isHeaderSearchOpen ? "z-[300]" : "z-50"} bg-gradient-to-b from-black/90 via-black/30 to-transparent px-4 sm:px-8 pt-3 pb-6 transition-all duration-300 pointer-events-none`}>
-        <div className="mx-auto flex w-full max-w-[1400px] flex-col gap-3 pointer-events-auto">
+      <header className={`absolute inset-x-0 top-0 ${isHeaderSearchOpen ? "z-[300]" : "z-50"} bg-gradient-to-b from-black/90 via-black/30 to-transparent pt-3 pb-6 transition-all duration-300 pointer-events-none px-4 sm:px-6 lg:px-8`}>
+        <div className="w-full relative flex flex-col gap-3 pointer-events-auto">
           {/* 1. TOP STORY SEGMENT LINES (Permanently mounted, never jumps when search toggles) */}
           <div className="w-full max-w-xl mx-auto">
             <StoryLinesHeader
@@ -1459,16 +1653,16 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
           </div>
 
           {/* 2. DYNAMIC HEADER TITLE & ACCOUNT BADGE */}
-          <div className="flex items-center justify-between gap-4">
-            {/* Left: Dynamic Screen Title (Sube tu evento | Home | Eventos | Fiestas & Clubs) */}
-            <div className="flex items-center gap-3">
+          <div className="w-full flex items-center relative">
+            {/* Exactly centered over the Left Vertical Video (lg:w-[30%]) across all screens */}
+            <div className="w-full lg:w-[30%] flex items-center justify-center text-center">
               <button
                 type="button"
                 onClick={() => {
                   setActiveStoryScreen(1);
                   window.scrollTo({ top: 0, behavior: "smooth" });
                 }}
-                className="flex items-center gap-2 cursor-pointer group focus:outline-none"
+                className="flex items-center justify-center gap-2 cursor-pointer group focus:outline-none text-center"
               >
                 <AnimatePresence mode="wait">
                   <motion.h1
@@ -1477,7 +1671,7 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: 6 }}
                     transition={{ duration: 0.25, ease: "easeOut" }}
-                    className="text-2xl sm:text-4xl font-extrabold tracking-tight text-white font-sans drop-shadow-md group-hover:text-purple-300 transition-colors whitespace-nowrap"
+                    className="text-2xl sm:text-4xl font-extrabold tracking-tight text-white font-sans drop-shadow-md group-hover:text-purple-300 transition-colors whitespace-nowrap text-center"
                   >
                     {storyScreens[activeStoryScreen]?.label || "Home"}
                   </motion.h1>
@@ -1485,33 +1679,61 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
               </button>
             </div>
 
-            {/* Right: Avatar & Clean Search Button (Stacked Vertically) */}
-            <div className="relative flex flex-col items-center gap-2 shrink-0 z-[300]">
-              <button
-                type="button"
-                onClick={() => setShowUserMenu(!showUserMenu)}
-                className="w-10 h-10 rounded-full bg-white/10 border border-white/20 backdrop-blur-xl flex items-center justify-center text-white hover:bg-white/20 shadow-lg cursor-pointer transition-all active:scale-95"
-                aria-label="Perfil de usuario"
-              >
-                <User className="w-5 h-5 text-white" />
-              </button>
+            {/* Right: Avatar on top & Search Button underneath (Absolute at Far Right Edge with Hover Tooltips) */}
+            <div className="absolute right-0 top-0 flex flex-col items-center gap-2 shrink-0 z-[300] pr-1 sm:pr-2 lg:pr-4">
+              {/* Profile Button with Hover Preview */}
+              <div className="relative group flex items-center justify-end">
+                <button
+                  type="button"
+                  onClick={() => setShowUserMenu(!showUserMenu)}
+                  className="w-10 h-10 rounded-full bg-white/10 border border-white/20 backdrop-blur-xl flex items-center justify-center text-white hover:bg-white/20 shadow-lg cursor-pointer transition-all active:scale-95 overflow-hidden relative"
+                  aria-label="Perfil"
+                >
+                  {userLoggedIn && userProfile?.avatar ? (
+                    <img
+                      src={userProfile.avatar}
+                      alt={userProfile.venueName || userProfile.name || "Perfil"}
+                      className="w-full h-full object-cover"
+                      onError={(e) => {
+                        e.currentTarget.style.display = "none";
+                        const fallback = e.currentTarget.parentElement?.querySelector(".header-user-fallback");
+                        if (fallback) fallback.classList.remove("hidden");
+                      }}
+                    />
+                  ) : null}
+                  <User className={`header-user-fallback w-5 h-5 text-white ${userLoggedIn && userProfile?.avatar ? "hidden" : ""}`} />
+                </button>
 
-              <button
-                type="button"
-                onClick={() => {
-                  setIsHeaderSearchOpen((prev) => !prev);
-                  if (!isHeaderSearchOpen) {
-                    setTimeout(() => headerSearchInputRef.current?.focus(), 100);
-                  }
-                }}
-                className={`w-10 h-10 rounded-full border backdrop-blur-xl flex items-center justify-center shadow-lg cursor-pointer transition-all active:scale-95 ${isHeaderSearchOpen
-                  ? "bg-white border-white text-zinc-900 shadow-xl scale-105"
-                  : "bg-white/10 border-white/20 hover:bg-white/20 text-white"
-                  }`}
-                aria-label="Buscar eventos o perfiles"
-              >
-                <Search className={`w-5 h-5 ${isHeaderSearchOpen ? "text-zinc-900" : "text-white"}`} />
-              </button>
+                {/* Hover Tooltip: Perfil */}
+                <div className="absolute right-[calc(100%+10px)] top-1/2 -translate-y-1/2 px-2.5 py-1 rounded-lg bg-zinc-950/90 border border-white/20 text-white text-[11px] font-bold uppercase tracking-wider backdrop-blur-xl shadow-2xl opacity-0 group-hover:opacity-100 pointer-events-none transition-all duration-200 translate-x-1 group-hover:translate-x-0 whitespace-nowrap z-50">
+                  Perfil
+                </div>
+              </div>
+
+              {/* Search Button with Hover Preview */}
+              <div className="relative group flex items-center justify-end">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsHeaderSearchOpen((prev) => !prev);
+                    if (!isHeaderSearchOpen) {
+                      setTimeout(() => headerSearchInputRef.current?.focus(), 100);
+                    }
+                  }}
+                  className={`w-10 h-10 rounded-full border backdrop-blur-xl flex items-center justify-center shadow-lg cursor-pointer transition-all active:scale-95 ${isHeaderSearchOpen
+                    ? "bg-white border-white text-zinc-900 shadow-xl scale-105"
+                    : "bg-white/10 border-white/20 hover:bg-white/20 text-white"
+                    }`}
+                  aria-label="Buscar"
+                >
+                  <Search className={`w-5 h-5 ${isHeaderSearchOpen ? "text-zinc-900" : "text-white"}`} />
+                </button>
+
+                {/* Hover Tooltip: Buscar */}
+                <div className="absolute right-[calc(100%+10px)] top-1/2 -translate-y-1/2 px-2.5 py-1 rounded-lg bg-zinc-950/90 border border-white/20 text-white text-[11px] font-bold uppercase tracking-wider backdrop-blur-xl shadow-2xl opacity-0 group-hover:opacity-100 pointer-events-none transition-all duration-200 translate-x-1 group-hover:translate-x-0 whitespace-nowrap z-50">
+                  Buscar
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -1807,15 +2029,15 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                           </button>
                         </div>
                       </div>
-                    ) : (
-                      <div className="relative z-10 w-full max-w-4xl mx-auto space-y-6 font-sans pt-12 sm:pt-16 pb-12">
-                        {/* --- STEPPER INDICATOR HEADER OUTSIDE MODAL --- */}
+                    ) : (!userProfile?.hasCompletedOnboarding || organizerSubView === "profile") ? (
+                      <div className="relative z-10 w-full max-w-2xl mx-auto space-y-5 font-sans pt-24 sm:pt-28 pb-8">
+                        {/* ─── STEPPER INDICATOR HEADER OUTSIDE MODAL (ORIGINAL CLEAN TEXT STYLE) ─── */}
                         <div className="flex items-center justify-center gap-3 sm:gap-6 py-2 text-xs sm:text-sm font-bold text-white tracking-wider uppercase drop-shadow-md">
-                          <span className="text-emerald-400 font-black flex items-center gap-1">
-                            ✓ Cuenta de Promotor
+                          <span className="text-white font-black">
+                            Cuenta de Promotor
                           </span>
                           <span className="text-zinc-400 font-normal">→</span>
-                          <span className="text-white font-black">
+                          <span className="text-zinc-400 font-medium">
                             Crear Evento
                           </span>
                           <span className="text-zinc-400 font-normal">→</span>
@@ -1824,45 +2046,501 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                           </span>
                         </div>
 
-                        {/* --- COMPACT WHITE CARD MODAL (CREAR EVENTO DIRECTO) --- */}
-                        <div className="bg-white text-zinc-900 p-6 sm:p-8 rounded-[32px] border border-zinc-200 shadow-2xl space-y-5 text-left font-sans">
-                          {/* Top Organizer Header inside White Modal */}
-                          <div className="flex items-center justify-between border-b border-zinc-100 pb-4">
-                            <div className="flex items-center gap-3">
-                              <div className="w-12 h-12 rounded-2xl bg-zinc-900 border border-zinc-200 overflow-hidden shrink-0 flex items-center justify-center shadow-sm">
+                        {/* ─── COMPACT WHITE CARD ONBOARDING MODAL ─── */}
+                        <div className="bg-white text-zinc-900 p-6 sm:p-8 rounded-[32px] border border-zinc-200 shadow-2xl text-left font-sans flex flex-col min-h-[700px] max-h-[730px] overflow-hidden">
+                          {/* Centered Hero Header with Restored Title (Pinned) */}
+                          <div className="space-y-1 border-b border-zinc-100 pb-3 text-center shrink-0">
+                            <h2 className="text-lg sm:text-xl font-black text-zinc-900 uppercase tracking-tight leading-snug">
+                              ELEVA TU CUENTA A PARTNER 4GO
+                            </h2>
+                            <p className="text-[11px] sm:text-xs text-zinc-500 font-medium leading-relaxed">
+                              Crea y gestiona tus eventos, vende entradas digitales y haz crecer tu audiencia.
+                            </p>
+                          </div>
+
+                          {/* Scrollable Form Fields */}
+                          <div className="overflow-y-auto pr-1 sm:pr-2 pt-2 space-y-4 flex-1">
+                            {/* Logo / Profile Picture Uploader */}
+                            <div className="space-y-2 text-center pb-2 border-b border-zinc-100">
+                              <label className="text-xs font-bold uppercase tracking-wider text-zinc-700 block">
+                                Foto de Perfil / Logo de la Marca
+                              </label>
+                              <div className="flex items-center justify-center gap-4">
+                                <div className="w-14 h-14 rounded-full bg-zinc-100 border-2 border-dashed border-zinc-300 flex items-center justify-center overflow-hidden shrink-0 shadow-inner relative">
+                                  {brandLogoUrl || userProfile?.avatar ? (
+                                    <img
+                                      src={brandLogoUrl || userProfile?.avatar}
+                                      alt="Logo de Marca"
+                                      className="w-full h-full object-cover"
+                                      onError={(e) => {
+                                        e.currentTarget.style.display = "none";
+                                        const fallback = e.currentTarget.parentElement?.querySelector(".upload-fallback-icon");
+                                        if (fallback) fallback.classList.remove("hidden");
+                                      }}
+                                    />
+                                  ) : null}
+                                  <Upload className={`upload-fallback-icon w-5 h-5 text-zinc-400 ${brandLogoUrl || userProfile?.avatar ? "hidden" : ""}`} />
+                                </div>
+                                <div className="text-left space-y-1">
+                                  <input
+                                    type="file"
+                                    accept="image/*"
+                                    id="brand-logo-file-input"
+                                    className="hidden"
+                                    onChange={(e) => {
+                                      const file = e.target.files?.[0];
+                                      if (file) {
+                                        const reader = new FileReader();
+                                        reader.onloadend = () => {
+                                          const base64 = reader.result as string;
+                                          setBrandLogoUrl(base64);
+                                          if (userProfile) {
+                                            const updated = { ...userProfile, avatar: base64 };
+                                            setUserProfile(updated);
+                                            const emailClean = (userProfile.email || "").toLowerCase();
+                                            localStorage.setItem("organizer_profile", JSON.stringify(updated));
+                                            if (emailClean) {
+                                              localStorage.setItem(`organizer_profile_${emailClean}`, JSON.stringify(updated));
+                                            }
+                                          }
+                                        };
+                                        reader.readAsDataURL(file);
+                                      }
+                                    }}
+                                  />
+                                  <label
+                                    htmlFor="brand-logo-file-input"
+                                    className="inline-block px-3.5 py-1.5 rounded-xl bg-zinc-900 hover:bg-black text-white font-bold text-xs uppercase tracking-wider transition cursor-pointer shadow-md"
+                                  >
+                                    {brandLogoUrl || userProfile?.avatar ? "Cambiar Foto" : "Subir Foto / Logo"}
+                                  </label>
+                                  <p className="text-[10px] text-zinc-400 font-medium">Recomendado: Formato cuadrado 500x500px.</p>
+                                </div>
+                              </div>
+                            </div>
+
+                            {/* Single Brand / Venue Name Input */}
+                            <div className="space-y-1">
+                              <label className="text-xs font-bold uppercase tracking-wider text-zinc-700 block">
+                                Nombre de la Marca / Discoteca
+                              </label>
+                              <input
+                                type="text"
+                                value={orgName || userProfile?.venueName || ""}
+                                onChange={(e) => setOrgName(e.target.value)}
+                                placeholder="Nombre de tu marca o establecimiento"
+                                className="w-full px-3.5 py-2 rounded-xl bg-zinc-50 border border-zinc-300 text-xs sm:text-sm text-zinc-900 focus:outline-none focus:border-black focus:bg-white transition font-medium"
+                              />
+                              <p className="text-[10px] text-zinc-400 font-medium">El nombre público de tu marca o establecimiento.</p>
+                            </div>
+
+                            {/* Instagram Meta Graph API Handle */}
+                            <div className="space-y-1">
+                              <label className="text-xs font-bold uppercase tracking-wider text-zinc-700 block">
+                                Instagram de la Marca (@usuario)
+                              </label>
+                              <div className="relative">
+                                <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-400 font-bold text-xs">@</span>
+                                <input
+                                  type="text"
+                                  value={instagramHandle || userProfile?.instagram?.replace(/^@/, '') || ""}
+                                  onChange={(e) => setInstagramHandle(e.target.value.replace(/^@/, ''))}
+                                  placeholder="usuario_instagram"
+                                  className="w-full pl-8 pr-3.5 py-2 rounded-xl bg-zinc-50 border border-zinc-300 text-xs sm:text-sm text-zinc-900 focus:outline-none focus:border-black focus:bg-white transition font-medium"
+                                />
+                              </div>
+                              <p className="text-[10px] text-zinc-400 font-medium">
+                                Conexión con Meta: Tus historias de Instagram se sincronizarán en 4GO.
+                              </p>
+                            </div>
+
+                            {/* Grid for Partner Type & City */}
+                            <div className="grid grid-cols-2 gap-3">
+                              <div className="space-y-1">
+                                <label className="text-xs font-bold uppercase tracking-wider text-zinc-700 block">
+                                  Partner type
+                                </label>
+                                <select
+                                  value={orgType || userProfile?.type || "Discoteca / Club"}
+                                  onChange={(e) => setOrgType(e.target.value)}
+                                  className="w-full px-3 py-2 rounded-xl bg-zinc-50 border border-zinc-300 text-xs text-zinc-900 font-bold focus:outline-none focus:border-black focus:bg-white transition cursor-pointer"
+                                >
+                                  <option value="Organizador / Promotor">Organizador / Promotor</option>
+                                  <option value="Discoteca / Club">Discoteca / Club</option>
+                                </select>
+                              </div>
+
+                              <div className="space-y-1">
+                                <label className="text-xs font-bold uppercase tracking-wider text-zinc-700 block">
+                                  City
+                                </label>
+                                <select
+                                  value="Loja"
+                                  disabled
+                                  className="w-full px-3 py-2 rounded-xl bg-zinc-100 border border-zinc-300 text-xs font-bold text-zinc-900 cursor-not-allowed appearance-none"
+                                >
+                                  <option value="Loja">Loja</option>
+                                </select>
+                              </div>
+                            </div>
+
+                            {/* DYNAMIC DISCOTECA FIELDS (Button-First Maps Flow, No Operating Hours) */}
+                            {(orgType === "Discoteca / Club" || (!orgType && userProfile?.type === "Discoteca / Club")) && (
+                              <div className="space-y-3 pt-2 border-t border-zinc-100">
+                                {/* Intuitive Button-First Maps Picker */}
+                                <div className="space-y-1">
+                                  <label className="text-[11px] font-bold uppercase tracking-wider text-zinc-800 block">
+                                    Ubicación de la Discoteca (Loja)
+                                  </label>
+                                  {!(clubAddress || userProfile?.address) ? (
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        const userAddr = prompt("Ingresa la dirección o punto de referencia de la discoteca en Loja:", "Av. Salvador Bustamante Celi y Guayaquil");
+                                        if (userAddr && userAddr.trim()) {
+                                          setClubAddress(userAddr.trim());
+                                        }
+                                      }}
+                                      className="w-full py-2 px-3.5 rounded-xl bg-zinc-900 hover:bg-black text-white text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 transition cursor-pointer shadow-sm"
+                                    >
+                                      <MapPin className="w-3.5 h-3.5 text-emerald-400" />
+                                      <span>Elegir Ubicación en Maps 📍</span>
+                                    </button>
+                                  ) : (
+                                    <div className="flex items-center justify-between gap-2 p-2 rounded-xl bg-zinc-50 border border-zinc-300 text-xs font-medium text-zinc-900">
+                                      <div className="flex items-center gap-2 truncate">
+                                        <MapPin className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
+                                        <span className="truncate font-semibold text-[11px]">{clubAddress || userProfile?.address}</span>
+                                      </div>
+                                      <button
+                                        type="button"
+                                        onClick={() => {
+                                          const userAddr = prompt("Editar dirección de la discoteca en Loja:", clubAddress || userProfile?.address || "");
+                                          if (userAddr !== null) {
+                                            setClubAddress(userAddr.trim());
+                                          }
+                                        }}
+                                        className="px-2 py-0.5 rounded-lg bg-zinc-900 hover:bg-black text-white text-[9.5px] font-bold uppercase shrink-0 cursor-pointer"
+                                      >
+                                        Cambiar 📍
+                                      </button>
+                                    </div>
+                                  )}
+                                </div>
+
+                                {/* Days of Opening */}
+                                <div className="space-y-1">
+                                  <label className="text-[11px] font-bold uppercase tracking-wider text-zinc-800 block">
+                                    Días de Apertura
+                                  </label>
+                                  <div className="flex flex-wrap gap-1">
+                                    {["Jueves", "Viernes", "Sábado", "Domingo", "Todos"].map((day) => {
+                                      const isSelected = openingDays.includes(day);
+                                      return (
+                                        <button
+                                          key={day}
+                                          type="button"
+                                          onClick={() => {
+                                            if (day === "Todos") {
+                                              setOpeningDays(["Jueves", "Viernes", "Sábado", "Domingo"]);
+                                              return;
+                                            }
+                                            setOpeningDays((prev) =>
+                                              isSelected ? prev.filter((d) => d !== day) : [...prev, day]
+                                            );
+                                          }}
+                                          className={`px-2.5 py-1 rounded-lg text-[11px] font-bold transition cursor-pointer border ${
+                                            isSelected
+                                              ? "bg-zinc-900 text-white border-zinc-900"
+                                              : "bg-zinc-100 text-zinc-600 border-zinc-200 hover:bg-zinc-200"
+                                          }`}
+                                        >
+                                          {day}
+                                        </button>
+                                      );
+                                    })}
+                                  </div>
+                                </div>
+                              </div>
+                            )}
+                          </div>
+
+                          {/* Pinned Action: Next Step Button */}
+                          {(() => {
+                            const currentName = orgName.trim() || userProfile?.venueName || "";
+                            const currentIg = instagramHandle.trim() || userProfile?.instagram || "";
+                            const currentAddr = clubAddress.trim() || userProfile?.address || "";
+                            const currentType = orgType || userProfile?.type || "Discoteca / Club";
+
+                            const isFormValid =
+                              currentName.length > 0 &&
+                              (currentType !== "Discoteca / Club" || (currentAddr.length > 0 && openingDays.length > 0));
+
+                            return (
+                              <div className="pt-3 shrink-0 border-t border-zinc-100">
+                                <button
+                                  type="button"
+                                  disabled={!isFormValid}
+                                  onClick={async () => {
+                                    if (!isFormValid) return;
+                                    const emailClean = (userProfile?.email || "usuario@ejemplo.com").trim().toLowerCase();
+                                    const isCubic = emailClean === "mrshifu879@gmail.com";
+                                    const isSata = emailClean === "brandon.medina@unl.edu.ec";
+
+                                    const updated = {
+                                      id: isCubic ? "cubic" : isSata ? "sata" : (userProfile?.id || `usr_${Date.now()}`),
+                                      name: currentName,
+                                      email: emailClean,
+                                      avatar: brandLogoUrl || userProfile?.avatar || (isCubic ? "/images/cubic-official-logo.png" : isSata ? "/images/sata-official-logo.jpg" : ""),
+                                      venueName: currentName,
+                                      type: currentType,
+                                      city: "Loja",
+                                      instagram: currentIg ? `@${currentIg.replace(/^@/, '')}` : "",
+                                      address: currentAddr,
+                                      openingDays,
+                                      hasCompletedOnboarding: true,
+                                    };
+
+                                    setUserProfile(updated as any);
+                                    localStorage.setItem("organizer_token", `token-${emailClean}-${Date.now()}`);
+                                    localStorage.setItem("organizer_profile", JSON.stringify(updated));
+                                    localStorage.setItem(`organizer_profile_${emailClean}`, JSON.stringify(updated));
+                                    setOrganizerSubView("create_event");
+
+                                    fetch("/api/users/sync", {
+                                      method: "POST",
+                                      headers: { "Content-Type": "application/json" },
+                                      body: JSON.stringify({
+                                        email: emailClean,
+                                        name: updated.name,
+                                        avatar: updated.avatar,
+                                        provider: "google",
+                                        type: currentType,
+                                        venueName: updated.venueName,
+                                        city: "Loja",
+                                      }),
+                                    }).catch(() => {});
+                                  }}
+                                  className={`w-full py-3.5 rounded-full font-bold text-xs uppercase tracking-widest transition active:scale-95 text-center flex items-center justify-center gap-2 ${
+                                    isFormValid
+                                      ? "bg-black hover:bg-zinc-800 text-white cursor-pointer shadow-xl"
+                                      : "bg-zinc-200 text-zinc-400 cursor-not-allowed opacity-60"
+                                  }`}
+                                >
+                                  <span>Siguiente: Crear Evento</span>
+                                  <span>→</span>
+                                </button>
+                              </div>
+                            );
+                          })()}
+                        </div>
+                      </div>
+                    ) : organizerSubView === "published" ? (
+                      <div className="relative z-10 w-full max-w-2xl mx-auto space-y-5 font-sans pt-24 sm:pt-28 pb-8">
+                        {/* ─── STEPPER INDICATOR HEADER (STEP 3 ACTIVE) ─── */}
+                        <div className="flex items-center justify-center gap-3 sm:gap-6 py-2 text-xs sm:text-sm font-bold text-white tracking-wider uppercase drop-shadow-md">
+                          <button
+                            type="button"
+                            onClick={() => setOrganizerSubView("profile")}
+                            className="text-zinc-400 hover:text-white transition cursor-pointer font-medium"
+                          >
+                            Cuenta de Promotor
+                          </button>
+                          <span className="text-zinc-400 font-normal">→</span>
+                          <button
+                            type="button"
+                            onClick={() => setOrganizerSubView("create_event")}
+                            className="text-zinc-400 hover:text-white transition cursor-pointer font-medium"
+                          >
+                            Crear Evento
+                          </button>
+                          <span className="text-zinc-400 font-normal">→</span>
+                          <span className="text-white font-black">
+                            Publicar
+                          </span>
+                        </div>
+
+                        {/* ─── PUBLISHED SUCCESS CARD ─── */}
+                        <div className="bg-white text-zinc-900 p-6 sm:p-8 rounded-[32px] border border-zinc-200 shadow-2xl space-y-4 text-center font-sans flex flex-col min-h-[700px] max-h-[730px] justify-between overflow-hidden">
+                          {/* Success Icon & Header */}
+                          <div className="space-y-2.5">
+                            <div className="w-16 h-16 rounded-full bg-emerald-50 text-emerald-600 border border-emerald-200 flex items-center justify-center mx-auto shadow-inner text-2xl font-black">
+                              ✓
+                            </div>
+                            <div className="space-y-1">
+                              <h2 className="text-2xl sm:text-3xl font-black text-zinc-900 uppercase tracking-tight">
+                                ¡Evento Publicado Correctamente!
+                              </h2>
+                              <p className="text-xs sm:text-sm text-zinc-500 font-medium max-w-md mx-auto">
+                                Tu evento ya se encuentra activo en la cartelera principal de 4GO y disponible para la compra de tickets.
+                              </p>
+                            </div>
+                          </div>
+
+                          {/* Event Summary Box */}
+                          {lastPublishedEvent && (
+                            <div className="p-4 rounded-2xl bg-zinc-50 border border-zinc-200 text-left flex flex-col sm:flex-row items-center gap-4">
+                              <div className="w-20 h-24 sm:w-24 sm:h-28 rounded-xl overflow-hidden bg-black shrink-0 relative shadow-md">
                                 <img
-                                  src={userProfile?.avatar || (userProfile?.id === "cubic" || userProfile?.email === "mrshifu879@gmail.com" ? "/images/cubic-official-logo.png" : "/images/sata-official-logo.jpg")}
-                                  alt="Logo"
+                                  src={lastPublishedEvent.poster || lastPublishedEvent.imageUrl || "/images/4go_red_girl_showcase.jpg"}
+                                  alt={lastPublishedEvent.title}
                                   className="w-full h-full object-cover"
                                 />
                               </div>
-                                <div>
-                                  <h3 className="text-base sm:text-lg font-black text-zinc-900 uppercase tracking-tight">
-                                    {userProfile?.venueName || (userProfile?.id === "cubic" || userProfile?.email === "mrshifu879@gmail.com" ? "CUBIC LOJA" : "SATA MUSIC")}
-                                  </h3>
-                                  <p className="text-xs text-zinc-500 font-medium">{userProfile?.email || "mrshifu879@gmail.com"}</p>
-                                </div>
+                              <div className="space-y-1.5 flex-1 min-w-0 text-center sm:text-left">
+                                <h4 className="text-base sm:text-lg font-black text-zinc-900 uppercase truncate">
+                                  {lastPublishedEvent.title}
+                                </h4>
+                                <p className="text-xs text-zinc-600 font-semibold truncate">
+                                  📍 {lastPublishedEvent.venue} • {lastPublishedEvent.city || "Loja"}
+                                </p>
+                                <p className="text-xs text-zinc-500 font-medium">
+                                  🗓️ {lastPublishedEvent.dateLabel || lastPublishedEvent.date}
+                                </p>
+                              </div>
                             </div>
+                          )}
 
+                          {/* Actions Buttons */}
+                          <div className="space-y-3 pt-2">
                             <button
                               type="button"
                               onClick={() => {
-                                setSelectedOrganizerSlug(userProfile?.id || (userProfile?.email === "mrshifu879@gmail.com" ? "cubic" : "sata"));
-                                setShowOrganizerOverlay(true);
+                                setNewEventTitle("");
+                                setNewEventSubtitle("");
+                                setNewEventDate("");
+                                setNewEventDoorsOpen("");
+                                setNewEventVenueName("");
+                                setNewEventVenueAddress("");
+                                setOrganizerSubView("create_event");
                               }}
-                              className="px-3.5 py-1.5 rounded-xl bg-zinc-100 hover:bg-zinc-200 text-zinc-800 text-xs font-bold transition active:scale-95 cursor-pointer text-center"
+                              className="w-full py-4 rounded-full bg-black hover:bg-zinc-800 text-white font-black text-xs uppercase tracking-widest transition active:scale-95 text-center cursor-pointer shadow-xl flex items-center justify-center gap-2"
                             >
-                              Ver Perfil
+                              <span>+ Publicar Otro Evento</span>
                             </button>
+
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setActiveStoryScreen(2);
+                                  if (typeof window !== "undefined") {
+                                    window.scrollTo({ top: 0, behavior: "smooth" });
+                                  }
+                                }}
+                                className="w-full py-3 px-4 rounded-2xl bg-zinc-100 hover:bg-zinc-200 text-zinc-900 font-bold text-xs uppercase tracking-wider transition cursor-pointer"
+                              >
+                                Ver en Cartelera →
+                              </button>
+
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  const slug = userProfile?.id || (userProfile?.email === "mrshifu879@gmail.com" ? "cubic" : "sata");
+                                  setSelectedOrganizerSlug(slug);
+                                  setShowOrganizerOverlay(true);
+                                }}
+                                className="w-full py-3 px-4 rounded-2xl bg-zinc-100 hover:bg-zinc-200 text-zinc-900 font-bold text-xs uppercase tracking-wider transition cursor-pointer"
+                              >
+                                Ver Mi Perfil
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="relative z-10 w-full max-w-2xl mx-auto space-y-6 font-sans pt-24 sm:pt-28 pb-12">
+                        {/* --- STEPPER INDICATOR HEADER OUTSIDE MODAL --- */}
+                        <div className="flex items-center justify-center gap-3 sm:gap-6 py-2 text-xs sm:text-sm font-bold text-white tracking-wider uppercase drop-shadow-md">
+                          <button
+                            type="button"
+                            onClick={() => setOrganizerSubView("profile")}
+                            className="text-zinc-400 hover:text-white transition cursor-pointer font-medium"
+                          >
+                            Cuenta de Promotor
+                          </button>
+                          <span className="text-zinc-400 font-normal">→</span>
+                          <span className="text-white font-black">
+                            Crear Evento
+                          </span>
+                          <span className="text-zinc-400 font-normal">→</span>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              if (lastPublishedEvent) setOrganizerSubView("published");
+                            }}
+                            className={`transition ${
+                              lastPublishedEvent
+                                ? "text-zinc-400 hover:text-white cursor-pointer font-medium"
+                                : "text-zinc-500 cursor-not-allowed font-medium"
+                            }`}
+                          >
+                            Publicar
+                          </button>
+                        </div>
+
+                        {/* --- COMPACT WHITE CARD MODAL (CREAR EVENTO DIRECTO) --- */}
+                        <div className="bg-white text-zinc-900 p-6 sm:p-8 rounded-[32px] border border-zinc-200 shadow-2xl text-left font-sans flex flex-col min-h-[700px] max-h-[730px] overflow-hidden">
+                          {/* Top Organizer Header inside White Modal (Pinned Header) */}
+                          <div className="flex items-center justify-between border-b border-zinc-100 pb-3 shrink-0">
+                            <div className="flex items-center gap-3">
+                              <div className="w-11 h-11 rounded-2xl bg-zinc-900 border border-zinc-200 overflow-hidden shrink-0 flex items-center justify-center shadow-sm">
+                                {userProfile?.avatar ? (
+                                  <img
+                                    src={userProfile.avatar}
+                                    alt="Logo"
+                                    className="w-full h-full object-cover"
+                                    onError={(e) => {
+                                      e.currentTarget.style.display = "none";
+                                    }}
+                                  />
+                                ) : (
+                                  <Building2 className="w-5 h-5 text-white" />
+                                )}
+                              </div>
+                              <div>
+                                <div className="flex items-center gap-2">
+                                  <h3 className="text-sm sm:text-base font-black text-zinc-900 uppercase tracking-tight">
+                                    {userProfile?.venueName || userProfile?.name || "PROMOTOR"}
+                                  </h3>
+                                  <span className="px-2 py-0.5 rounded-full bg-zinc-100 border border-zinc-200 text-zinc-700 text-[9px] font-bold uppercase tracking-wider">
+                                    Partner 4GO
+                                  </span>
+                                </div>
+                                <p className="text-[11px] text-zinc-500 font-medium truncate max-w-[170px] sm:max-w-[260px]">{userProfile?.email}</p>
+                              </div>
+                            </div>
+
+                            <div className="flex items-center gap-2">
+                              <button
+                                type="button"
+                                onClick={() => setOrganizerSubView("profile")}
+                                className="px-3 py-1.5 rounded-xl bg-zinc-100 hover:bg-zinc-200 text-zinc-800 text-[11px] font-bold transition active:scale-95 cursor-pointer text-center flex items-center gap-1"
+                              >
+                                <ArrowLeft className="w-3 h-3 text-zinc-600" />
+                                <span>Volver a Cuenta</span>
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  const slug = userProfile?.id || (userProfile?.email === "mrshifu879@gmail.com" ? "cubic" : "sata");
+                                  setSelectedOrganizerSlug(slug);
+                                  setShowOrganizerOverlay(true);
+                                }}
+                                className="px-3 py-1.5 rounded-xl bg-zinc-100 hover:bg-zinc-200 text-zinc-800 text-[11px] font-bold transition active:scale-95 cursor-pointer text-center"
+                              >
+                                Ver Perfil
+                              </button>
+                            </div>
                           </div>
 
-                          {/* Event Creation Form Fields */}
-                          <div className="space-y-5">
-                            <div className="space-y-1 border-b border-zinc-100 pb-3">
-                              <h2 className="text-xl sm:text-2xl font-black text-zinc-900 uppercase tracking-tight">
+                          {/* Scrollable Event Creation Form Fields */}
+                          <div className="overflow-y-auto pr-1 sm:pr-2 pt-3 pb-2 space-y-4 flex-1">
+                            <div className="space-y-0.5 border-b border-zinc-100 pb-2.5">
+                              <h2 className="text-lg sm:text-xl font-black text-zinc-900 uppercase tracking-tight">
                                 CREAR Y PUBLICAR EVENTO
                               </h2>
-                              <p className="text-xs text-zinc-500 font-medium">
+                              <p className="text-[11px] text-zinc-500 font-medium">
                                 Todos estos datos se mostrarán exactamente en la cartelera y página de compra del evento.
                               </p>
                             </div>
@@ -1873,14 +2551,14 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                                 Flyer / Poster Oficial del Evento
                               </label>
                               <div className="flex items-center gap-4">
-                                <div className="w-20 h-24 rounded-2xl bg-zinc-900 border border-zinc-300 overflow-hidden shrink-0 shadow-md flex items-center justify-center">
+                                <div className="w-16 h-20 rounded-xl bg-zinc-900 border border-zinc-300 overflow-hidden shrink-0 shadow-md flex items-center justify-center">
                                   <img
                                     src={newEventPoster}
                                     alt="Preview del Flyer"
                                     className="w-full h-full object-cover"
                                   />
                                 </div>
-                                <div className="space-y-1.5 text-left">
+                                <div className="space-y-1 text-left">
                                   <input
                                     type="file"
                                     accept="image/*"
@@ -1888,12 +2566,18 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                                     className="hidden"
                                     onChange={(e) => {
                                       const file = e.target.files?.[0];
-                                      if (file) setNewEventPoster(URL.createObjectURL(file));
+                                      if (file) {
+                                        const reader = new FileReader();
+                                        reader.onloadend = () => {
+                                          setNewEventPoster(reader.result as string);
+                                        };
+                                        reader.readAsDataURL(file);
+                                      }
                                     }}
                                   />
                                   <label
                                     htmlFor="event-poster-file-input"
-                                    className="inline-block px-4 py-2 rounded-xl bg-black hover:bg-zinc-800 text-white font-bold text-xs uppercase tracking-wider transition cursor-pointer shadow-md"
+                                    className="inline-block px-3.5 py-1.5 rounded-xl bg-black hover:bg-zinc-800 text-white font-bold text-xs uppercase tracking-wider transition cursor-pointer shadow-md"
                                   >
                                     Subir Foto / Flyer
                                   </label>
@@ -1906,7 +2590,7 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
 
                             {/* 2. Título & Subtítulo (Venue / Sala) */}
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                              <div className="space-y-1.5">
+                              <div className="space-y-1">
                                 <label className="text-xs font-bold uppercase tracking-wider text-zinc-700 block">
                                   Título del Evento
                                 </label>
@@ -1915,11 +2599,11 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                                   value={newEventTitle}
                                   onChange={(e) => setNewEventTitle(e.target.value)}
                                   placeholder="Ej. Kaskade: ORIGIN //"
-                                  className="w-full px-4 py-2.5 rounded-xl bg-zinc-50 border border-zinc-300 text-xs sm:text-sm text-zinc-900 focus:outline-none focus:border-black focus:bg-white transition font-medium"
+                                  className="w-full px-3.5 py-2 rounded-xl bg-zinc-50 border border-zinc-300 text-xs sm:text-sm text-zinc-900 focus:outline-none focus:border-black focus:bg-white transition font-medium"
                                 />
                               </div>
 
-                              <div className="space-y-1.5">
+                              <div className="space-y-1">
                                 <label className="text-xs font-bold uppercase tracking-wider text-zinc-700 block">
                                   Subtítulo / Sala
                                 </label>
@@ -1928,14 +2612,14 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                                   value={newEventSubtitle}
                                   onChange={(e) => setNewEventSubtitle(e.target.value)}
                                   placeholder="Ej. FACTORY TOWN / CUBIC LOJA"
-                                  className="w-full px-4 py-2.5 rounded-xl bg-zinc-50 border border-zinc-300 text-xs sm:text-sm text-zinc-900 focus:outline-none focus:border-black focus:bg-white transition font-medium"
+                                  className="w-full px-3.5 py-2 rounded-xl bg-zinc-50 border border-zinc-300 text-xs sm:text-sm text-zinc-900 focus:outline-none focus:border-black focus:bg-white transition font-medium"
                                 />
                               </div>
                             </div>
 
                             {/* 3. Fecha, Apertura de Puertas & Género */}
                             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                              <div className="space-y-1.5">
+                              <div className="space-y-1">
                                 <label className="text-xs font-bold uppercase tracking-wider text-zinc-700 block">
                                   Fecha del Evento
                                 </label>
@@ -1944,11 +2628,11 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                                   value={newEventDate}
                                   onChange={(e) => setNewEventDate(e.target.value)}
                                   placeholder="Ej. 18 SEP 2026"
-                                  className="w-full px-4 py-2.5 rounded-xl bg-zinc-50 border border-zinc-300 text-xs sm:text-sm text-zinc-900 focus:outline-none focus:border-black focus:bg-white transition font-medium"
+                                  className="w-full px-3.5 py-2 rounded-xl bg-zinc-50 border border-zinc-300 text-xs sm:text-sm text-zinc-900 focus:outline-none focus:border-black focus:bg-white transition font-medium"
                                 />
                               </div>
 
-                              <div className="space-y-1.5">
+                              <div className="space-y-1">
                                 <label className="text-xs font-bold uppercase tracking-wider text-zinc-700 block">
                                   Hora de Apertura
                                 </label>
@@ -1956,19 +2640,19 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                                   type="text"
                                   value={newEventDoorsOpen}
                                   onChange={(e) => setNewEventDoorsOpen(e.target.value)}
-                                  placeholder="Apertura de puertas 22:00 GMT-5"
-                                  className="w-full px-4 py-2.5 rounded-xl bg-zinc-50 border border-zinc-300 text-xs sm:text-sm text-zinc-900 focus:outline-none focus:border-black focus:bg-white transition font-medium"
+                                  placeholder="Apertura 22:00"
+                                  className="w-full px-3.5 py-2 rounded-xl bg-zinc-50 border border-zinc-300 text-xs sm:text-sm text-zinc-900 focus:outline-none focus:border-black focus:bg-white transition font-medium"
                                 />
                               </div>
 
-                              <div className="space-y-1.5">
+                              <div className="space-y-1">
                                 <label className="text-xs font-bold uppercase tracking-wider text-zinc-700 block">
-                                  Categoría / Género
+                                  Categoría
                                 </label>
                                 <select
                                   value={newEventCategory}
                                   onChange={(e) => setNewEventCategory(e.target.value)}
-                                  className="w-full px-3 py-2.5 rounded-xl bg-zinc-50 border border-zinc-300 text-xs font-bold text-zinc-900 focus:outline-none focus:border-black focus:bg-white transition cursor-pointer"
+                                  className="w-full px-2.5 py-2 rounded-xl bg-zinc-50 border border-zinc-300 text-xs font-bold text-zinc-900 focus:outline-none focus:border-black focus:bg-white transition cursor-pointer"
                                 >
                                   <option value="Electronic / House">Electronic / House</option>
                                   <option value="Fiesta / Club">Fiesta / Club</option>
@@ -1980,7 +2664,7 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                             </div>
 
                             {/* 4. Preventa 1 & Preventa 2 */}
-                            <div className="p-4 rounded-2xl bg-zinc-50 border border-zinc-200 space-y-3">
+                            <div className="p-3.5 rounded-2xl bg-zinc-50 border border-zinc-200 space-y-2.5">
                               <div className="flex items-center justify-between">
                                 <label className="text-xs font-black uppercase tracking-wider text-zinc-800 block">
                                   Escalafón de Entradas y Preventas
@@ -1996,7 +2680,7 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                                     value={newEventPresale1Price}
                                     onChange={(e) => setNewEventPresale1Price(e.target.value)}
                                     placeholder="5"
-                                    className="w-full px-3.5 py-2 rounded-xl bg-white border border-zinc-300 text-xs font-bold text-zinc-900 focus:outline-none focus:border-black transition"
+                                    className="w-full px-3.5 py-1.5 rounded-xl bg-white border border-zinc-300 text-xs font-bold text-zinc-900 focus:outline-none focus:border-black transition"
                                   />
                                 </div>
                                 <div className="space-y-1">
@@ -2006,18 +2690,18 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                                     value={newEventPresale2Price}
                                     onChange={(e) => setNewEventPresale2Price(e.target.value)}
                                     placeholder="10"
-                                    className="w-full px-3.5 py-2 rounded-xl bg-white border border-zinc-300 text-xs font-bold text-zinc-900 focus:outline-none focus:border-black transition"
+                                    className="w-full px-3.5 py-1.5 rounded-xl bg-white border border-zinc-300 text-xs font-bold text-zinc-900 focus:outline-none focus:border-black transition"
                                   />
                                 </div>
                               </div>
                               <p className="text-[10px] text-zinc-400 font-medium">
-                                * La preventa 1 es limitada. Al agotarse o vencer el plazo, se activará la preventa 2.
+                                * La preventa 1 es limitada. Al agotarse, se activará la preventa 2.
                               </p>
                             </div>
 
                             {/* 5. Información & Restricciones */}
-                            <div className="space-y-3">
-                              <div className="space-y-1.5">
+                            <div className="space-y-2.5">
+                              <div className="space-y-1">
                                 <label className="text-xs font-bold uppercase tracking-wider text-zinc-700 block">
                                   Información / Descripción del Evento
                                 </label>
@@ -2026,12 +2710,12 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                                   onChange={(e) => setNewEventDescription(e.target.value)}
                                   rows={2}
                                   placeholder="Detalla la experiencia, artistas invitados, código de vestimenta, etc."
-                                  className="w-full px-4 py-2.5 rounded-xl bg-zinc-50 border border-zinc-300 text-xs sm:text-sm text-zinc-900 focus:outline-none focus:border-black focus:bg-white transition font-medium"
+                                  className="w-full px-3.5 py-2 rounded-xl bg-zinc-50 border border-zinc-300 text-xs text-zinc-900 focus:outline-none focus:border-black focus:bg-white transition font-medium"
                                 />
                               </div>
 
                               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                                <div className="space-y-1.5">
+                                <div className="space-y-1">
                                   <label className="text-xs font-bold uppercase tracking-wider text-zinc-700 block">
                                     Restricción de Edad
                                   </label>
@@ -2039,30 +2723,31 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                                     type="text"
                                     value={newEventAgeRestriction}
                                     onChange={(e) => setNewEventAgeRestriction(e.target.value)}
-                                    placeholder="This is an 18+ event"
-                                    className="w-full px-4 py-2 rounded-xl bg-zinc-50 border border-zinc-300 text-xs text-zinc-900 font-medium"
+                                    placeholder="Ej. +18 con cédula"
+                                    className="w-full px-3.5 py-2 rounded-xl bg-zinc-50 border border-zinc-300 text-xs text-zinc-900 focus:outline-none focus:border-black focus:bg-white transition font-medium"
                                   />
                                 </div>
 
-                                <div className="space-y-1.5">
+                                <div className="space-y-1">
                                   <label className="text-xs font-bold uppercase tracking-wider text-zinc-700 block">
-                                    Presentado por
+                                    Presentado Por
                                   </label>
                                   <input
                                     type="text"
-                                    value={`Presented by ${userProfile?.venueName || "Cubic"}`}
+                                    value={userProfile?.venueName ? `Presented by ${userProfile.venueName}` : "Presented by Oficial"}
                                     disabled
-                                    className="w-full px-4 py-2 rounded-xl bg-zinc-100 border border-zinc-200 text-xs text-zinc-700 font-medium cursor-not-allowed"
+                                    className="w-full px-3.5 py-2 rounded-xl bg-zinc-100 border border-zinc-200 text-xs text-zinc-500 font-semibold cursor-not-allowed"
                                   />
                                 </div>
                               </div>
                             </div>
 
-                            {/* 6. Lugar & Ubicación con Google Maps */}
-                            <div className="p-4 rounded-2xl bg-zinc-50 border border-zinc-200 space-y-3">
+                            {/* 6. Lugar / Ubicación */}
+                            <div className="p-3.5 rounded-2xl bg-zinc-50 border border-zinc-200 space-y-2.5">
                               <label className="text-xs font-black uppercase tracking-wider text-zinc-800 block">
-                                Lugar & Ubicación (Google Maps)
+                                Lugar &amp; Ubicación (Google Maps)
                               </label>
+
                               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                 <div className="space-y-1">
                                   <span className="text-[11px] font-bold text-zinc-600 block">Nombre del Establecimiento</span>
@@ -2071,7 +2756,7 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                                     value={newEventVenueName}
                                     onChange={(e) => setNewEventVenueName(e.target.value)}
                                     placeholder="Factory Town - Miami / Cubic Loja"
-                                    className="w-full px-3.5 py-2 rounded-xl bg-white border border-zinc-300 text-xs font-semibold text-zinc-900 focus:outline-none focus:border-black transition"
+                                    className="w-full px-3.5 py-1.5 rounded-xl bg-white border border-zinc-300 text-xs font-semibold text-zinc-900 focus:outline-none focus:border-black transition"
                                   />
                                 </div>
                                 <div className="space-y-1">
@@ -2081,7 +2766,7 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                                     value={newEventVenueAddress}
                                     onChange={(e) => setNewEventVenueAddress(e.target.value)}
                                     placeholder="Av. Salvador Bustamante Celi y Guayaquil, Loja"
-                                    className="w-full px-3.5 py-2 rounded-xl bg-white border border-zinc-300 text-xs font-semibold text-zinc-900 focus:outline-none focus:border-black transition"
+                                    className="w-full px-3.5 py-1.5 rounded-xl bg-white border border-zinc-300 text-xs font-semibold text-zinc-900 focus:outline-none focus:border-black transition"
                                   />
                                 </div>
                               </div>
@@ -2091,21 +2776,21 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                                 onClick={() => {
                                   window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(newEventVenueAddress || "Cubic Loja")}`, '_blank');
                                 }}
-                                className="px-4 py-2 rounded-xl bg-zinc-900 hover:bg-black text-white text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 transition cursor-pointer shadow-sm"
+                                className="px-3.5 py-1.5 rounded-xl bg-zinc-900 hover:bg-black text-white text-[11px] font-bold uppercase tracking-wider flex items-center justify-center gap-1.5 transition cursor-pointer shadow-sm"
                               >
-                                <MapPin className="w-3.5 h-3.5 text-emerald-400" />
+                                <MapPin className="w-3 h-3 text-emerald-400" />
                                 <span>Probar y Abrir en Google Maps 📍</span>
                               </button>
                             </div>
 
                             {/* 7. Sección Promotor & Co-Promotores (con SATA / QR) */}
-                            <div className="p-4 rounded-2xl bg-zinc-50 border border-zinc-200 space-y-3">
+                            <div className="p-3.5 rounded-2xl bg-zinc-50 border border-zinc-200 space-y-2.5">
                               <div className="flex items-center justify-between">
                                 <div>
                                   <label className="text-xs font-black uppercase tracking-wider text-zinc-800 block">
                                     Promotores del Evento
                                   </label>
-                                  <p className="text-[11px] text-zinc-500 font-medium">
+                                  <p className="text-[10px] text-zinc-500 font-medium">
                                     Aparecerán con su botón oficial de "SEGUIR" en la cartelera.
                                   </p>
                                 </div>
@@ -2113,30 +2798,30 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                                 <button
                                   type="button"
                                   onClick={() => setIsCoOrganizerModalOpen(true)}
-                                  className="px-3.5 py-1.5 rounded-xl bg-black hover:bg-zinc-800 text-white font-bold text-xs uppercase tracking-wider transition cursor-pointer flex items-center gap-1.5 shadow-sm"
+                                  className="px-3 py-1.5 rounded-xl bg-black hover:bg-zinc-800 text-white text-[11px] font-bold uppercase tracking-wider transition active:scale-95 cursor-pointer flex items-center gap-1 shadow-sm"
                                 >
-                                  <Users className="w-3.5 h-3.5 text-emerald-400" />
                                   <span>+ Vincular SATA (QR / Link)</span>
                                 </button>
                               </div>
 
-                              {/* Promotores vinculados */}
                               <div className="flex flex-wrap gap-2 pt-1">
-                                {newEventCoOrganizers.map((org, i) => (
-                                  <div key={i} className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white border border-zinc-300 shadow-sm">
-                                    <div className="w-5 h-5 rounded-full bg-zinc-900 flex items-center justify-center text-[10px] text-white font-bold">
-                                      {org.slice(0, 1)}
-                                    </div>
-                                    <span className="text-xs font-bold text-zinc-900 uppercase">{org}</span>
-                                    <span className="text-[10px] px-1.5 py-0.2 rounded bg-zinc-100 text-zinc-600 font-bold uppercase">
-                                      {i === 0 ? "Principal" : "Co-Promotor"}
+                                {newEventCoOrganizers.map((coOrg, idx) => (
+                                  <div
+                                    key={idx}
+                                    className="flex items-center gap-1.5 px-3 py-1 rounded-xl bg-white border border-zinc-200 text-xs font-bold text-zinc-800 shadow-sm"
+                                  >
+                                    <span>{coOrg}</span>
+                                    <span className="text-[9.5px] px-1.5 py-0.2 rounded bg-zinc-100 text-zinc-600 font-semibold uppercase">
+                                      Promotor
                                     </span>
                                   </div>
                                 ))}
                               </div>
                             </div>
+                          </div>
 
-                            {/* Submit Button */}
+                          {/* Pinned Submit Button Footer */}
+                          <div className="pt-3 shrink-0 border-t border-zinc-100">
                             <button
                               type="button"
                               onClick={async () => {
@@ -2149,16 +2834,17 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                                   price: Number(newEventPresale2Price) || 10,
                                   date: newEventDate || "2026-09-18",
                                   dateLabel: newEventDate || "18 SEP 2026",
-                                  venue: newEventVenueName || userProfile?.venueName || "Cubic Loja",
+                                  venue: newEventVenueName || userProfile?.venueName || "Local del Evento",
                                   poster: newEventPoster || "/images/4go_red_girl_showcase.jpg",
                                   imageUrl: newEventPoster || "/images/4go_red_girl_showcase.jpg",
-                                  description: newEventDescription || `Evento oficial por ${userProfile?.venueName || "Cubic Loja"}. Entradas con acceso instantáneo.`,
+                                  description: newEventDescription || `Evento oficial por ${userProfile?.venueName || userProfile?.name || "Organizador"}. Entradas con acceso instantáneo.`,
                                   lineup: newEventCoOrganizers,
-                                  organizer: userProfile?.venueName || "Cubic",
+                                  organizer: userProfile?.venueName || userProfile?.name || "Promotor Oficial",
                                   organizers: newEventCoOrganizers,
                                   ageRestriction: newEventAgeRestriction || "18+",
                                 };
 
+                                let publishedEvt: Event;
                                 try {
                                   const res = await fetch("/api/events", {
                                     method: "POST",
@@ -2167,27 +2853,34 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                                   });
                                   const data = await res.json();
                                   if (data.success && data.event) {
+                                    publishedEvt = data.event;
                                     setEvents((prev) => [data.event, ...prev.filter((e) => e.id !== data.event.id)]);
                                   } else {
-                                    const fallbackEvt: Event = {
+                                    publishedEvt = {
                                       id: `evt-${Date.now()}`,
                                       ...newEvtPayload,
                                       startsAt: new Date().toISOString(),
                                     } as any;
-                                    setEvents((prev) => [fallbackEvt, ...prev]);
+                                    setEvents((prev) => [publishedEvt, ...prev]);
                                   }
                                 } catch {
-                                  const fallbackEvt: Event = {
+                                  publishedEvt = {
                                     id: `evt-${Date.now()}`,
                                     ...newEvtPayload,
                                     startsAt: new Date().toISOString(),
                                   } as any;
-                                  setEvents((prev) => [fallbackEvt, ...prev]);
+                                  setEvents((prev) => [publishedEvt, ...prev]);
                                 }
 
+                                setLastPublishedEvent(publishedEvt);
+                                setOrganizerSubView("published");
+                                setShowEventPublishedToast(true);
                                 setActiveStoryScreen(2);
+                                if (typeof window !== "undefined") {
+                                  window.scrollTo({ top: 0, behavior: "smooth" });
+                                }
                               }}
-                              className="w-full py-4 rounded-full bg-black hover:bg-zinc-800 text-white font-black text-xs uppercase tracking-widest transition active:scale-95 text-center cursor-pointer shadow-xl mt-3"
+                              className="w-full py-3.5 rounded-full bg-black hover:bg-zinc-800 text-white font-black text-xs uppercase tracking-widest transition active:scale-95 text-center cursor-pointer shadow-xl"
                             >
                               Publicar Evento Ahora →
                             </button>
@@ -2369,17 +3062,23 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                                   </button>
                                 </div>
                               ) : (
-                                /* LOGGED IN: PUBLICAR EVENTO (Sleek Glassmorphism Animated Button) */
-                                <button
-                                  type="button"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    setActiveStoryScreen(0);
-                                  }}
-                                  className="px-8 py-3.5 rounded-full bg-white/20 backdrop-blur-xl border border-white/40 text-white font-black text-xs uppercase tracking-widest hover:bg-white/30 shadow-[0_10px_30px_rgba(0,0,0,0.5)] transition-all hover:scale-105 active:scale-95 cursor-pointer animate-pulse"
-                                >
-                                  PUBLICAR EVENTO
-                                </button>
+                                /* LOGGED IN: PUBLICAR EVENTO (Sleek Glassmorphism Animated Button with Hover Preview) */
+                                <div className="relative group flex items-center justify-center">
+                                  <button
+                                    type="button"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      setActiveStoryScreen(0);
+                                    }}
+                                    className="px-8 py-3.5 rounded-full bg-white/20 backdrop-blur-xl border border-white/40 text-white font-black text-xs uppercase tracking-widest hover:bg-white/30 shadow-[0_10px_30px_rgba(0,0,0,0.5)] transition-all hover:scale-105 active:scale-95 cursor-pointer"
+                                  >
+                                    PUBLICAR EVENTO
+                                  </button>
+                                  {/* Hover Tooltip: Ir a publicar */}
+                                  <div className="absolute bottom-[calc(100%+10px)] left-1/2 -translate-x-1/2 px-3 py-1 rounded-lg bg-zinc-950/90 border border-white/20 text-white text-[11px] font-bold uppercase tracking-wider backdrop-blur-xl shadow-2xl opacity-0 group-hover:opacity-100 pointer-events-none transition-all duration-200 translate-y-1 group-hover:translate-y-0 whitespace-nowrap z-50">
+                                    Ir a publicar
+                                  </div>
+                                </div>
                               )}
                             </div>
                           </div>
@@ -2987,6 +3686,7 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
             }}
             onOpenProfile={() => setShowUserMenu(true)}
             userLoggedIn={userLoggedIn}
+            userProfile={userProfile}
             isFavorite={!!likedEvents[selectedCarouselEvent?.id || ""]}
             onToggleFavorite={(eventId, e) => toggleFavorite(eventId, e)}
             onOpenAuth={() => setShowAuthModalForFavorites(true)}
@@ -3143,21 +3843,44 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
             >
               {/* Header with Clean Icon & Close Button (MI CUENTA) */}
               <div className="flex items-center justify-between pb-3 border-b border-white/10">
-                <div className="flex items-center gap-3">
-                  <div className="h-10 w-10 rounded-full bg-zinc-800 border border-white/20 text-white flex items-center justify-center shrink-0">
-                    <User className="w-5 h-5 text-white" />
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="h-11 w-11 rounded-full bg-zinc-800 border border-white/20 text-white flex items-center justify-center shrink-0 overflow-hidden relative shadow-inner">
+                    {userLoggedIn && userProfile?.avatar ? (
+                      <img
+                        src={userProfile.avatar}
+                        alt={userProfile.name || userProfile.venueName || "Avatar"}
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                          e.currentTarget.style.display = "none";
+                          const fallback = e.currentTarget.parentElement?.querySelector(".modal-user-fallback");
+                          if (fallback) fallback.classList.remove("hidden");
+                        }}
+                      />
+                    ) : null}
+                    <User className={`modal-user-fallback w-5 h-5 text-white ${userLoggedIn && userProfile?.avatar ? "hidden" : ""}`} />
                   </div>
-                  <div>
-                    <h4 className="text-sm font-black uppercase text-white tracking-wider leading-none">MI CUENTA</h4>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-1.5">
+                      <h4 className="text-sm font-black uppercase text-white tracking-wider leading-tight truncate">
+                        {userLoggedIn && userProfile?.venueName ? userProfile.venueName : "MI CUENTA"}
+                      </h4>
+                    </div>
                     {userLoggedIn && userProfile && (
-                      <p className="text-[10px] text-zinc-400 font-medium truncate max-w-[150px] mt-1">{userProfile.email}</p>
+                      <p className="text-[10px] text-zinc-400 font-medium truncate max-w-[160px] mt-0.5">{userProfile.email}</p>
+                    )}
+                    {userLoggedIn && userProfile?.hasCompletedOnboarding && (
+                      <div className="mt-1 flex items-center">
+                        <span className="inline-flex items-center px-2 py-0.5 rounded-md bg-white/10 border border-white/20 text-white text-[9.5px] font-bold uppercase tracking-wider">
+                          Partner 4GO
+                        </span>
+                      </div>
                     )}
                   </div>
                 </div>
                 <button
                   type="button"
                   onClick={() => setShowUserMenu(false)}
-                  className="w-7 h-7 rounded-full bg-white/5 hover:bg-white/15 text-zinc-400 hover:text-white flex items-center justify-center transition cursor-pointer"
+                  className="w-7 h-7 rounded-full bg-white/5 hover:bg-white/15 text-zinc-400 hover:text-white flex items-center justify-center transition cursor-pointer shrink-0 ml-2"
                 >
                   <X className="h-4 w-4" />
                 </button>
@@ -3419,7 +4142,41 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
 
 
 
-      {/* Styled overridden stylesheet for total monochromatic consistency */}
+      {/* ─── DYNAMIC GLASS PUSH NOTIFICATION TOAST (MINIMAL LUXURY APPLE STYLE) ─── */}
+      <AnimatePresence>
+        {showEventPublishedToast && (
+          <motion.div
+            initial={{ y: -80, opacity: 0, scale: 0.95 }}
+            animate={{ y: 0, opacity: 1, scale: 1 }}
+            exit={{ y: -80, opacity: 0, scale: 0.95 }}
+            transition={{ type: "spring", stiffness: 450, damping: 32 }}
+            className="fixed top-6 inset-x-0 z-[1000] flex items-center justify-center px-4 pointer-events-none"
+          >
+            <div className="pointer-events-auto max-w-md w-full bg-zinc-950/90 backdrop-blur-2xl border border-white/15 text-white p-3.5 sm:p-4 rounded-2xl shadow-[0_25px_60px_rgba(0,0,0,0.7)] flex items-center gap-3.5 font-sans">
+              <div className="w-9 h-9 rounded-xl bg-white text-black flex items-center justify-center shrink-0 shadow-md">
+                <Check className="w-5 h-5 stroke-[2.5]" />
+              </div>
+
+              <div className="flex-1 min-w-0 text-left space-y-0.5">
+                <h4 className="text-xs sm:text-sm font-black uppercase tracking-wider text-white truncate">
+                  Evento publicado
+                </h4>
+                <p className="text-[11px] sm:text-xs text-zinc-300 font-medium truncate">
+                  {lastPublishedEvent?.title || newEventTitle} ya está disponible en la cartelera.
+                </p>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setShowEventPublishedToast(false)}
+                className="w-7 h-7 rounded-full bg-white/10 hover:bg-white/20 text-zinc-300 hover:text-white flex items-center justify-center shrink-0 transition cursor-pointer"
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
       <style dangerouslySetInnerHTML={{
         __html: `
         .theme-btn { background: #ffffff !important; color: #000000 !important; }

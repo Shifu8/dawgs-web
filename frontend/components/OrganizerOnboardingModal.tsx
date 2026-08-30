@@ -100,31 +100,38 @@ export default function OrganizerOnboardingModal({
       });
 
       const data = await res.json();
-      const updatedUser = data.user || {
-        id: currentUser?.id || `usr_${Date.now()}`,
+      const cleanEmail = email.trim().toLowerCase();
+      const updatedUser = {
+        ...(data.user || {}),
+        id: currentUser?.id || data.user?.id || `usr_${Date.now()}`,
         name,
-        email,
+        email: cleanEmail,
         type: selectedPartner.id,
         venueName: displayName.trim(),
         city,
+        hasCompletedOnboarding: true,
       };
 
-      localStorage.setItem("organizer_token", `token-${Date.now()}`);
+      localStorage.setItem("organizer_token", `token-${cleanEmail}-${Date.now()}`);
       localStorage.setItem("organizer_profile", JSON.stringify(updatedUser));
+      localStorage.setItem(`organizer_profile_${cleanEmail}`, JSON.stringify(updatedUser));
 
       onSuccess(updatedUser);
       onClose();
     } catch (err) {
       console.error("Error updating organizer profile:", err);
+      const cleanEmail = (currentUser?.email || "usuario@ejemplo.com").trim().toLowerCase();
       const fallbackUser = {
         id: currentUser?.id || `usr_${Date.now()}`,
         name: displayName.trim(),
-        email: currentUser?.email || "brandon.medina@unl.edu.ec",
+        email: cleanEmail,
         type: selectedPartner.id,
         venueName: displayName.trim(),
         city,
+        hasCompletedOnboarding: true,
       };
       localStorage.setItem("organizer_profile", JSON.stringify(fallbackUser));
+      localStorage.setItem(`organizer_profile_${cleanEmail}`, JSON.stringify(fallbackUser));
       onSuccess(fallbackUser);
       onClose();
     } finally {

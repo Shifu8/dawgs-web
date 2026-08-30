@@ -48,6 +48,7 @@ interface EventDetailOverlayProps {
   isOpen?: boolean;
   isCheckoutOpen?: boolean;
   userLoggedIn?: boolean;
+  userProfile?: any;
   isFavorite?: boolean;
   onToggleFavorite?: (eventId: string, e?: React.MouseEvent) => void;
   onOpenAuth?: () => void;
@@ -78,6 +79,7 @@ export default function EventDetailOverlay({
   onOpenSearch,
   onOpenProfile,
   userLoggedIn = false,
+  userProfile,
   isFavorite = false,
   onToggleFavorite,
   onOpenAuth,
@@ -225,35 +227,69 @@ export default function EventDetailOverlay({
 
       {/* ─── TOP NAVIGATION BAR ─── */}
       <header className="fixed top-0 inset-x-0 z-[350] flex items-center justify-between px-4 sm:px-8 py-4 bg-gradient-to-b from-[#0c0714]/90 via-[#0c0714]/50 to-transparent pointer-events-none">
-        {/* Left: Back Arrow Button [←] */}
-        <button
-          type="button"
-          onClick={onClose}
-          className="pointer-events-auto flex items-center justify-center w-11 h-11 rounded-full bg-black/60 border border-white/20 text-white hover:bg-white/20 backdrop-blur-md transition-all cursor-pointer shadow-2xl active:scale-95"
-          aria-label="Volver"
-        >
-          <ArrowLeft className="w-5 h-5" />
-        </button>
-
-        {/* Right Controls: Search & Profile */}
-        <div className="pointer-events-auto flex items-center gap-2">
+        {/* Left: Back Arrow Button [←] with Hover Tooltip */}
+        <div className="relative group pointer-events-auto flex items-center">
           <button
             type="button"
-            onClick={() => onOpenSearch?.()}
+            onClick={onClose}
             className="flex items-center justify-center w-11 h-11 rounded-full bg-black/60 border border-white/20 text-white hover:bg-white/20 backdrop-blur-md transition-all cursor-pointer shadow-2xl active:scale-95"
-            aria-label="Buscar eventos"
+            aria-label="Atrás"
           >
-            <Search className="w-5 h-5 text-white" />
+            <ArrowLeft className="w-5 h-5" />
           </button>
+          {/* Hover Tooltip: Atrás */}
+          <div className="absolute left-[calc(100%+10px)] top-1/2 -translate-y-1/2 px-2.5 py-1 rounded-lg bg-zinc-950/90 border border-white/20 text-white text-[11px] font-bold uppercase tracking-wider backdrop-blur-xl shadow-2xl opacity-0 group-hover:opacity-100 pointer-events-none transition-all duration-200 -translate-x-1 group-hover:translate-x-0 whitespace-nowrap z-50">
+            Atrás
+          </div>
+        </div>
 
-          <button
-            type="button"
-            onClick={() => onOpenProfile?.()}
-            className="flex items-center justify-center w-11 h-11 rounded-full bg-black/60 border border-white/20 text-white hover:bg-white/20 backdrop-blur-md transition-all cursor-pointer shadow-2xl active:scale-95"
-            aria-label="Perfil de usuario"
-          >
-            <User className="w-5 h-5 text-white" />
-          </button>
+        {/* Right Controls: Avatar on top & Search underneath (Absolute with Hover Tooltips) */}
+        <div className="pointer-events-auto flex flex-col items-center gap-2 shrink-0">
+          {/* Profile Button with Hover Preview */}
+          <div className="relative group flex items-center justify-end">
+            <button
+              type="button"
+              onClick={() => onOpenProfile?.()}
+              className="w-10 h-10 rounded-full bg-black/60 border border-white/20 backdrop-blur-xl flex items-center justify-center text-white hover:bg-white/20 shadow-lg cursor-pointer transition-all active:scale-95 overflow-hidden relative"
+              aria-label="Perfil"
+            >
+              {userLoggedIn && userProfile?.avatar ? (
+                <img
+                  src={userProfile.avatar}
+                  alt={userProfile.venueName || userProfile.name || "Perfil"}
+                  className="w-full h-full object-cover"
+                  onError={(e) => {
+                    e.currentTarget.style.display = "none";
+                    const fallback = e.currentTarget.parentElement?.querySelector(".detail-user-fallback");
+                    if (fallback) fallback.classList.remove("hidden");
+                  }}
+                />
+              ) : null}
+              <User className={`detail-user-fallback w-5 h-5 text-white ${userLoggedIn && userProfile?.avatar ? "hidden" : ""}`} />
+            </button>
+
+            {/* Hover Tooltip: Perfil */}
+            <div className="absolute right-[calc(100%+10px)] top-1/2 -translate-y-1/2 px-2.5 py-1 rounded-lg bg-zinc-950/90 border border-white/20 text-white text-[11px] font-bold uppercase tracking-wider backdrop-blur-xl shadow-2xl opacity-0 group-hover:opacity-100 pointer-events-none transition-all duration-200 translate-x-1 group-hover:translate-x-0 whitespace-nowrap z-50">
+              Perfil
+            </div>
+          </div>
+
+          {/* Search Button with Hover Preview */}
+          <div className="relative group flex items-center justify-end">
+            <button
+              type="button"
+              onClick={() => onOpenSearch?.()}
+              className="w-10 h-10 rounded-full bg-black/60 border border-white/20 hover:bg-white/20 text-white backdrop-blur-xl flex items-center justify-center shadow-lg cursor-pointer transition-all active:scale-95"
+              aria-label="Buscar"
+            >
+              <Search className="w-5 h-5 text-white" />
+            </button>
+
+            {/* Hover Tooltip: Buscar */}
+            <div className="absolute right-[calc(100%+10px)] top-1/2 -translate-y-1/2 px-2.5 py-1 rounded-lg bg-zinc-950/90 border border-white/20 text-white text-[11px] font-bold uppercase tracking-wider backdrop-blur-xl shadow-2xl opacity-0 group-hover:opacity-100 pointer-events-none transition-all duration-200 translate-x-1 group-hover:translate-x-0 whitespace-nowrap z-50">
+              Buscar
+            </div>
+          </div>
         </div>
       </header>
 
@@ -431,13 +467,15 @@ export default function EventDetailOverlay({
                 </span>
               </div>
 
-              {/* Badge 'Muy vendido' (Orange badge + Flame icon) */}
-              <div className="pt-1 flex items-center">
-                <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-[#ff6600] text-black font-extrabold text-xs shadow-md tracking-tight select-none">
-                  <Flame className="w-3.5 h-3.5 fill-black stroke-black" />
-                  <span>Muy vendido</span>
+              {/* Badge 'Muy vendido' (Only if explicitly marked as popular/high sales) */}
+              {Boolean((event as any)?.isPopular || (event as any)?.isVeryPopular) && (
+                <div className="pt-1 flex items-center">
+                  <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-[#ff6600] text-black font-extrabold text-xs shadow-md tracking-tight select-none">
+                    <Flame className="w-3.5 h-3.5 fill-black stroke-black" />
+                    <span>Muy vendido</span>
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
 
             {/* ─── WHITE TICKET PRICE BOX WITH YELLOW COMPRAR BUTTON (DESKTOP) ─── */}

@@ -426,21 +426,27 @@ export default function EventPurchaseCheckoutModal({
 
       {/* ─── TOP NAVIGATION HEADER BAR (EXACT MATCHING POSITION AS EVENT DETAIL) ─── */}
       <header className="fixed top-0 inset-x-0 z-[550] flex items-center justify-between px-4 sm:px-8 py-4 bg-gradient-to-b from-black/90 via-black/40 to-transparent pointer-events-none">
-        {/* Left: Circular Back Arrow Button (Exact position & size as Event Detail) */}
-        <button
-          type="button"
-          onClick={() => {
-            if (currentStep === "payment") {
-              setCurrentStep("select");
-            } else {
-              onClose();
-            }
-          }}
-          className="pointer-events-auto flex items-center justify-center w-11 h-11 rounded-full bg-black/60 border border-white/20 text-white hover:bg-white/20 backdrop-blur-md transition-all cursor-pointer shadow-2xl active:scale-95 shrink-0"
-          aria-label="Volver"
-        >
-          <ArrowLeft className="w-5 h-5" />
-        </button>
+        {/* Left: Circular Back Arrow Button with Hover Tooltip */}
+        <div className="relative group pointer-events-auto flex items-center">
+          <button
+            type="button"
+            onClick={() => {
+              if (currentStep === "payment") {
+                setCurrentStep("select");
+              } else {
+                onClose();
+              }
+            }}
+            className="flex items-center justify-center w-11 h-11 rounded-full bg-black/60 border border-white/20 text-white hover:bg-white/20 backdrop-blur-md transition-all cursor-pointer shadow-2xl active:scale-95 shrink-0"
+            aria-label="Atrás"
+          >
+            <ArrowLeft className="w-5 h-5" />
+          </button>
+          {/* Hover Tooltip: Atrás */}
+          <div className="absolute left-[calc(100%+10px)] top-1/2 -translate-y-1/2 px-2.5 py-1 rounded-lg bg-zinc-950/90 border border-white/20 text-white text-[11px] font-bold uppercase tracking-wider backdrop-blur-xl shadow-2xl opacity-0 group-hover:opacity-100 pointer-events-none transition-all duration-200 -translate-x-1 group-hover:translate-x-0 whitespace-nowrap z-50">
+            Atrás
+          </div>
+        </div>
 
         {/* Center: Breadcrumbs (Desktop Centered in same row) */}
         <div className="pointer-events-auto hidden md:flex absolute left-1/2 -translate-x-1/2 items-center gap-3 text-xs sm:text-sm font-semibold tracking-normal text-zinc-400">
@@ -457,25 +463,53 @@ export default function EventPurchaseCheckoutModal({
           </span>
         </div>
 
-        {/* Right Controls: Search & Profile */}
-        <div className="pointer-events-auto flex items-center gap-2">
-          <button
-            type="button"
-            onClick={() => onOpenSearch?.()}
-            className="flex items-center justify-center w-11 h-11 rounded-full bg-black/60 border border-white/20 text-white hover:bg-white/20 backdrop-blur-md transition-all cursor-pointer shadow-2xl active:scale-95"
-            aria-label="Buscar eventos"
-          >
-            <Search className="w-5 h-5 text-white" />
-          </button>
+        {/* Right Controls: Avatar on top & Search underneath (Absolute with Hover Tooltips) */}
+        <div className="pointer-events-auto flex flex-col items-center gap-2 shrink-0">
+          {/* Profile Button with Hover Preview */}
+          <div className="relative group flex items-center justify-end">
+            <button
+              type="button"
+              onClick={() => onOpenProfile?.()}
+              className="w-10 h-10 rounded-full bg-black/60 border border-white/20 backdrop-blur-xl flex items-center justify-center text-white hover:bg-white/20 shadow-lg cursor-pointer transition-all active:scale-95 overflow-hidden relative"
+              aria-label="Perfil"
+            >
+              {userLoggedIn && userProfile?.avatar ? (
+                <img
+                  src={userProfile.avatar}
+                  alt={userProfile.venueName || userProfile.name || "Perfil"}
+                  className="w-full h-full object-cover"
+                  onError={(e) => {
+                    e.currentTarget.style.display = "none";
+                    const fallback = e.currentTarget.parentElement?.querySelector(".checkout-user-fallback");
+                    if (fallback) fallback.classList.remove("hidden");
+                  }}
+                />
+              ) : null}
+              <User className={`checkout-user-fallback w-5 h-5 text-white ${userLoggedIn && userProfile?.avatar ? "hidden" : ""}`} />
+            </button>
 
-          <button
-            type="button"
-            onClick={() => onOpenProfile?.()}
-            className="flex items-center justify-center w-11 h-11 rounded-full bg-black/60 border border-white/20 text-white hover:bg-white/20 backdrop-blur-md transition-all cursor-pointer shadow-2xl active:scale-95"
-            aria-label="Perfil de usuario"
-          >
-            <User className="w-5 h-5 text-white" />
-          </button>
+            {/* Hover Tooltip: Perfil */}
+            <div className="absolute right-[calc(100%+10px)] top-1/2 -translate-y-1/2 px-2.5 py-1 rounded-lg bg-zinc-950/90 border border-white/20 text-white text-[11px] font-bold uppercase tracking-wider backdrop-blur-xl shadow-2xl opacity-0 group-hover:opacity-100 pointer-events-none transition-all duration-200 translate-x-1 group-hover:translate-x-0 whitespace-nowrap z-50">
+              Perfil
+            </div>
+          </div>
+
+          {/* Search Button with Hover Preview */}
+          <div className="relative group flex items-center justify-end">
+            <button
+              type="button"
+              onClick={() => onOpenSearch?.()}
+              className="w-10 h-10 rounded-full bg-black/60 border border-white/20 hover:bg-white/20 text-white backdrop-blur-xl flex items-center justify-center shadow-lg cursor-pointer transition-all active:scale-95"
+              aria-label="Buscar"
+            >
+              <Search className="w-5 h-5 text-white" />
+            </button>
+
+            {/* Hover Tooltip: Buscar */}
+            <div className="absolute right-[calc(100%+10px)] top-1/2 -translate-y-1/2 px-2.5 py-1 rounded-lg bg-zinc-950/90 border border-white/20 text-white text-[11px] font-bold uppercase tracking-wider backdrop-blur-xl shadow-2xl opacity-0 group-hover:opacity-100 pointer-events-none transition-all duration-200 translate-x-1 group-hover:translate-x-0 whitespace-nowrap z-50">
+              Buscar
+            </div>
+          </div>
         </div>
       </header>
 
