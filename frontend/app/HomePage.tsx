@@ -3062,23 +3062,17 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                                   </button>
                                 </div>
                               ) : (
-                                /* LOGGED IN: PUBLICAR EVENTO (Sleek Glassmorphism Animated Button with Hover Preview) */
-                                <div className="relative group flex items-center justify-center">
-                                  <button
-                                    type="button"
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      setActiveStoryScreen(0);
-                                    }}
-                                    className="px-8 py-3.5 rounded-full bg-white/20 backdrop-blur-xl border border-white/40 text-white font-black text-xs uppercase tracking-widest hover:bg-white/30 shadow-[0_10px_30px_rgba(0,0,0,0.5)] transition-all hover:scale-105 active:scale-95 cursor-pointer"
-                                  >
-                                    PUBLICAR EVENTO
-                                  </button>
-                                  {/* Hover Tooltip: Ir a publicar */}
-                                  <div className="absolute bottom-[calc(100%+10px)] left-1/2 -translate-x-1/2 px-3 py-1 rounded-lg bg-zinc-950/90 border border-white/20 text-white text-[11px] font-bold uppercase tracking-wider backdrop-blur-xl shadow-2xl opacity-0 group-hover:opacity-100 pointer-events-none transition-all duration-200 translate-y-1 group-hover:translate-y-0 whitespace-nowrap z-50">
-                                    Ir a publicar
-                                  </div>
-                                </div>
+                                /* LOGGED IN: PUBLICAR EVENTO (Sleek Glassmorphism Animated Button) */
+                                <button
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setActiveStoryScreen(0);
+                                  }}
+                                  className="px-8 py-3.5 rounded-full bg-white/20 backdrop-blur-xl border border-white/40 text-white font-black text-xs uppercase tracking-widest hover:bg-white/30 shadow-[0_10px_30px_rgba(0,0,0,0.5)] transition-all hover:scale-105 active:scale-95 cursor-pointer"
+                                >
+                                  PUBLICAR EVENTO
+                                </button>
                               )}
                             </div>
                           </div>
