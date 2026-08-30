@@ -22,20 +22,16 @@ export default function GoogleConsentModal({
   isOpen,
   onClose,
   onSuccess,
-  domainName = "meet2go.com",
+  domainName = "4go.ec",
 }: GoogleConsentModalProps) {
-  const [selectedEmail, setSelectedEmail] = useState("soporte.nenez@gmail.com");
+  const [selectedEmail, setSelectedEmail] = useState("mrshifu879@gmail.com");
   const [customName, setCustomName] = useState("Brandon Medina");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showAccountDropdown, setShowAccountDropdown] = useState(false);
 
   const availableAccounts = [
-    { email: "soporte.nenez@gmail.com", name: "NENEZ Soporte" },
-    { email: "brandon.medina@unl.edu.ec", name: "Brandon Alexis Medina Jimenez" },
-    { email: "mrshifu879@gmail.com", name: "Brandon Medina" },
-    { email: "comadem2020@gmail.com", name: "José Fabián Medina Pogo" },
-    { email: "clashcuentaid@gmail.com", name: "Andres Pardo" },
-    { email: "bambam8e@gmail.com", name: "BrandOn M3dina" },
+    { email: "mrshifu879@gmail.com", name: "Brandon Medina (Cubic)" },
+    { email: "brandon.medina@unl.edu.ec", name: "Brandon Alexis Medina Jimenez (Sata)" },
   ];
 
   if (!isOpen) return null;
@@ -46,48 +42,59 @@ export default function GoogleConsentModal({
       const selectedAcc = availableAccounts.find((a) => a.email === selectedEmail);
       const nameToUse = selectedAcc ? selectedAcc.name : customName || selectedEmail.split("@")[0];
 
-      // Save user to PostgreSQL database
-      const res = await fetch("/api/users/sync", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          email: selectedEmail,
-          name: nameToUse,
-          provider: "google",
-          type: "Discoteca / Club",
-          venueName: "Cubic Club",
-          city: "Quito",
-        }),
-      });
+      const isCubic = selectedEmail === "mrshifu879@gmail.com";
+      const isSata = selectedEmail === "brandon.medina@unl.edu.ec";
+      const orgType = isCubic ? "Discoteca / Club Nocturno" : "Organizador";
+      const venueName = isCubic ? "CUBIC LOJA" : "SATA MUSIC";
+      const avatar = isCubic ? "/images/cubic-official-logo.png" : "/images/sata-official-logo.jpg";
 
-      const data = await res.json();
-      const userObj = data.user || {
-        id: `google-${Date.now()}`,
+      // Save user to PostgreSQL database
+      try {
+        await fetch("/api/users/sync", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            email: selectedEmail,
+            name: nameToUse,
+            provider: "google",
+            type: orgType,
+            venueName: venueName,
+            city: "Loja",
+          }),
+        });
+      } catch { }
+
+      const userObj = {
+        id: isCubic ? "cubic" : isSata ? "sata" : `user-${Date.now()}`,
         name: nameToUse,
         email: selectedEmail,
-        type: "Discoteca / Club",
-        venueName: "Cubic Club",
-        city: "Quito",
+        type: orgType,
+        venueName: venueName,
+        city: "Loja",
+        avatar: avatar,
+        hasCompletedOnboarding: true,
       };
 
       // Store local session
-      localStorage.setItem("organizer_token", `google-token-${Date.now()}`);
+      localStorage.setItem("organizer_token", `google-token-${selectedEmail}`);
       localStorage.setItem("organizer_profile", JSON.stringify(userObj));
 
       onSuccess(userObj);
       onClose();
     } catch (err) {
       console.error("Error during Google auth consent:", err);
-      // Fallback
+      const isCubic = selectedEmail === "mrshifu879@gmail.com";
       const fallbackUser = {
-        id: `google-${Date.now()}`,
+        id: isCubic ? "cubic" : "sata",
         name: customName || "Brandon Medina",
         email: selectedEmail,
-        type: "Discoteca / Club",
-        venueName: "Cubic Club",
-        city: "Quito",
+        type: isCubic ? "Discoteca / Club Nocturno" : "Organizador",
+        venueName: isCubic ? "CUBIC LOJA" : "SATA MUSIC",
+        city: "Loja",
+        avatar: isCubic ? "/images/cubic-official-logo.png" : "/images/sata-official-logo.jpg",
+        hasCompletedOnboarding: true,
       };
-      localStorage.setItem("organizer_token", `google-token-${Date.now()}`);
+      localStorage.setItem("organizer_token", `google-token-${selectedEmail}`);
       localStorage.setItem("organizer_profile", JSON.stringify(fallbackUser));
       onSuccess(fallbackUser);
       onClose();

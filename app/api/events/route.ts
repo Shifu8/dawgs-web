@@ -1,16 +1,25 @@
 import { NextResponse } from "next/server";
-import { loadAllEvents } from "@/lib/admin/events-store";
+import { loadAllEvents, saveAllEvents } from "@/lib/admin/events-store";
 import { events as fallbackEvents } from "@/frontend/services/nenezData";
 import type { Event } from "@/frontend/types/domain";
 
 const MONTHS = ["ENE", "FEB", "MAR", "ABR", "MAY", "JUN", "JUL", "AGO", "SEP", "OCT", "NOV", "DEC"];
 
 function formatDateLabel(dateStr: string): string {
-  const d = new Date(dateStr + "T12:00:00Z");
-  const day = d.getUTCDate().toString().padStart(2, "0");
-  const month = MONTHS[d.getUTCMonth()];
-  const year = d.getUTCFullYear();
-  return `${day} ${month} ${year}`;
+  if (!dateStr) return "18 SEP 2026";
+  try {
+    if (dateStr.includes(" ") && (dateStr.includes("SEP") || dateStr.includes("OCT") || dateStr.includes("AGO") || dateStr.includes("JUL") || dateStr.includes("NOV") || dateStr.includes("DEC") || dateStr.includes("ENE") || dateStr.includes("FEB") || dateStr.includes("MAR") || dateStr.includes("ABR") || dateStr.includes("MAY") || dateStr.includes("JUN"))) {
+      return dateStr;
+    }
+    const d = new Date(dateStr.includes("T") ? dateStr : dateStr + "T12:00:00Z");
+    if (isNaN(d.getTime())) return dateStr;
+    const day = d.getUTCDate().toString().padStart(2, "0");
+    const month = MONTHS[d.getUTCMonth()] || "SEP";
+    const year = d.getUTCFullYear();
+    return `${day} ${month} ${year}`;
+  } catch {
+    return dateStr || "18 SEP 2026";
+  }
 }
 
 type EventWithPosition = Event & { position: number };
@@ -82,5 +91,60 @@ export async function GET() {
     return NextResponse.json({ success: true, events: merged });
   } catch {
     return NextResponse.json({ error: "Error interno del servidor" }, { status: 500 });
+  }
+}
+
+export async function POST(req: Request) {
+  try {
+    const body = await req.json();
+    const adminEvents = loadAllEvents();
+
+    const slug = (body.title || "evento")
+      .toLowerCase()
+      .trim()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "") + `-${Date.now().toString().slice(-4)}`;
+
+    const newEvent: any = {
+      id: slug,
+      slug: slug,
+      title: body.title || "Nuevo Evento",
+      subtitle: body.subtitle || "CUBIC LOJA",
+      location: body.city || "Loja",
+      date: body.date || new Date().toISOString().split("T")[0],
+      dateLabel: body.dateLabel || body.date || "18 SEP 2026",
+      time: body.time || "22:00",
+      price: Number(body.price) || 10,
+      imageUrl: body.poster || body.imageUrl || "/images/4go_red_girl_showcase.jpg",
+      poster: body.poster || body.imageUrl || "/images/4go_red_girl_showcase.jpg",
+      miniImage: body.poster || body.imageUrl || "/images/4go_red_girl_showcase.jpg",
+      description: body.description || "Evento oficial con acceso asegurado.",
+      lineup: Array.isArray(body.lineup) && body.lineup.length ? body.lineup : ["Cubic", "Sata"],
+      organizer: body.organizer || "Cubic",
+      organizers: Array.isArray(body.organizers) && body.organizers.length ? body.organizers : ["Cubic", "Sata"],
+      venue: body.venue || "Cubic Loja",
+      category: body.category || "Electronic / House",
+      ageRestriction: body.ageRestriction || "18+",
+      status: "active",
+      isFeatured: true,
+      isAvailable: true,
+      position: 0,
+      badge: "NUEVO",
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+
+    // Increase position for all other events
+    adminEvents.forEach((ev) => {
+      if (typeof ev.position === "number") ev.position += 1;
+    });
+
+    adminEvents.unshift(newEvent);
+    saveAllEvents(adminEvents);
+
+    return NextResponse.json({ success: true, event: toFrontendEvent(newEvent) });
+  } catch (err: any) {
+    console.error("POST /api/events error:", err);
+    return NextResponse.json({ error: String(err?.message || err) }, { status: 500 });
   }
 }

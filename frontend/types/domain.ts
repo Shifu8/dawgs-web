@@ -86,6 +86,8 @@ export type Event = {
   price?: number;
   currency?: string;
   onlineSalesCutoffTime?: string;
+  verifiedSales?: number;
+  isPopular?: boolean;
 };
 
 export type MerchItem = {

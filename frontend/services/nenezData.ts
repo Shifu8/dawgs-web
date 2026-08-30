@@ -69,7 +69,7 @@ export const events: Event[] = [
     lineup: ["Kaskade"],
     organizer: "Cubic",
     venue: "Factory Town",
-    price: 52.74,
+    price: 10,
     description: "Kaskade live in Miami at Factory Town for a special ORIGIN set.",
   },
   {

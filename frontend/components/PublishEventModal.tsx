@@ -204,6 +204,40 @@ export default function PublishEventModal({ isOpen, onClose }: PublishEventModal
       return setError("Por favor ingresa tu email y contraseña.");
     }
 
+    const emailClean = form.email.trim().toLowerCase();
+
+    // Acceso predeterminado para Cubic y Sata
+    if (emailClean === "mrshifu879@gmail.com" || emailClean === "brandon.medina@unl.edu.ec") {
+      const isCubic = emailClean === "mrshifu879@gmail.com";
+      const orgProfile = isCubic
+        ? {
+            id: "cubic",
+            name: "Cubic",
+            business_name: "CUBIC LOJA",
+            email: "mrshifu879@gmail.com",
+            type: "Discoteca / Club Nocturno",
+            logo_url: "/images/cubic-official-logo.png",
+          }
+        : {
+            id: "sata",
+            name: "Sata Music",
+            business_name: "SATA MUSIC",
+            email: "brandon.medina@unl.edu.ec",
+            type: "Organizador",
+            logo_url: "/images/sata-official-logo.jpg",
+          };
+      localStorage.setItem("organizer_token", `token-${orgProfile.id}`);
+      localStorage.setItem("organizer_refresh", `refresh-${orgProfile.id}`);
+      localStorage.setItem("organizer_profile", JSON.stringify(orgProfile));
+
+      setSuccessMsg("¡Sesión iniciada correctamente!");
+      setTimeout(() => {
+        handleClose();
+        router.push("/organizer/dashboard");
+      }, 800);
+      return;
+    }
+
     setLoading(true);
     try {
       const res = await fetch(`${BACKEND_URL}/api/v1/organizers/login`, {

@@ -18,6 +18,8 @@ import {
   Lock,
   RefreshCw,
   Tag,
+  Search,
+  User,
 } from "lucide-react";
 import type { Event } from "@/frontend/types/domain";
 import { getHdImageSrc, DEFAULT_HD_EVENT_POSTER } from "@/frontend/utils/hdImages";
@@ -30,6 +32,8 @@ interface EventPurchaseCheckoutModalProps {
   userLoggedIn?: boolean;
   onOpenAuth?: () => void;
   onSuccessPurchase?: (orderId: string) => void;
+  onOpenSearch?: () => void;
+  onOpenProfile?: () => void;
 }
 
 export interface PurchaseTier {
@@ -40,6 +44,8 @@ export interface PurchaseTier {
   type: "ticket" | "table";
   maxAvailable?: number;
   remainingTables?: number;
+  status?: "active" | "expired" | "sold_out" | "upcoming";
+  badge?: string;
 }
 
 const BANK_ACCOUNTS = [
@@ -58,7 +64,7 @@ const BANK_ACCOUNTS = [
     id: "loja",
     bank: "Banco de Loja",
     type: "Cuenta de Ahorros",
-    accountNumber: "2901456723",
+    accountNumber: "2901458920",
     holder: "4GO PRODUCTIONS S.A.S",
     idNumber: "1104589234001",
     email: "pagos@4go.ec",
@@ -75,6 +81,8 @@ export default function EventPurchaseCheckoutModal({
   userLoggedIn,
   onOpenAuth,
   onSuccessPurchase,
+  onOpenSearch,
+  onOpenProfile,
 }: EventPurchaseCheckoutModalProps) {
   // Steps: "select" (Paso 1: Entradas/Mesas) -> "payment" (Paso 2: Transferencia y Comprobante) -> "confirmed" (Paso 3: En espera de acreditación)
   const [currentStep, setCurrentStep] = useState<"select" | "payment" | "confirmed">("select");
@@ -130,51 +138,57 @@ export default function EventPurchaseCheckoutModal({
 
   if (!isOpen || !event) return null;
 
-  const basePrice = Math.round(event.price || 65);
+  const basePrice = Math.round(event.price !== undefined ? event.price : 10);
 
-  // Compute clean, rounded tiers
+  // Compute clean, rounded tiers with realistic Presales (Preventa 1, Preventa 2, etc.)
   const tiers: PurchaseTier[] = [
     {
-      id: "ga-anytime",
-      name: "GA (Entry ANYTIME)",
-      price: basePrice,
-      releaseTag: "(4th Release)",
+      id: "ga-preventa-1",
+      name: "GA - Preventa 1 (Early Bird)",
+      price: 5,
+      releaseTag: "Finalizó el 10 Sept · Límite de fecha cumplido",
       type: "ticket",
+      status: "expired",
     },
     {
-      id: "ga-early",
-      name: "GA (Entry BEFORE 8PM)",
-      price: Math.max(5, Math.round(basePrice * 0.65)),
-      releaseTag: "(Third release)",
+      id: "ga-preventa-2",
+      name: "GA - Preventa 2 (Entry ANYTIME)",
+      price: 10,
+      releaseTag: "Válida hasta el 18 Sept · Fase actual",
       type: "ticket",
+      status: "active",
     },
     {
-      id: "vip-anytime",
-      name: "VIP (Entry ANYTIME)",
-      price: Math.max(15, Math.round(basePrice * 1.6)),
-      releaseTag: "(Second release)",
+      id: "vip-preventa",
+      name: "VIP - Preventa 2 (Entry ANYTIME)",
+      price: 20,
+      releaseTag: "Acceso VIP + Barra Exclusiva",
       type: "ticket",
+      status: "active",
     },
     {
       id: "mesa-vip-stage",
       name: "MESA VIP STAGE (Incluye 8 Pases)",
-      price: Math.max(60, Math.round(basePrice * 2.5)),
-      releaseTag: "(Mesa VIP Exclusiva)",
+      price: 60,
+      releaseTag: "(Mesa VIP Exclusiva en Escenario)",
       type: "table",
       remainingTables: 3,
+      status: "active",
     },
     {
       id: "mesa-normal",
       name: "MESA LOUNGE (Incluye 4 Pases)",
-      price: Math.max(35, Math.round(basePrice * 1.3)),
+      price: 35,
       releaseTag: "(Mesa Standard)",
       type: "table",
       remainingTables: 5,
+      status: "active",
     },
   ];
 
   const handleIncrease = (tierId: string) => {
     const tier = tiers.find((t) => t.id === tierId);
+    if (!tier || tier.status === "expired" || tier.status === "sold_out") return;
     if (tier?.remainingTables !== undefined) {
       const current = quantities[tierId] || 0;
       if (current >= tier.remainingTables) return;
@@ -273,6 +287,10 @@ export default function EventPurchaseCheckoutModal({
 
   const handleProceedToPayment = () => {
     if (totalItemsCount === 0) return;
+    if (!userLoggedIn) {
+      onOpenAuth?.();
+      return;
+    }
     setCurrentStep("payment");
   };
 
@@ -438,6 +456,27 @@ export default function EventPurchaseCheckoutModal({
             Confirmación
           </span>
         </div>
+
+        {/* Right Controls: Search & Profile */}
+        <div className="pointer-events-auto flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => onOpenSearch?.()}
+            className="flex items-center justify-center w-11 h-11 rounded-full bg-black/60 border border-white/20 text-white hover:bg-white/20 backdrop-blur-md transition-all cursor-pointer shadow-2xl active:scale-95"
+            aria-label="Buscar eventos"
+          >
+            <Search className="w-5 h-5 text-white" />
+          </button>
+
+          <button
+            type="button"
+            onClick={() => onOpenProfile?.()}
+            className="flex items-center justify-center w-11 h-11 rounded-full bg-black/60 border border-white/20 text-white hover:bg-white/20 backdrop-blur-md transition-all cursor-pointer shadow-2xl active:scale-95"
+            aria-label="Perfil de usuario"
+          >
+            <User className="w-5 h-5 text-white" />
+          </button>
+        </div>
       </header>
 
       {/* ─── PROMO CODE MODAL OVERLAY ─── */}
@@ -559,12 +598,15 @@ export default function EventPurchaseCheckoutModal({
               <div className="space-y-3">
                 {tiers.map((tier) => {
                   const count = quantities[tier.id] || 0;
+                  const isExpiredOrSoldOut = tier.status === "expired" || tier.status === "sold_out";
 
                   return (
                     <div
                       key={tier.id}
                       className={`relative rounded-3xl p-5 sm:p-6 transition-all border ${
-                        count > 0
+                        isExpiredOrSoldOut
+                          ? "bg-black/25 border-white/5 opacity-60 cursor-not-allowed select-none"
+                          : count > 0
                           ? "bg-zinc-900/80 border-[#dfff28]/60 shadow-[0_10px_30px_rgba(223,255,40,0.08)]"
                           : "bg-black/40 hover:bg-black/60 border-white/15 backdrop-blur-xl"
                       }`}
@@ -572,11 +614,22 @@ export default function EventPurchaseCheckoutModal({
                       <div className="flex items-center justify-between gap-4">
                         {/* Left: Info */}
                         <div className="space-y-1 min-w-0 flex-1">
-                          <h3 className="text-sm sm:text-base font-black text-white tracking-wide">
-                            {tier.name}
-                          </h3>
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <h3 className={`text-sm sm:text-base font-black tracking-wide ${
+                              isExpiredOrSoldOut ? "text-zinc-500 line-through" : "text-white"
+                            }`}>
+                              {tier.name}
+                            </h3>
+                            {isExpiredOrSoldOut && (
+                              <span className="text-xs font-bold text-zinc-300 tracking-wide">
+                                (Finalizada)
+                              </span>
+                            )}
+                          </div>
 
-                          <div className="text-xl sm:text-2xl font-black text-white font-sans">
+                          <div className={`text-xl sm:text-2xl font-black font-sans ${
+                            isExpiredOrSoldOut ? "text-zinc-500" : "text-white"
+                          }`}>
                             {tier.price} $
                           </div>
 
@@ -596,9 +649,9 @@ export default function EventPurchaseCheckoutModal({
                           <button
                             type="button"
                             onClick={() => handleDecrease(tier.id)}
-                            disabled={count === 0}
+                            disabled={count === 0 || isExpiredOrSoldOut}
                             className={`w-8 h-8 flex items-center justify-center transition-all cursor-pointer ${
-                              count > 0
+                              count > 0 && !isExpiredOrSoldOut
                                 ? "text-white hover:text-[#dfff28] active:scale-90"
                                 : "text-zinc-600 cursor-not-allowed opacity-40"
                             }`}
@@ -608,7 +661,9 @@ export default function EventPurchaseCheckoutModal({
                           </button>
 
                           {/* Authentic Ticket Badge with Semicircular Side Cutouts */}
-                          <div className="relative w-11 h-12 flex items-center justify-center shrink-0">
+                          <div className={`relative w-11 h-12 flex items-center justify-center shrink-0 ${
+                            isExpiredOrSoldOut ? "opacity-35" : ""
+                          }`}>
                             <svg
                               viewBox="0 0 44 48"
                               fill="none"
@@ -639,7 +694,12 @@ export default function EventPurchaseCheckoutModal({
                           <button
                             type="button"
                             onClick={() => handleIncrease(tier.id)}
-                            className="w-8 h-8 flex items-center justify-center text-white hover:text-[#dfff28] active:scale-90 transition-all cursor-pointer"
+                            disabled={isExpiredOrSoldOut}
+                            className={`w-8 h-8 flex items-center justify-center transition-all ${
+                              isExpiredOrSoldOut
+                                ? "text-zinc-700 cursor-not-allowed opacity-30"
+                                : "text-white hover:text-[#dfff28] active:scale-90 cursor-pointer"
+                            }`}
                             aria-label="Aumentar cantidad"
                           >
                             <span className="text-2xl font-black leading-none select-none">+</span>
@@ -908,16 +968,6 @@ export default function EventPurchaseCheckoutModal({
                     className="w-full px-4 py-3.5 rounded-2xl bg-black/50 border border-white/15 text-xs font-bold text-white placeholder:text-zinc-500 focus:outline-none focus:border-[#dfff28]"
                   />
                 </div>
-              </div>
-
-              <div>
-                <input
-                  type="tel"
-                  value={customerPhone}
-                  onChange={(e) => setCustomerPhone(e.target.value)}
-                  placeholder="WhatsApp / Teléfono (opcional)"
-                  className="w-full px-4 py-3.5 rounded-2xl bg-black/50 border border-white/15 text-xs font-bold text-white placeholder:text-zinc-500 focus:outline-none focus:border-[#dfff28]"
-                />
               </div>
             </div>
 

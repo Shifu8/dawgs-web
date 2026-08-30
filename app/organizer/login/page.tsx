@@ -22,6 +22,36 @@ export default function OrganizerLoginPage() {
     setError("");
     setLoading(true);
 
+    const emailClean = form.email.trim().toLowerCase();
+
+    // Acceso directo preconfigurado para Cubic y Sata
+    if (emailClean === "mrshifu879@gmail.com" || emailClean === "brandon.medina@unl.edu.ec") {
+      const isCubic = emailClean === "mrshifu879@gmail.com";
+      const orgProfile = isCubic
+        ? {
+            id: "cubic",
+            name: "Cubic",
+            business_name: "CUBIC LOJA",
+            email: "mrshifu879@gmail.com",
+            type: "Discoteca / Club Nocturno",
+            logo_url: "/images/cubic-official-logo.png",
+          }
+        : {
+            id: "sata",
+            name: "Sata Music",
+            business_name: "SATA MUSIC",
+            email: "brandon.medina@unl.edu.ec",
+            type: "Organizador",
+            logo_url: "/images/sata-official-logo.jpg",
+          };
+      localStorage.setItem("organizer_token", `token-${orgProfile.id}`);
+      localStorage.setItem("organizer_refresh", `refresh-${orgProfile.id}`);
+      localStorage.setItem("organizer_profile", JSON.stringify(orgProfile));
+      router.push("/organizer/dashboard");
+      setLoading(false);
+      return;
+    }
+
     try {
       const res = await fetch(`${BACKEND_URL}/api/v1/organizers/login`, {
         method: "POST",
@@ -56,17 +86,30 @@ export default function OrganizerLoginPage() {
     setError("");
     setTimeout(() => {
       setSocialLoading(null);
-      // Simulate quick social OAuth redirect/login
-      const mockProfile = {
-        id: `social-${Date.now()}`,
-        name: provider === "Google" ? "Usuario Google" : "Usuario Apple",
-        email: provider === "Google" ? "usuario@gmail.com" : "usuario@icloud.com",
-        type: "Organizador",
-      };
-      localStorage.setItem("organizer_token", `mock-token-${provider.toLowerCase()}`);
-      localStorage.setItem("organizer_profile", JSON.stringify(mockProfile));
+      // Asignar perfil predeterminado según el proveedor/cuenta
+      const isCubic = provider === "Google";
+      const orgProfile = isCubic
+        ? {
+            id: "cubic",
+            name: "Cubic",
+            business_name: "CUBIC LOJA",
+            email: "mrshifu879@gmail.com",
+            type: "Discoteca / Club Nocturno",
+            logo_url: "/images/cubic-official-logo.png",
+          }
+        : {
+            id: "sata",
+            name: "Sata Music",
+            business_name: "SATA MUSIC",
+            email: "brandon.medina@unl.edu.ec",
+            type: "Organizador",
+            logo_url: "/images/sata-official-logo.jpg",
+          };
+      localStorage.setItem("organizer_token", `token-${orgProfile.id}`);
+      localStorage.setItem("organizer_refresh", `refresh-${orgProfile.id}`);
+      localStorage.setItem("organizer_profile", JSON.stringify(orgProfile));
       router.push("/organizer/dashboard");
-    }, 1200);
+    }, 1000);
   };
 
   return (

@@ -27,6 +27,9 @@ import {
   ExternalLink,
   DoorOpen,
   ArrowRight,
+  Search,
+  User,
+  Flame,
 } from "lucide-react";
 import type { Event } from "@/frontend/types/domain";
 import { DEFAULT_HD_EVENT_POSTER, getHdImageSrc } from "@/frontend/utils/hdImages";
@@ -40,8 +43,14 @@ interface EventDetailOverlayProps {
   onSelectEvent?: (event: Event) => void;
   onOpenOrganizer?: (slug: string) => void;
   onOpenDrinks?: () => void;
+  onOpenSearch?: () => void;
+  onOpenProfile?: () => void;
   isOpen?: boolean;
   isCheckoutOpen?: boolean;
+  userLoggedIn?: boolean;
+  isFavorite?: boolean;
+  onToggleFavorite?: (eventId: string, e?: React.MouseEvent) => void;
+  onOpenAuth?: () => void;
 }
 
 const DEFAULT_ORGANIZERS = [
@@ -66,8 +75,13 @@ export default function EventDetailOverlay({
   onClose,
   onBuy,
   onOpenOrganizer,
+  onOpenSearch,
+  onOpenProfile,
+  userLoggedIn = false,
+  isFavorite = false,
+  onToggleFavorite,
+  onOpenAuth,
 }: EventDetailOverlayProps) {
-  const [isFavorite, setIsFavorite] = useState(false);
   const [isExpandedDescription, setIsExpandedDescription] = useState(false);
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
   const [showPromoCodeInput, setShowPromoCodeInput] = useState(false);
@@ -173,7 +187,7 @@ export default function EventDetailOverlay({
     }
   };
 
-  const displayPrice = event.price === 0 ? "Gratis" : `${Math.round(event.price || 65)} $`;
+  const displayPrice = event.price === 0 ? "Gratis" : `${Math.round(event.price !== undefined ? event.price : 10)} $`;
 
   return (
     <motion.div
@@ -221,28 +235,24 @@ export default function EventDetailOverlay({
           <ArrowLeft className="w-5 h-5" />
         </button>
 
-        {/* Right Controls: Favorite Heart & Share */}
+        {/* Right Controls: Search & Profile */}
         <div className="pointer-events-auto flex items-center gap-2">
           <button
             type="button"
-            onClick={() => setShowShareMenu(!showShareMenu)}
+            onClick={() => onOpenSearch?.()}
             className="flex items-center justify-center w-11 h-11 rounded-full bg-black/60 border border-white/20 text-white hover:bg-white/20 backdrop-blur-md transition-all cursor-pointer shadow-2xl active:scale-95"
-            aria-label="Compartir"
+            aria-label="Buscar eventos"
           >
-            <Share2 className="w-5 h-5" />
+            <Search className="w-5 h-5 text-white" />
           </button>
 
           <button
             type="button"
-            onClick={() => setIsFavorite(!isFavorite)}
-            className={`flex items-center justify-center w-11 h-11 rounded-full border backdrop-blur-md transition-all cursor-pointer shadow-2xl active:scale-95 ${
-              isFavorite
-                ? "bg-red-500/30 border-red-500/50 text-red-400"
-                : "bg-black/60 border-white/20 text-white hover:bg-white/20"
-            }`}
-            aria-label="Favorito"
+            onClick={() => onOpenProfile?.()}
+            className="flex items-center justify-center w-11 h-11 rounded-full bg-black/60 border border-white/20 text-white hover:bg-white/20 backdrop-blur-md transition-all cursor-pointer shadow-2xl active:scale-95"
+            aria-label="Perfil de usuario"
           >
-            <Heart className={`w-5 h-5 ${isFavorite ? "fill-red-500 text-red-500" : ""}`} />
+            <User className="w-5 h-5 text-white" />
           </button>
         </div>
       </header>
@@ -257,7 +267,7 @@ export default function EventDetailOverlay({
         <div className="max-w-6xl mx-auto px-3 sm:px-8 w-full grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-14 items-start">
           
           {/* ─── LEFT COLUMN (POSTER + AUDIO PLAYER + PROTECTION BADGES - STICKY ON PC) ─── */}
-          <div className="lg:col-span-5 flex flex-col space-y-6 lg:sticky lg:top-20 lg:-mt-2.5">
+          <div className="lg:col-span-5 flex flex-col space-y-6 lg:sticky lg:top-6 lg:-mt-[72px]">
             {/* Poster Artwork Container (Full width on mobile, max-w-[440px] on desktop, aligned with title) */}
             <div
               onClick={() => setIsLightboxOpen(true)}
@@ -280,16 +290,20 @@ export default function EventDetailOverlay({
                   type="button"
                   onClick={(e) => {
                     e.stopPropagation();
-                    setIsFavorite(!isFavorite);
+                    if (!userLoggedIn) {
+                      onOpenAuth?.();
+                      return;
+                    }
+                    onToggleFavorite?.(event.id, e);
                   }}
-                  className={`w-10 h-10 rounded-full backdrop-blur-md border flex items-center justify-center transition-transform active:scale-95 ${
-                    isFavorite
-                      ? "bg-red-500/40 border-red-400 text-red-400"
-                      : "bg-black/75 border-white/25 text-white hover:bg-black/90"
-                  }`}
+                  className="w-10 h-10 rounded-full backdrop-blur-md border border-white bg-white hover:bg-zinc-100 flex items-center justify-center transition-all active:scale-95 shadow-xl cursor-pointer"
                   aria-label="Guardar favorito"
                 >
-                  <Heart className={`w-4 h-4 ${isFavorite ? "fill-red-400 text-red-400" : ""}`} />
+                  <Heart
+                    className={`w-4 h-4 transition-colors ${
+                      isFavorite ? "fill-red-500 text-red-500" : "text-zinc-900"
+                    }`}
+                  />
                 </button>
 
                 <div className="relative">
@@ -299,10 +313,10 @@ export default function EventDetailOverlay({
                       e.stopPropagation();
                       setShowShareMenu(!showShareMenu);
                     }}
-                    className="w-9 h-9 rounded-full backdrop-blur-md border flex items-center justify-center transition-transform active:scale-95 bg-black/70 border-white/20 text-white hover:bg-black/90"
+                    className="w-10 h-10 rounded-full backdrop-blur-md border flex items-center justify-center transition-all active:scale-95 bg-white hover:bg-zinc-100 border-white text-zinc-900 shadow-xl cursor-pointer"
                     aria-label="Compartir evento"
                   >
-                    <Share2 className="w-4 h-4" />
+                    <Share2 className="w-4 h-4 text-zinc-900" />
                   </button>
 
                   {/* Share Popover Menu (Glassmorphism Oscuro Matching User Request) */}
@@ -402,19 +416,27 @@ export default function EventDetailOverlay({
             </div>
 
             {/* Date & Time Highlight (Yellow bold text exact match to screenshot) */}
-            <div className="space-y-1">
+            <div className="space-y-2">
               <p className="text-lg sm:text-xl font-bold text-yellow-400 tracking-tight">
                 {event.dateLabel || "sáb, 19 sept, 22:00 GMT-5"}
               </p>
-              <div className="flex items-center gap-4 text-xs font-bold text-zinc-300 pt-1">
+              <div className="flex items-center gap-4 text-xs font-bold text-zinc-300 pt-0.5">
                 <span className="flex items-center gap-1.5">
                   <Tag className="w-3.5 h-3.5 text-zinc-400" />
-                  <span>Fiesta / DJ</span>
+                  <span>{event.category || "Fiesta / DJ"}</span>
                 </span>
                 <span className="flex items-center gap-1.5">
                   <MapPin className="w-3.5 h-3.5 text-zinc-400" />
                   <span>{event.city || "Loja"}</span>
                 </span>
+              </div>
+
+              {/* Badge 'Muy vendido' (Orange badge + Flame icon) */}
+              <div className="pt-1 flex items-center">
+                <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-[#ff6600] text-black font-extrabold text-xs shadow-md tracking-tight select-none">
+                  <Flame className="w-3.5 h-3.5 fill-black stroke-black" />
+                  <span>Muy vendido</span>
+                </div>
               </div>
             </div>
 

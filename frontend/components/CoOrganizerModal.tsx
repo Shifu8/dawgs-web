@@ -14,10 +14,7 @@ interface CoOrganizerModalProps {
 
 const AVAILABLE_ORGANIZERS = [
   { id: "cubic", name: "Cubic", type: "Discoteca / Club", avatar: "🏢" },
-  { id: "4go", name: "4Go", type: "Productora / Eventos", avatar: "⚡" },
-  { id: "wave-music", name: "Wave Music", type: "Sello Discográfico", avatar: "🌊" },
-  { id: "nenez-official", name: "NENEZ Official", type: "Plataforma Base", avatar: "🔥" },
-  { id: "loja-night", name: "Loja Nightlife", type: "Colectivo Urbano", avatar: "🌃" },
+  { id: "sata", name: "Sata Music", type: "Productora / Eventos", avatar: "⚡" },
 ];
 
 export default function CoOrganizerModal({

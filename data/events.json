@@ -1,5 +1,39 @@
 [
   {
+    "id": "prueba1-9111",
+    "slug": "prueba1-9111",
+    "title": "PRUEBA1",
+    "subtitle": "FACTORY TOWN",
+    "location": "Loja",
+    "date": "18 SEP 2026",
+    "dateLabel": "18 SEP 2026",
+    "time": "22:00",
+    "price": 10,
+    "imageUrl": "/images/4go_red_girl_showcase.jpg",
+    "poster": "/images/4go_red_girl_showcase.jpg",
+    "miniImage": "/images/4go_red_girl_showcase.jpg",
+    "description": "Kaskade live in Miami at Factory Town for a special ORIGIN set.",
+    "lineup": [
+      "Cubic",
+      "Sata"
+    ],
+    "organizer": "CUBIC LOJA",
+    "organizers": [
+      "Cubic",
+      "Sata"
+    ],
+    "venue": "Factory Town - Miami",
+    "category": "Electronic / House",
+    "ageRestriction": "This is an 18+ event",
+    "status": "active",
+    "isFeatured": true,
+    "isAvailable": true,
+    "position": 1,
+    "badge": "NUEVO",
+    "createdAt": "2026-08-30T04:47:59.111Z",
+    "updatedAt": "2026-08-30T04:47:59.111Z"
+  },
+  {
     "id": "satellite-cloonee",
     "slug": "satellite-cloonee",
     "title": "Satellite: Cloonee, Miluhska, Omar+ & Vintage Culture",
@@ -7,7 +41,7 @@
     "location": "Miami",
     "date": "2026-10-15",
     "time": "23:00",
-    "price": 40.0,
+    "price": 40,
     "imageUrl": "/images/rauw_alejandro_card_bg.png",
     "description": "Tech house vibes with Cloonee and Vintage Culture.",
     "lineup": [
@@ -15,7 +49,7 @@
       "Vintage Culture",
       "Miluhska"
     ],
-    "position": 9,
+    "position": 11,
     "status": "active",
     "isFeatured": false,
     "isAvailable": true,
@@ -38,7 +72,7 @@
     "location": "Miami",
     "date": "2026-08-21",
     "time": "23:00",
-    "price": 30.0,
+    "price": 30,
     "imageUrl": "/images/roa_artist_1779161704881.png",
     "description": "Melodic & emotive electronic music live with Elderbrook.",
     "lineup": [
@@ -46,7 +80,7 @@
       "Laurence Guy",
       "Collect 200"
     ],
-    "position": 8,
+    "position": 10,
     "status": "active",
     "isFeatured": false,
     "isAvailable": true,
@@ -69,7 +103,7 @@
     "location": "Miami",
     "date": "2026-10-17",
     "time": "23:00",
-    "price": 45.0,
+    "price": 45,
     "imageUrl": "/images/latin_loud_medellin_mobile_2026.png",
     "description": "Exclusive B2B marathon set at Space Terrace.",
     "lineup": [
@@ -78,7 +112,7 @@
       "Floating Points",
       "Daphni"
     ],
-    "position": 7,
+    "position": 9,
     "status": "active",
     "isFeatured": true,
     "isAvailable": true,
@@ -107,7 +141,7 @@
     "lineup": [
       "UNREAL Residents"
     ],
-    "position": 6,
+    "position": 8,
     "status": "active",
     "isFeatured": true,
     "isAvailable": true,
@@ -130,7 +164,7 @@
     "location": "Miami",
     "date": "2026-10-18",
     "time": "23:00",
-    "price": 35.0,
+    "price": 35,
     "imageUrl": "/images/rnb_loud_brent_1778966427864.png",
     "description": "33+ Hour non-stop closing marathon party at Club Space.",
     "lineup": [
@@ -138,7 +172,7 @@
       "Marco Carola",
       "Honey Dijon"
     ],
-    "position": 5,
+    "position": 7,
     "status": "active",
     "isFeatured": true,
     "isAvailable": true,
@@ -167,7 +201,7 @@
     "lineup": [
       "Cornelinho"
     ],
-    "position": 4,
+    "position": 6,
     "status": "active",
     "isFeatured": false,
     "isAvailable": true,
@@ -190,13 +224,13 @@
     "location": "Miami",
     "date": "2026-09-15",
     "time": "21:00",
-    "price": 75.0,
+    "price": 75,
     "imageUrl": "/images/trap_loud_sanjuan_mobile_2026.png",
     "description": "Strippers FL Tour 2026 live at Factory Town.",
     "lineup": [
       "Strippers"
     ],
-    "position": 3,
+    "position": 5,
     "status": "active",
     "isFeatured": false,
     "isAvailable": true,
@@ -219,14 +253,14 @@
     "location": "Miami",
     "date": "2026-10-10",
     "time": "22:00",
-    "price": 75.0,
+    "price": 75,
     "imageUrl": "/images/trap_loud_miami_mobile_2026.png",
     "description": "Trance & high BPM energy with Armin van Buuren.",
     "lineup": [
       "Armin van Buuren",
       "Funk Tribu"
     ],
-    "position": 2,
+    "position": 4,
     "status": "active",
     "isFeatured": true,
     "isAvailable": true,
@@ -255,7 +289,7 @@
     "lineup": [
       "FISHER"
     ],
-    "position": 1,
+    "position": 3,
     "status": "active",
     "isFeatured": true,
     "isAvailable": true,
@@ -278,13 +312,13 @@
     "location": "Miami",
     "date": "2026-09-18",
     "time": "22:00",
-    "price": 52.74,
+    "price": 10,
     "imageUrl": "/images/4go_dj_green_alien_hero_2k.png",
     "description": "Kaskade live in Miami at Factory Town for a special ORIGIN set.",
     "lineup": [
       "Kaskade"
     ],
-    "position": 0,
+    "position": 2,
     "status": "active",
     "isFeatured": true,
     "isAvailable": true,
@@ -294,7 +328,8 @@
     "category": "Electronic / House",
     "ageRestriction": "21+",
     "organizers": [
-      "Cubic"
+      "Cubic",
+      "Sata"
     ],
     "poster": "/images/4go_dj_green_alien_hero_2k.png",
     "miniImage": "/images/4go_dj_green_alien_hero_2k.png"
@@ -462,7 +497,7 @@
       "DRAKE",
       "CARTI"
     ],
-    "position": 1,
+    "position": 3,
     "status": "active",
     "isFeatured": false,
     "isAvailable": false,
@@ -564,7 +599,7 @@
     "lineup": [
       "YAN BLOCK"
     ],
-    "position": 2,
+    "position": 4,
     "status": "active",
     "isFeatured": false,
     "isAvailable": false,
@@ -671,7 +706,7 @@
       "NOVULENT",
       "AEROSMITH"
     ],
-    "position": 3,
+    "position": 5,
     "status": "active",
     "isFeatured": false,
     "isAvailable": false,
@@ -768,7 +803,7 @@
       "BAD BUNNY",
       "RAUW ALEJANDRO"
     ],
-    "position": 4,
+    "position": 6,
     "status": "active",
     "isFeatured": false,
     "isAvailable": true,
@@ -813,7 +848,7 @@
     "lineup": [
       "BRENT FAIYAZ"
     ],
-    "position": 5,
+    "position": 7,
     "status": "active",
     "isFeatured": false,
     "isAvailable": true,
@@ -858,7 +893,7 @@
     "lineup": [
       "ROA"
     ],
-    "position": 6,
+    "position": 8,
     "status": "active",
     "isFeatured": false,
     "isAvailable": true,
@@ -903,7 +938,7 @@
     "lineup": [
       "DJ OFICIAL NENEZ"
     ],
-    "position": 7,
+    "position": 9,
     "status": "active",
     "isFeatured": false,
     "isAvailable": true,
