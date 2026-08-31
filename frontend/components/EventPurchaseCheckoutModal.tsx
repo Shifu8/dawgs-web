@@ -784,12 +784,6 @@ export default function EventPurchaseCheckoutModal({
 
               {/* Tiers List */}
               <div className="space-y-3">
-                {isMaxTicketsReached && (
-                  <div className="p-3.5 rounded-2xl bg-zinc-900/90 border border-amber-500/40 text-amber-300 text-xs font-bold flex items-center gap-2 shadow-lg">
-                    <span>⚠️ Has alcanzado el límite máximo de 2 entradas por usuario para este evento.</span>
-                  </div>
-                )}
-
                 {tiers.map((tier) => {
                   const count = quantities[tier.id] || 0;
                   const isExpiredOrSoldOut = tier.status === "expired" || tier.status === "sold_out";
@@ -963,14 +957,23 @@ export default function EventPurchaseCheckoutModal({
                   </button>
                 </div>
 
-                <button
-                  type="button"
-                  onClick={handleProceedToPayment}
-                  disabled={totalItemsCount === 0}
-                  className="w-full py-4 rounded-full bg-[#dfff28] hover:bg-[#d4f522] text-black font-black text-xs uppercase tracking-widest transition-all shadow-xl active:scale-95 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed text-center"
-                >
-                  FINALIZAR COMPRA
-                </button>
+                <div className="relative group/finalize-desktop">
+                  <button
+                    type="button"
+                    onClick={handleProceedToPayment}
+                    disabled={totalItemsCount === 0 || isMaxTicketsReached}
+                    className="w-full py-4 rounded-full bg-[#dfff28] hover:bg-[#d4f522] text-black font-black text-xs uppercase tracking-widest transition-all shadow-xl active:scale-95 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed text-center"
+                  >
+                    FINALIZAR COMPRA
+                  </button>
+
+                  {/* Desktop Hover Tooltip (clean neutral design without warning colors/icons) */}
+                  {isMaxTicketsReached && (
+                    <div className="absolute bottom-[calc(100%+10px)] left-1/2 -translate-x-1/2 w-max max-w-[260px] p-2.5 rounded-xl bg-zinc-950/95 border border-white/20 text-zinc-300 text-xs font-normal text-center opacity-0 group-hover/finalize-desktop:opacity-100 transition-opacity duration-200 pointer-events-none shadow-2xl z-50">
+                      Has alcanzado el límite máximo de 2 entradas por usuario para este evento.
+                    </div>
+                  )}
+                </div>
               </div>
 
               {/* Desktop Legal Notice */}
@@ -1333,31 +1336,39 @@ export default function EventPurchaseCheckoutModal({
 
       {/* ─── MOBILE FIXED BOTTOM CHECKOUT BAR (SCREENSHOT 3 EXACT MATCH) ─── */}
       {currentStep === "select" && (
-        <div className="fixed bottom-0 inset-x-0 z-[530] bg-white text-black p-4 sm:p-5 flex items-center justify-between shadow-[0_-15px_40px_rgba(0,0,0,0.7)] lg:hidden rounded-t-3xl border-t border-zinc-200">
-          <div className="flex flex-col text-left">
-            <span className="text-sm font-black tracking-tight text-black">
-              {totalItemsCount} {totalItemsCount === 1 ? "entrada" : "entradas"}
-            </span>
-            <div className="flex items-center gap-1.5">
-              <span className="text-xs font-bold text-zinc-600">
-                Total – {totalPrice} $
+        <div className="fixed bottom-0 inset-x-0 z-[530] bg-white text-black p-4 sm:p-5 flex flex-col gap-2 shadow-[0_-15px_40px_rgba(0,0,0,0.7)] lg:hidden rounded-t-3xl border-t border-zinc-200">
+          <div className="flex items-center justify-between">
+            <div className="flex flex-col text-left">
+              <span className="text-sm font-black tracking-tight text-black">
+                {totalItemsCount} {totalItemsCount === 1 ? "entrada" : "entradas"}
               </span>
-              {appliedPromo && discountAmount > 0 && (
-                <span className="text-[10px] font-bold text-emerald-600">
-                  (-{discountAmount}$)
+              <div className="flex items-center gap-1.5">
+                <span className="text-xs font-bold text-zinc-600">
+                  Total – {totalPrice} $
                 </span>
-              )}
+                {appliedPromo && discountAmount > 0 && (
+                  <span className="text-[10px] font-bold text-emerald-600">
+                    (-{discountAmount}$)
+                  </span>
+                )}
+              </div>
             </div>
+
+            <button
+              type="button"
+              onClick={handleProceedToPayment}
+              disabled={totalItemsCount === 0 || isMaxTicketsReached}
+              className="px-8 py-3.5 rounded-full bg-[#dfff28] hover:bg-[#d4f522] text-black font-black text-xs uppercase tracking-widest transition-all shadow-xl active:scale-95 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed text-center"
+            >
+              FINALIZAR COMPRA
+            </button>
           </div>
 
-          <button
-            type="button"
-            onClick={handleProceedToPayment}
-            disabled={totalItemsCount === 0}
-            className="px-8 py-3.5 rounded-full bg-[#dfff28] hover:bg-[#d4f522] text-black font-black text-xs uppercase tracking-widest transition-all shadow-xl active:scale-95 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed text-center"
-          >
-            FINALIZAR COMPRA
-          </button>
+          {isMaxTicketsReached && (
+            <p className="text-[11px] text-zinc-500 font-medium text-center">
+              Has alcanzado el límite máximo de 2 entradas por usuario para este evento.
+            </p>
+          )}
         </div>
       )}
     </motion.div>
