@@ -61,7 +61,7 @@ export default function TicketPassModal({
   const posterSrc = ticket?.poster || ticket?.imageUrl || "/images/now4go-hero-presentation-hd-v3_3840w.jpg";
   const refCode = ticket?.referenceNumber || ticket?.id?.slice(0, 10) || "NENEZ-PASS";
 
-  // Generate high-resolution scannable QR Code Data URL
+  // Generate high-resolution scannable QR Code Data URL for on-screen entry
   useEffect(() => {
     if (isOpen && qrValue) {
       QRCode.toDataURL(qrValue, {
@@ -85,7 +85,7 @@ export default function TicketPassModal({
     }
   }, [isOpen]);
 
-  // Generate Ticket Canvas
+  // Generate Ticket Canvas (ONLY the Ticket Image is downloadable / shareable)
   const generateTicketCanvas = useCallback(async (): Promise<HTMLCanvasElement | null> => {
     const canvas = document.createElement("canvas");
     const ctx = canvas.getContext("2d");
@@ -222,102 +222,32 @@ export default function TicketPassModal({
     return canvas;
   }, [eventTitle, dateStr, timeStr, venueStr, tierStr, posterSrc, refCode]);
 
-  // Generate QR Code Card Canvas
-  const generateQrCanvas = useCallback(async (): Promise<HTMLCanvasElement | null> => {
-    const canvas = document.createElement("canvas");
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return null;
-
-    const scale = 2;
-    canvas.width = 380 * scale;
-    canvas.height = 540 * scale;
-    ctx.scale(scale, scale);
-
-    // Background card (clean pure white)
-    ctx.fillStyle = "#ffffff";
-    roundRect(ctx, 0, 0, 380, 540, 26);
-    ctx.fill();
-
-    // Card border
-    ctx.strokeStyle = "#e2e2e8";
-    ctx.lineWidth = 2;
-    roundRect(ctx, 1, 1, 378, 538, 25);
-    ctx.stroke();
-
-    // Header label
-    ctx.fillStyle = "#888888";
-    ctx.font = "800 10px sans-serif";
-    ctx.textAlign = "center";
-    ctx.fillText("PASE OFICIAL DE ACCESO 4GO", 190, 42);
-
-    // Event title
-    ctx.fillStyle = "#000000";
-    ctx.font = "900 18px sans-serif";
-    ctx.fillText(eventTitle.toUpperCase(), 190, 72);
-
-    // Venue & Tier
-    ctx.fillStyle = "#555555";
-    ctx.font = "600 12px sans-serif";
-    ctx.fillText(`${venueStr} • ${tierStr}`, 190, 95);
-
-    // QR Image
-    const qrImg = new (window as any).Image();
-    qrImg.src = qrCodeDataUrl || await QRCode.toDataURL(qrValue, { width: 500, margin: 1 });
-    await new Promise((resolve) => {
-      qrImg.onload = () => resolve(true);
-      qrImg.onerror = () => resolve(false);
-    });
-
-    // Draw QR Code centered
-    ctx.drawImage(qrImg, 65, 125, 250, 250);
-
-    // QR Value text
-    ctx.fillStyle = "#111111";
-    ctx.font = "700 12px monospace";
-    ctx.fillText(qrValue, 190, 415);
-
-    // Scannable status badge
-    ctx.fillStyle = "#22c55e";
-    ctx.font = "800 11px sans-serif";
-    ctx.fillText("✓ VÁLIDO PARA 1 ESCANEO EN PUERTA", 190, 445);
-
-    ctx.fillStyle = "#999999";
-    ctx.font = "600 9px sans-serif";
-    ctx.fillText(`Ref: #${refCode.toUpperCase()} • ${dateStr}`, 190, 475);
-
-    return canvas;
-  }, [eventTitle, venueStr, tierStr, qrCodeDataUrl, qrValue, refCode, dateStr]);
-
-  // Download Action (Handles both Ticket view and QR view)
-  const handleDownload = async () => {
+  // Download Ticket Image (Downloads only the ticket image)
+  const handleDownloadTicketImage = async () => {
     setIsDownloading(true);
     try {
-      const canvas = activeView === "qr" ? await generateQrCanvas() : await generateTicketCanvas();
+      const canvas = await generateTicketCanvas();
       if (!canvas) return;
 
       const link = document.createElement("a");
-      const filename = activeView === "qr"
-        ? `QR_Pass_${eventTitle.replace(/[^a-zA-Z0-9]/g, "_")}.png`
-        : `Ticket_${eventTitle.replace(/[^a-zA-Z0-9]/g, "_")}.png`;
-      
-      link.download = filename;
+      link.download = `Ticket_${eventTitle.replace(/[^a-zA-Z0-9]/g, "_")}.png`;
       link.href = canvas.toDataURL("image/png");
       link.click();
     } catch (err) {
-      console.error("Error downloading image:", err);
+      console.error("Error downloading ticket image:", err);
     } finally {
       setIsDownloading(false);
     }
   };
 
-  // Share Action (Direct Image File Sharing via Web Share API)
-  const handleShare = async () => {
+  // Share Ticket Image (Shares ONLY the ticket image)
+  const handleShareTicketImage = async () => {
     setIsSharing(true);
     try {
-      const canvas = activeView === "qr" ? await generateQrCanvas() : await generateTicketCanvas();
+      const canvas = await generateTicketCanvas();
       if (!canvas) return;
 
-      const filename = activeView === "qr" ? "QR_Pass_4GO.png" : "Ticket_4GO.png";
+      const filename = "Ticket_4GO.png";
 
       // Convert canvas to Blob
       const blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, "image/png"));
@@ -367,7 +297,7 @@ export default function TicketPassModal({
         className="relative w-full max-w-[340px] sm:max-w-[360px] space-y-4 my-auto text-center selection:bg-[#dfff28] selection:text-black"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* ─── TOP BAR (PHOTO 1 MATCH) ─── */}
+        {/* ─── TOP BAR (PHOTO 1 EXACT MATCH) ─── */}
         <div className="flex items-center justify-between px-1">
           <button
             type="button"
@@ -384,10 +314,10 @@ export default function TicketPassModal({
 
           <button
             type="button"
-            onClick={handleShare}
+            onClick={handleShareTicketImage}
             disabled={isSharing}
             className="w-9 h-9 rounded-full bg-white/10 hover:bg-white/20 border border-white/20 text-white flex items-center justify-center transition active:scale-95 cursor-pointer shadow-lg"
-            title="Compartir Imagen"
+            title="Compartir Imagen del Ticket"
           >
             {shareSuccess ? (
               <Check className="w-4 h-4 text-[#dfff28]" />
@@ -399,7 +329,7 @@ export default function TicketPassModal({
           </button>
         </div>
 
-        {/* ─── TICKET CARD (MATCHING USER SCREENSHOT EXACTLY) ─── */}
+        {/* ─── TICKET CARD / QR VIEW ─── */}
         {activeView === "ticket" ? (
           <div className="relative rounded-[30px] bg-[#2a2421] p-3 border border-white/10 shadow-[0_25px_60px_rgba(0,0,0,0.8)] space-y-2.5 overflow-hidden">
             {/* Top Event Image with Exact Rounded Form */}
@@ -498,8 +428,8 @@ export default function TicketPassModal({
             </div>
           </div>
         ) : (
-          /* ─── DYNAMIC QR CODE SCANNER VIEW ─── */
-          <div className="relative rounded-[28px] bg-white text-zinc-950 p-6 space-y-4 shadow-2xl border border-zinc-200">
+          /* ─── DYNAMIC QR CODE SCANNER VIEW (ON-SCREEN ENTRY ONLY) ─── */
+          <div className="relative rounded-[30px] bg-white text-zinc-950 p-6 space-y-4 shadow-2xl border border-zinc-200">
             <div className="space-y-1">
               <span className="text-[10px] font-black uppercase text-zinc-400 tracking-wider">
                 Pase Oficial de Acceso 4GO
@@ -518,7 +448,7 @@ export default function TicketPassModal({
                 <img
                   src={qrCodeDataUrl}
                   alt="QR Code"
-                  className="w-full h-full object-contain"
+                  className="w-full h-full object-contain select-none"
                 />
               ) : (
                 <QrCode className="w-full h-full text-zinc-900" />
@@ -534,12 +464,18 @@ export default function TicketPassModal({
           </div>
         )}
 
-        {/* ─── BOTTOM DUAL ACTION BUTTONS ─── */}
+        {/* ─── BOTTOM DUAL ACTION BUTTONS (PHOTO 1 EXACT MATCH) ─── */}
         <div className="grid grid-cols-2 gap-3 pt-1">
-          {/* Button 1: Image / Download (Works for both views) */}
+          {/* Button 1: Image (ALWAYS downloads the Ticket Image) */}
           <button
             type="button"
-            onClick={handleDownload}
+            onClick={() => {
+              if (activeView !== "ticket") {
+                setActiveView("ticket");
+              } else {
+                handleDownloadTicketImage();
+              }
+            }}
             disabled={isDownloading}
             className={`py-3.5 px-4 rounded-full font-black text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2 shadow-xl active:scale-95 cursor-pointer disabled:opacity-50 ${
               activeView === "ticket"
@@ -552,7 +488,7 @@ export default function TicketPassModal({
             ) : (
               <Download className="w-3.5 h-3.5" />
             )}
-            <span>{isDownloading ? "Descargando..." : activeView === "qr" ? "Descargar QR" : "Image"}</span>
+            <span>{isDownloading ? "Descargando..." : "Image"}</span>
           </button>
 
           {/* Button 2: QR Code View Toggle */}
@@ -566,7 +502,7 @@ export default function TicketPassModal({
             }`}
           >
             <QrCode className="w-3.5 h-3.5" />
-            <span>{activeView === "qr" ? "Ver Ticket" : "QR Code"}</span>
+            <span>QR Code</span>
           </button>
         </div>
       </div>
