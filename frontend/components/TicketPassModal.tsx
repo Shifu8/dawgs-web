@@ -301,9 +301,15 @@ export default function TicketPassModal({
         <div className="flex items-center justify-between px-1">
           <button
             type="button"
-            onClick={onClose}
+            onClick={() => {
+              if (activeView === "qr") {
+                setActiveView("ticket");
+              } else {
+                onClose();
+              }
+            }}
             className="w-9 h-9 rounded-full bg-white/10 hover:bg-white/20 border border-white/20 text-white flex items-center justify-center transition active:scale-95 cursor-pointer shadow-lg"
-            title="Volver"
+            title={activeView === "qr" ? "Volver al Ticket" : "Volver"}
           >
             <ChevronLeft className="w-5 h-5 text-white" />
           </button>
@@ -312,21 +318,25 @@ export default function TicketPassModal({
             Tickets
           </h3>
 
-          <button
-            type="button"
-            onClick={handleShareTicketImage}
-            disabled={isSharing}
-            className="w-9 h-9 rounded-full bg-white/10 hover:bg-white/20 border border-white/20 text-white flex items-center justify-center transition active:scale-95 cursor-pointer shadow-lg"
-            title="Compartir Imagen del Ticket"
-          >
-            {shareSuccess ? (
-              <Check className="w-4 h-4 text-[#dfff28]" />
-            ) : isSharing ? (
-              <Loader2 className="w-4 h-4 text-white animate-spin" />
-            ) : (
-              <Share2 className="w-4 h-4 text-white" />
-            )}
-          </button>
+          {activeView === "ticket" ? (
+            <button
+              type="button"
+              onClick={handleShareTicketImage}
+              disabled={isSharing}
+              className="w-9 h-9 rounded-full bg-white/10 hover:bg-white/20 border border-white/20 text-white flex items-center justify-center transition active:scale-95 cursor-pointer shadow-lg"
+              title="Compartir Imagen del Ticket"
+            >
+              {shareSuccess ? (
+                <Check className="w-4 h-4 text-[#dfff28]" />
+              ) : isSharing ? (
+                <Loader2 className="w-4 h-4 text-white animate-spin" />
+              ) : (
+                <Share2 className="w-4 h-4 text-white" />
+              )}
+            </button>
+          ) : (
+            <div className="w-9 h-9 pointer-events-none" />
+          )}
         </div>
 
         {/* ─── TICKET CARD / QR VIEW ─── */}
@@ -432,7 +442,7 @@ export default function TicketPassModal({
           <div className="relative rounded-[30px] bg-white text-zinc-950 p-6 space-y-4 shadow-2xl border border-zinc-200">
             <div className="space-y-1">
               <span className="text-[10px] font-black uppercase text-zinc-400 tracking-wider">
-                Pase Oficial de Acceso 4GO
+                Ticket Oficial de Acceso
               </span>
               <h4 className="text-base font-black uppercase text-black">
                 {eventTitle}
@@ -464,47 +474,35 @@ export default function TicketPassModal({
           </div>
         )}
 
-        {/* ─── BOTTOM DUAL ACTION BUTTONS (PHOTO 1 EXACT MATCH) ─── */}
-        <div className="grid grid-cols-2 gap-3 pt-1">
-          {/* Button 1: Image (ALWAYS downloads the Ticket Image) */}
-          <button
-            type="button"
-            onClick={() => {
-              if (activeView !== "ticket") {
-                setActiveView("ticket");
-              } else {
-                handleDownloadTicketImage();
-              }
-            }}
-            disabled={isDownloading}
-            className={`py-3.5 px-4 rounded-full font-black text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2 shadow-xl active:scale-95 cursor-pointer disabled:opacity-50 ${
-              activeView === "ticket"
-                ? "bg-[#ff4d5a] hover:bg-[#ff3b49] text-white shadow-[#ff4d5a]/25"
-                : "bg-[#ff4d5a] hover:bg-[#ff3b49] text-white shadow-[#ff4d5a]/25"
-            }`}
-          >
-            {isDownloading ? (
-              <Loader2 className="w-3.5 h-3.5 animate-spin" />
-            ) : (
-              <Download className="w-3.5 h-3.5" />
-            )}
-            <span>{isDownloading ? "Descargando..." : "Image"}</span>
-          </button>
+        {/* ─── BOTTOM ACTION BUTTONS (ONLY ON TICKET VIEW) ─── */}
+        {activeView === "ticket" && (
+          <div className="grid grid-cols-2 gap-3 pt-1">
+            {/* Button 1: Image (Downloads the Ticket Image) */}
+            <button
+              type="button"
+              onClick={handleDownloadTicketImage}
+              disabled={isDownloading}
+              className="py-3.5 px-4 rounded-full font-black text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2 shadow-xl active:scale-95 cursor-pointer disabled:opacity-50 bg-[#ff4d5a] hover:bg-[#ff3b49] text-white shadow-[#ff4d5a]/25"
+            >
+              {isDownloading ? (
+                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+              ) : (
+                <Download className="w-3.5 h-3.5" />
+              )}
+              <span>{isDownloading ? "Descargando..." : "Image"}</span>
+            </button>
 
-          {/* Button 2: QR Code View Toggle */}
-          <button
-            type="button"
-            onClick={() => setActiveView(activeView === "qr" ? "ticket" : "qr")}
-            className={`py-3.5 px-4 rounded-full font-black text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2 shadow-xl active:scale-95 cursor-pointer ${
-              activeView === "qr"
-                ? "bg-white hover:bg-zinc-200 text-black shadow-white/20"
-                : "bg-white/15 hover:bg-white/25 text-white border border-white/20"
-            }`}
-          >
-            <QrCode className="w-3.5 h-3.5" />
-            <span>QR Code</span>
-          </button>
-        </div>
+            {/* Button 2: QR Code View Toggle */}
+            <button
+              type="button"
+              onClick={() => setActiveView("qr")}
+              className="py-3.5 px-4 rounded-full font-black text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2 shadow-xl active:scale-95 cursor-pointer bg-white/15 hover:bg-white/25 text-white border border-white/20"
+            >
+              <QrCode className="w-3.5 h-3.5" />
+              <span>QR Code</span>
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );
