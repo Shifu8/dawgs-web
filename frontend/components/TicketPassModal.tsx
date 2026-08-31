@@ -7,7 +7,6 @@ import {
   Share2,
   Download,
   QrCode,
-  ChevronLeft,
   Check,
 } from "lucide-react";
 
@@ -76,17 +75,13 @@ export default function TicketPassModal({
       if (!ctx) return;
 
       const scale = 2; // Retina scale
-      canvas.width = 400 * scale;
-      canvas.height = 700 * scale;
+      canvas.width = 380 * scale;
+      canvas.height = 640 * scale;
       ctx.scale(scale, scale);
 
-      // Background
-      ctx.fillStyle = "#121118";
-      ctx.fillRect(0, 0, 400, 700);
-
-      // Card outer background
-      ctx.fillStyle = "#1e1d24";
-      roundRect(ctx, 20, 20, 360, 660, 24);
+      // Card outer background (Brown / dark card style as in mockup)
+      ctx.fillStyle = "#262220";
+      roundRect(ctx, 0, 0, 380, 640, 26);
       ctx.fill();
 
       // Top Poster image
@@ -101,33 +96,33 @@ export default function TicketPassModal({
 
       // Draw poster rounded top
       ctx.save();
-      roundRect(ctx, 28, 28, 344, 210, 18);
+      roundRect(ctx, 16, 16, 348, 195, 20);
       ctx.clip();
-      ctx.drawImage(img, 28, 28, 344, 210);
+      ctx.drawImage(img, 16, 16, 348, 195);
       ctx.restore();
 
       // White lower ticket body
       ctx.fillStyle = "#ffffff";
-      roundRect(ctx, 28, 250, 344, 416, 20);
+      roundRect(ctx, 16, 225, 348, 395, 20);
       ctx.fill();
 
       // Ticket Title
       ctx.fillStyle = "#111111";
-      ctx.font = "900 16px sans-serif";
+      ctx.font = "900 15px sans-serif";
       ctx.textAlign = "center";
-      ctx.fillText(eventTitle.toUpperCase(), 200, 285);
+      ctx.fillText(eventTitle.toUpperCase(), 190, 260);
 
       ctx.fillStyle = "#666666";
       ctx.font = "600 11px sans-serif";
-      ctx.fillText(`${dateStr} • ${timeStr}`, 200, 303);
+      ctx.fillText(`${dateStr} • ${timeStr}`, 190, 278);
 
       // Perforated Dotted Line
       ctx.strokeStyle = "#e2e2e8";
       ctx.lineWidth = 1.5;
       ctx.setLineDash([4, 4]);
       ctx.beginPath();
-      ctx.moveTo(48, 325);
-      ctx.lineTo(352, 325);
+      ctx.moveTo(36, 298);
+      ctx.lineTo(344, 298);
       ctx.stroke();
       ctx.setLineDash([]);
 
@@ -137,43 +132,43 @@ export default function TicketPassModal({
       // Date
       ctx.fillStyle = "#8e8e93";
       ctx.font = "600 10px sans-serif";
-      ctx.fillText("DATE", 52, 355);
+      ctx.fillText("Date", 40, 328);
       ctx.fillStyle = "#111111";
       ctx.font = "800 13px sans-serif";
-      ctx.fillText(dateStr, 52, 375);
+      ctx.fillText(dateStr, 40, 348);
 
       // Time
       ctx.fillStyle = "#8e8e93";
       ctx.font = "600 10px sans-serif";
-      ctx.fillText("TIME", 215, 355);
+      ctx.fillText("Time", 205, 328);
       ctx.fillStyle = "#111111";
       ctx.font = "800 13px sans-serif";
-      ctx.fillText(timeStr, 215, 375);
+      ctx.fillText(timeStr, 205, 348);
 
       // Venue
       ctx.fillStyle = "#8e8e93";
       ctx.font = "600 10px sans-serif";
-      ctx.fillText("VENUE", 52, 415);
+      ctx.fillText("Venue", 40, 388);
       ctx.fillStyle = "#111111";
       ctx.font = "800 13px sans-serif";
-      ctx.fillText(venueStr, 52, 435);
+      ctx.fillText(venueStr, 40, 408);
 
       // Seat / Tier
       ctx.fillStyle = "#8e8e93";
       ctx.font = "600 10px sans-serif";
-      ctx.fillText("SEAT / TIER", 215, 415);
+      ctx.fillText("Seat", 205, 388);
       ctx.fillStyle = "#111111";
       ctx.font = "800 13px sans-serif";
-      ctx.fillText(tierStr, 215, 435);
+      ctx.fillText(tierStr, 205, 408);
 
       // Notch Cutouts left & right
-      ctx.fillStyle = "#1e1d24";
+      ctx.fillStyle = "#262220";
       ctx.beginPath();
-      ctx.arc(28, 510, 14, -Math.PI / 2, Math.PI / 2);
+      ctx.arc(16, 475, 14, -Math.PI / 2, Math.PI / 2);
       ctx.fill();
 
       ctx.beginPath();
-      ctx.arc(372, 510, 14, Math.PI / 2, -Math.PI / 2);
+      ctx.arc(364, 475, 14, Math.PI / 2, -Math.PI / 2);
       ctx.fill();
 
       // Lower Dotted separator
@@ -181,19 +176,19 @@ export default function TicketPassModal({
       ctx.lineWidth = 1.5;
       ctx.setLineDash([4, 4]);
       ctx.beginPath();
-      ctx.moveTo(50, 510);
-      ctx.lineTo(350, 510);
+      ctx.moveTo(38, 475);
+      ctx.lineTo(342, 475);
       ctx.stroke();
       ctx.setLineDash([]);
 
       // Barcode bars simulation
       ctx.fillStyle = "#111111";
-      const startX = 65;
-      const barY = 535;
+      const startX = 55;
+      const barY = 500;
       const barH = 55;
       const widths = [
-        3, 1, 4, 2, 1, 3, 2, 4, 1, 2, 3, 1, 4, 2, 1, 3, 2, 1, 4, 3, 1, 2, 4, 1,
-        3, 2, 1, 4, 2, 3, 1, 4, 2,
+        3, 1, 4, 2, 1, 3, 2, 4, 1, 2, 3, 1, 4, 2, 1, 3, 2, 1, 4,
+        3, 1, 2, 4, 1, 3, 2, 1, 4, 2, 3, 1, 4, 2,
       ];
       let currentX = startX;
       for (const w of widths) {
@@ -205,15 +200,7 @@ export default function TicketPassModal({
       ctx.fillStyle = "#777777";
       ctx.font = "700 10px monospace";
       ctx.textAlign = "center";
-      ctx.fillText(`• ${refCode.toUpperCase()} •`, 200, 615);
-
-      ctx.fillStyle = "#999999";
-      ctx.font = "600 8px sans-serif";
-      ctx.fillText(
-        "PASE DIGITAL OFICIAL 4GO • ACCESO PERSONALIZADO",
-        200,
-        642
-      );
+      ctx.fillText(`• ${refCode.toUpperCase()} •`, 190, 580);
 
       // Trigger download
       const link = document.createElement("a");
@@ -245,65 +232,57 @@ export default function TicketPassModal({
 
   return (
     <div
-      className="fixed inset-0 z-[800] flex items-center justify-center p-3 sm:p-5 bg-black/90 backdrop-blur-2xl overflow-y-auto"
+      className="fixed inset-0 z-[850] flex items-center justify-center p-3 sm:p-5 bg-black/90 backdrop-blur-xl overflow-y-auto"
       onClick={onClose}
     >
       <div
-        className="relative w-full max-w-sm sm:max-w-md bg-[#131218] border border-white/15 rounded-[36px] p-5 sm:p-6 shadow-2xl space-y-5 my-auto text-center selection:bg-[#dfff28] selection:text-black"
+        className="relative w-full max-w-[340px] sm:max-w-[360px] space-y-4 my-auto text-center selection:bg-[#dfff28] selection:text-black"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* ─── TOP APP-STYLE HEADER BAR ─── */}
-        <div className="flex items-center justify-between">
-          <button
-            type="button"
-            onClick={onClose}
-            className="w-10 h-10 rounded-full bg-black/60 hover:bg-white/20 border border-white/20 text-white flex items-center justify-center transition active:scale-95 cursor-pointer shadow-lg"
-            title="Volver"
-          >
-            <ChevronLeft className="w-5 h-5 text-white" />
-          </button>
-
-          <h3 className="text-base font-black uppercase tracking-wider text-white">
-            Tickets
-          </h3>
-
+        {/* Floating Quick Action Buttons on Top Corner */}
+        <div className="flex items-center justify-end gap-2 px-1">
           <button
             type="button"
             onClick={handleShareTicket}
-            className="w-10 h-10 rounded-full bg-black/60 hover:bg-white/20 border border-white/20 text-white flex items-center justify-center transition active:scale-95 cursor-pointer shadow-lg relative"
-            title="Compartir Ticket"
+            className="w-8 h-8 rounded-full bg-black/70 hover:bg-white/20 border border-white/20 text-white flex items-center justify-center transition active:scale-95 cursor-pointer shadow-lg"
+            title="Compartir"
           >
             {shareSuccess ? (
-              <Check className="w-4 h-4 text-[#dfff28]" />
+              <Check className="w-3.5 h-3.5 text-[#dfff28]" />
             ) : (
-              <Share2 className="w-4 h-4 text-white" />
+              <Share2 className="w-3.5 h-3.5 text-white" />
             )}
+          </button>
+
+          <button
+            type="button"
+            onClick={onClose}
+            className="w-8 h-8 rounded-full bg-black/70 hover:bg-white/20 border border-white/20 text-white flex items-center justify-center transition active:scale-95 cursor-pointer shadow-lg"
+            title="Cerrar"
+          >
+            <X className="w-3.5 h-3.5 text-white" />
           </button>
         </div>
 
-        {/* ─── TICKET CONTAINER CARD ─── */}
+        {/* ─── TICKET CARD (MATCHING USER SCREENSHOT EXACTLY) ─── */}
         {activeView === "ticket" ? (
-          <div className="relative rounded-[28px] bg-[#212028] p-3 border border-white/10 shadow-2xl space-y-3 overflow-hidden">
-            {/* Top Poster Art */}
-            <div className="relative w-full h-44 sm:h-48 rounded-2xl overflow-hidden bg-black border border-white/10 shadow-md">
+          <div className="relative rounded-[30px] bg-[#2a2421] p-3 border border-white/10 shadow-[0_25px_60px_rgba(0,0,0,0.8)] space-y-2.5 overflow-hidden">
+            {/* Top Event Image with Exact Rounded Form */}
+            <div className="relative w-full h-44 sm:h-48 rounded-[20px] overflow-hidden bg-black shadow-inner">
               <Image
                 src={posterSrc}
                 alt={eventTitle}
                 fill
-                className="object-cover object-top"
+                className="object-cover object-center"
                 priority
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent pointer-events-none" />
-              <div className="absolute top-2.5 left-2.5 px-3 py-1 rounded-full bg-black/70 border border-white/20 text-white text-[10px] font-black uppercase tracking-wider backdrop-blur-md">
-                Pase Oficial 4GO
-              </div>
             </div>
 
-            {/* White Ticket Paper Body */}
-            <div className="relative rounded-2xl bg-white text-zinc-950 p-5 space-y-4 shadow-xl">
+            {/* White Ticket Body */}
+            <div className="relative rounded-[20px] bg-white text-zinc-950 p-4 sm:p-5 space-y-3.5 shadow-xl">
               {/* Event Title & Date Header */}
-              <div className="space-y-1 text-center">
-                <h4 className="text-sm sm:text-base font-black uppercase tracking-tight text-black leading-tight">
+              <div className="space-y-0.5 text-center">
+                <h4 className="text-sm font-black uppercase tracking-tight text-black leading-tight">
                   {eventTitle}
                 </h4>
                 <p className="text-[11px] font-bold text-zinc-500">
@@ -311,72 +290,72 @@ export default function TicketPassModal({
                 </p>
               </div>
 
-              {/* Perforated Dotted Separator */}
+              {/* Perforated Dotted Line */}
               <div className="border-t-2 border-dashed border-zinc-200" />
 
               {/* 2x2 Details Grid */}
               <div className="grid grid-cols-2 gap-3 text-left">
                 <div>
-                  <span className="text-[9.5px] font-bold uppercase tracking-wider text-zinc-400 block">
+                  <span className="text-[9px] font-bold uppercase tracking-wider text-zinc-400 block">
                     Date
                   </span>
-                  <p className="text-xs sm:text-sm font-black text-zinc-900 mt-0.5">
+                  <p className="text-xs font-black text-zinc-900 mt-0.5 truncate">
                     {dateStr}
                   </p>
                 </div>
 
                 <div>
-                  <span className="text-[9.5px] font-bold uppercase tracking-wider text-zinc-400 block">
+                  <span className="text-[9px] font-bold uppercase tracking-wider text-zinc-400 block">
                     Time
                   </span>
-                  <p className="text-xs sm:text-sm font-black text-zinc-900 mt-0.5">
+                  <p className="text-xs font-black text-zinc-900 mt-0.5 truncate">
                     {timeStr}
                   </p>
                 </div>
 
                 <div>
-                  <span className="text-[9.5px] font-bold uppercase tracking-wider text-zinc-400 block">
+                  <span className="text-[9px] font-bold uppercase tracking-wider text-zinc-400 block">
                     Venue
                   </span>
-                  <p className="text-xs sm:text-sm font-black text-zinc-900 mt-0.5 truncate">
+                  <p className="text-xs font-black text-zinc-900 mt-0.5 truncate">
                     {venueStr}
                   </p>
                 </div>
 
                 <div>
-                  <span className="text-[9.5px] font-bold uppercase tracking-wider text-zinc-400 block">
-                    Seat / Tier
+                  <span className="text-[9px] font-bold uppercase tracking-wider text-zinc-400 block">
+                    Seat
                   </span>
-                  <p className="text-xs sm:text-sm font-black text-zinc-900 mt-0.5 truncate">
+                  <p className="text-xs font-black text-zinc-900 mt-0.5 truncate">
                     {tierStr}
                   </p>
                 </div>
               </div>
 
               {/* Lower Section: Notched Cutouts & Barcode */}
-              <div className="relative pt-3">
-                {/* Left & Right Notch Circles */}
-                <div className="absolute -left-8 top-1.5 w-6 h-6 rounded-full bg-[#212028]" />
-                <div className="absolute -right-8 top-1.5 w-6 h-6 rounded-full bg-[#212028]" />
+              <div className="relative pt-2">
+                {/* Left & Right Notch Cutouts */}
+                <div className="absolute -left-7 sm:-left-8 top-0.5 w-5 h-5 rounded-full bg-[#2a2421]" />
+                <div className="absolute -right-7 sm:-right-8 top-0.5 w-5 h-5 rounded-full bg-[#2a2421]" />
 
                 {/* Dotted Cut Line */}
-                <div className="border-t-2 border-dashed border-zinc-200 mb-3" />
+                <div className="border-t-2 border-dashed border-zinc-200 mb-2.5" />
 
-                {/* Realistic Barcode Graphic */}
-                <div className="flex flex-col items-center justify-center space-y-1.5 py-1">
-                  <div className="h-12 w-full max-w-[260px] flex items-stretch justify-between px-2">
+                {/* Barcode Graphic */}
+                <div className="flex flex-col items-center justify-center space-y-1 py-0.5">
+                  <div className="h-10 w-full max-w-[220px] flex items-stretch justify-between px-1">
                     {[
                       3, 1, 4, 2, 1, 3, 2, 4, 1, 2, 3, 1, 4, 2, 1, 3, 2, 1, 4,
                       3, 1, 2, 4, 1, 3, 2, 1, 4, 2, 3, 1, 4,
                     ].map((w, idx) => (
                       <div
                         key={idx}
-                        style={{ width: `${w * 2.2}px` }}
+                        style={{ width: `${w * 1.8}px` }}
                         className="bg-black h-full rounded-[0.5px]"
                       />
                     ))}
                   </div>
-                  <span className="font-mono text-[10px] font-bold text-zinc-600 tracking-wider">
+                  <span className="font-mono text-[9px] font-bold text-zinc-600 tracking-wider">
                     {refCode.toUpperCase()}
                   </span>
                 </div>
@@ -385,12 +364,12 @@ export default function TicketPassModal({
           </div>
         ) : (
           /* ─── DYNAMIC QR CODE SCANNER VIEW ─── */
-          <div className="relative rounded-[28px] bg-white text-zinc-950 p-6 sm:p-8 space-y-5 shadow-2xl border border-zinc-200">
+          <div className="relative rounded-[28px] bg-white text-zinc-950 p-6 space-y-4 shadow-2xl border border-zinc-200">
             <div className="space-y-1">
               <span className="text-[10px] font-black uppercase text-zinc-400 tracking-wider">
                 Pase Oficial de Acceso 4GO
               </span>
-              <h4 className="text-base sm:text-lg font-black uppercase text-black">
+              <h4 className="text-base font-black uppercase text-black">
                 {eventTitle}
               </h4>
               <p className="text-xs text-zinc-600 font-medium">
@@ -399,11 +378,11 @@ export default function TicketPassModal({
             </div>
 
             {/* High-Contrast QR Code */}
-            <div className="w-56 h-56 bg-zinc-50 border-2 border-zinc-950 rounded-3xl mx-auto flex items-center justify-center p-3 shadow-inner relative group">
+            <div className="w-52 h-52 bg-zinc-50 border-2 border-zinc-950 rounded-2xl mx-auto flex items-center justify-center p-3 shadow-inner">
               <QrCode className="w-full h-full text-zinc-900" />
             </div>
 
-            <div className="space-y-1 text-xs text-zinc-500 font-mono">
+            <div className="space-y-0.5 text-xs text-zinc-500 font-mono">
               <p className="font-bold text-black text-sm">{qrValue}</p>
               <p className="text-[10px] text-zinc-700 font-bold uppercase">
                 ✓ Válido para 1 escaneo en puerta
@@ -412,9 +391,9 @@ export default function TicketPassModal({
           </div>
         )}
 
-        {/* ─── BOTTOM DUAL ACTION TOGGLE BUTTONS (CORAL & WHITE PILLS) ─── */}
+        {/* ─── BOTTOM DUAL ACTION BUTTONS (EXACT PHOTO 1 MATCH) ─── */}
         <div className="grid grid-cols-2 gap-3 pt-1">
-          {/* Button 1: Image / Download Canvas */}
+          {/* Button 1: Image / Download */}
           <button
             type="button"
             onClick={() => {
@@ -431,8 +410,8 @@ export default function TicketPassModal({
                 : "bg-zinc-800 hover:bg-zinc-700 text-zinc-300 border border-zinc-700"
             }`}
           >
-            <Download className="w-4 h-4" />
-            <span>{activeView === "ticket" ? (isDownloading ? "Descargando..." : "Image / Descargar") : "Ver Ticket"}</span>
+            <Download className="w-3.5 h-3.5" />
+            <span>{activeView === "ticket" ? (isDownloading ? "Descargando..." : "Image") : "Image"}</span>
           </button>
 
           {/* Button 2: QR Code View */}
@@ -445,7 +424,7 @@ export default function TicketPassModal({
                 : "bg-white/15 hover:bg-white/25 text-white border border-white/20"
             }`}
           >
-            <QrCode className="w-4 h-4" />
+            <QrCode className="w-3.5 h-3.5" />
             <span>QR Code</span>
           </button>
         </div>
