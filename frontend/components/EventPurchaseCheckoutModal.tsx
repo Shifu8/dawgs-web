@@ -23,6 +23,7 @@ import {
 } from "lucide-react";
 import type { Event } from "@/frontend/types/domain";
 import { getHdImageSrc, DEFAULT_HD_EVENT_POSTER } from "@/frontend/utils/hdImages";
+import TicketPassModal from "@/frontend/components/TicketPassModal";
 
 interface EventPurchaseCheckoutModalProps {
   isOpen: boolean;
@@ -725,7 +726,7 @@ export default function EventPurchaseCheckoutModal({
                             {isConfirmed ? (
                               <div className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white text-black font-black text-xs uppercase tracking-wider shadow-md">
                                 <QrCode className="w-3.5 h-3.5" />
-                                <span>Ver QR</span>
+                                <span>Ver Ticket</span>
                               </div>
                             ) : isRejected ? (
                               <span className="px-3 py-1 rounded-full bg-zinc-900 border border-zinc-800 text-zinc-500 font-bold text-xs uppercase">
@@ -1267,45 +1268,23 @@ export default function EventPurchaseCheckoutModal({
         )}
       </div>
 
-      {/* QR Modal for user ticket */}
-      {viewingTicketQr && (
-        <div className="fixed inset-0 z-[700] flex items-center justify-center p-4 bg-black/85 backdrop-blur-md">
-          <div className="w-full max-w-sm bg-white text-zinc-900 rounded-[28px] p-6 text-center space-y-4 shadow-2xl relative">
-            <button
-              type="button"
-              onClick={() => setViewingTicketQr(null)}
-              className="absolute top-4 right-4 w-8 h-8 rounded-full bg-zinc-100 hover:bg-zinc-200 text-zinc-600 flex items-center justify-center transition cursor-pointer"
-            >
-              <X className="w-4 h-4" />
-            </button>
-
-            <div className="space-y-1">
-              <span className="text-[10px] font-black uppercase text-zinc-400 tracking-wider">
-                Pase Oficial de Acceso 4GO
-              </span>
-              <h3 className="text-lg font-black uppercase text-zinc-900">
-                {viewingTicketQr.eventTitle}
-              </h3>
-              <p className="text-xs text-zinc-600 font-medium">
-                {viewingTicketQr.venue} • {viewingTicketQr.tierName}
-              </p>
-            </div>
-
-            <div className="w-48 h-48 bg-zinc-50 border-2 border-zinc-900 rounded-2xl mx-auto flex items-center justify-center p-3">
-              <QrCode className="w-full h-full text-zinc-900" />
-            </div>
-
-            <div className="space-y-0.5 text-xs text-zinc-500 font-mono">
-              <p>{viewingTicketQr.qrCode}</p>
-              <p className="text-[10px] text-zinc-900 font-bold uppercase">
-                {viewingTicketQr.status === "confirmed" || viewingTicketQr.status === "aprobado"
-                  ? "✓ Válido para 1 escaneo en puerta"
-                  : "En espera de verificación"}
-              </p>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* ─── TICKET PASS CINEMATIC MODAL ─── */}
+      <TicketPassModal
+        isOpen={!!viewingTicketQr}
+        onClose={() => setViewingTicketQr(null)}
+        ticket={
+          viewingTicketQr && event
+            ? {
+                ...viewingTicketQr,
+                eventTitle: viewingTicketQr.eventTitle || event.title,
+                venue: viewingTicketQr.venue || event.venue,
+                dateLabel: event.dateLabel || event.startsAt,
+                time: event.time || "22:00 PM",
+                poster: event.poster,
+              }
+            : null
+        }
+      />
 
       {/* ─── MOBILE FIXED BOTTOM CHECKOUT BAR (SCREENSHOT 3 EXACT MATCH) ─── */}
       {currentStep === "select" && (
