@@ -46,9 +46,10 @@ const BANK_PATTERNS: Array<{ name: string; pattern: RegExp }> = [
 ];
 
 const AMOUNT_PATTERNS = [
-  /(?:monto|valor|total|importe|transferido|recibido|enviado|efectivo)[^\d$]{0,25}(?:USD|\$)?\s*(\d{1,6}(?:[.,]\d{2}))/i,
-  /(?:USD|\$)\s*(\d{1,6}(?:[.,]\d{2}))/i,
-  /\b(\d{1,6}[.,]\d{2})\s*(?:USD)?\b/i,
+  /(?:monto\s+transferido|monto|valor|total|importe|transferido|recibido|enviado|pago|efectivo)[^\d$]{0,25}(?:USD|\$)?\s*(\d{1,6}(?:[.,]\d{2})?)/i,
+  /(?:USD|\$)\s*(\d{1,6}(?:[.,]\d{2})?)/i,
+  /\b(\d{1,6}[.,]\d{2})\s*(?:USD|\$)?\b/i,
+  /\b(?:USD|\$)\s*(\d{1,6})\b/i,
 ];
 
 const DATE_PATTERNS = [
@@ -83,7 +84,10 @@ function extractAmount(text: string): string | undefined {
     const matches = text.matchAll(regex);
     for (const match of matches) {
       if (match?.[1]) {
-        const val = match[1].trim().replace(",", ".");
+        let val = match[1].trim().replace(",", ".");
+        if (!val.includes(".") && /^\d+$/.test(val)) {
+          val = `${val}.00`;
+        }
         const parsed = parseFloat(val);
         if (!Number.isNaN(parsed)) {
           if (parsed > 0.01) {

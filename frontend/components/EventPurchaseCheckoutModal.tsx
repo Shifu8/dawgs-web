@@ -147,7 +147,26 @@ export default function EventPurchaseCheckoutModal({
               const forEvent = parsed.filter(
                 (t: any) => t.eventId === event.id || t.eventTitle === event.title
               );
-              setUserExistingEventTickets(forEvent);
+              const individualPasses: any[] = [];
+              forEvent.forEach((item: any) => {
+                const qty = Number(item.quantity) || 1;
+                if (qty > 1) {
+                  for (let i = 0; i < qty; i++) {
+                    individualPasses.push({
+                      ...item,
+                      id: `${item.id}-${i + 1}`,
+                      singleIndex: i + 1,
+                      tierName: `1x ${item.tierName?.replace(/^\d+x\s*/, "") || "Entrada"}`,
+                    });
+                  }
+                } else {
+                  individualPasses.push({
+                    ...item,
+                    tierName: item.tierName?.startsWith("1x ") ? item.tierName : `1x ${item.tierName || "Entrada"}`,
+                  });
+                }
+              });
+              setUserExistingEventTickets(individualPasses);
             }
           }
         } catch {}
@@ -211,7 +230,25 @@ export default function EventPurchaseCheckoutModal({
     ];
   })();
 
+  const totalTickets = Object.entries(quantities).reduce((acc, [id, qty]) => {
+    const tier = tiers.find((t) => t.id === id);
+    if (tier?.type === "ticket") return acc + qty;
+    return acc;
+  }, 0);
+
+  const totalTables = Object.entries(quantities).reduce((acc, [id, qty]) => {
+    const tier = tiers.find((t) => t.id === id);
+    if (tier?.type === "table") return acc + qty;
+    return acc;
+  }, 0);
+
+  const existingTicketsCount = userExistingEventTickets.filter(
+    (t: any) => t.status !== "rejected" && t.status !== "rechazado"
+  ).length;
+  const isMaxTicketsReached = existingTicketsCount >= 2;
+
   const handleIncrease = (tierId: string) => {
+    if (existingTicketsCount + totalTickets >= 2) return;
     const tier = tiers.find((t) => t.id === tierId);
     if (!tier || tier.status === "expired" || tier.status === "sold_out") return;
     if (tier?.remainingTables !== undefined) {
@@ -235,18 +272,6 @@ export default function EventPurchaseCheckoutModal({
       return { ...prev, [tierId]: current - 1 };
     });
   };
-
-  const totalTickets = Object.entries(quantities).reduce((acc, [id, qty]) => {
-    const tier = tiers.find((t) => t.id === id);
-    if (tier?.type === "ticket") return acc + qty;
-    return acc;
-  }, 0);
-
-  const totalTables = Object.entries(quantities).reduce((acc, [id, qty]) => {
-    const tier = tiers.find((t) => t.id === id);
-    if (tier?.type === "table") return acc + qty;
-    return acc;
-  }, 0);
 
   const subtotalPrice = Object.entries(quantities).reduce((acc, [id, qty]) => {
     const tier = tiers.find((t) => t.id === id);
@@ -436,12 +461,25 @@ export default function EventPurchaseCheckoutModal({
         />
       </div>
       <p className="text-[11px] sm:text-xs text-zinc-300 font-sans font-medium leading-relaxed tracking-normal">
-        Comprando esta entrada, abrirás una cuenta y aceptarás nuestras{" "}
-        <strong className="text-white font-bold">Condiciones de Uso</strong> generales, la{" "}
-        <strong className="text-white font-bold">Política de Privacidad</strong> y las{" "}
-        <strong className="text-white font-bold">Condiciones de Compra</strong> de entradas.
-        Procesamos tus datos personales de acuerdo con nuestra{" "}
-        <strong className="text-white font-bold">Política de Privacidad</strong>.
+        {userLoggedIn ? (
+          <>
+            Comprando esta entrada, aceptarás nuestras{" "}
+            <strong className="text-white font-bold">Condiciones de Uso</strong> generales, la{" "}
+            <strong className="text-white font-bold">Política de Privacidad</strong> y las{" "}
+            <strong className="text-white font-bold">Condiciones de Compra</strong> de entradas.
+            Procesamos tus datos personales de acuerdo con nuestra{" "}
+            <strong className="text-white font-bold">Política de Privacidad</strong>.
+          </>
+        ) : (
+          <>
+            Comprando esta entrada, abrirás una cuenta y aceptarás nuestras{" "}
+            <strong className="text-white font-bold">Condiciones de Uso</strong> generales, la{" "}
+            <strong className="text-white font-bold">Política de Privacidad</strong> y las{" "}
+            <strong className="text-white font-bold">Condiciones de Compra</strong> de entradas.
+            Procesamos tus datos personales de acuerdo con nuestra{" "}
+            <strong className="text-white font-bold">Política de Privacidad</strong>.
+          </>
+        )}
       </p>
     </div>
   );
@@ -724,9 +762,8 @@ export default function EventPurchaseCheckoutModal({
 
                           <div className="shrink-0 flex items-center gap-2">
                             {isConfirmed ? (
-                              <div className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white text-black font-black text-xs uppercase tracking-wider shadow-md">
-                                <QrCode className="w-3.5 h-3.5" />
-                                <span>Ver Ticket</span>
+                              <div className="flex items-center justify-center px-4 py-1.5 rounded-full bg-white text-black font-black text-xs uppercase tracking-wider shadow-md">
+                                <span>VER TICKET</span>
                               </div>
                             ) : isRejected ? (
                               <span className="px-3 py-1 rounded-full bg-zinc-900 border border-zinc-800 text-zinc-500 font-bold text-xs uppercase">
@@ -747,16 +784,24 @@ export default function EventPurchaseCheckoutModal({
 
               {/* Tiers List */}
               <div className="space-y-3">
+                {isMaxTicketsReached && (
+                  <div className="p-3.5 rounded-2xl bg-zinc-900/90 border border-amber-500/40 text-amber-300 text-xs font-bold flex items-center gap-2 shadow-lg">
+                    <span>⚠️ Has alcanzado el límite máximo de 2 entradas por usuario para este evento.</span>
+                  </div>
+                )}
+
                 {tiers.map((tier) => {
                   const count = quantities[tier.id] || 0;
                   const isExpiredOrSoldOut = tier.status === "expired" || tier.status === "sold_out";
+                  const isTierDisabled = isExpiredOrSoldOut || isMaxTicketsReached;
+                  const canIncrease = !isTierDisabled && (existingTicketsCount + totalTickets < 2);
 
                   return (
                     <div
                       key={tier.id}
                       className={`relative rounded-3xl p-5 sm:p-6 transition-all border ${
-                        isExpiredOrSoldOut
-                          ? "bg-black/25 border-white/5 opacity-60 cursor-not-allowed select-none"
+                        isTierDisabled
+                          ? "bg-black/25 border-white/5 opacity-50 cursor-not-allowed select-none"
                           : count > 0
                           ? "bg-zinc-900/80 border-[#dfff28]/60 shadow-[0_10px_30px_rgba(223,255,40,0.08)]"
                           : "bg-black/40 hover:bg-black/60 border-white/15 backdrop-blur-xl"
@@ -767,7 +812,7 @@ export default function EventPurchaseCheckoutModal({
                         <div className="space-y-1 min-w-0 flex-1">
                           <div className="flex items-center gap-2 flex-wrap">
                             <h3 className={`text-sm sm:text-base font-black tracking-wide ${
-                              isExpiredOrSoldOut ? "text-zinc-500 line-through" : "text-white"
+                              isTierDisabled ? "text-zinc-500" : "text-white"
                             }`}>
                               {tier.name}
                             </h3>
@@ -779,7 +824,7 @@ export default function EventPurchaseCheckoutModal({
                           </div>
 
                           <div className={`text-xl sm:text-2xl font-black font-sans ${
-                            isExpiredOrSoldOut ? "text-zinc-500" : "text-white"
+                            isTierDisabled ? "text-zinc-500" : "text-white"
                           }`}>
                             {tier.price} $
                           </div>
@@ -800,9 +845,9 @@ export default function EventPurchaseCheckoutModal({
                           <button
                             type="button"
                             onClick={() => handleDecrease(tier.id)}
-                            disabled={count === 0 || isExpiredOrSoldOut}
+                            disabled={count === 0 || isTierDisabled}
                             className={`w-8 h-8 flex items-center justify-center transition-all cursor-pointer ${
-                              count > 0 && !isExpiredOrSoldOut
+                              count > 0 && !isTierDisabled
                                 ? "text-white hover:text-[#dfff28] active:scale-90"
                                 : "text-zinc-600 cursor-not-allowed opacity-40"
                             }`}
@@ -813,7 +858,7 @@ export default function EventPurchaseCheckoutModal({
 
                           {/* Authentic Ticket Badge with Semicircular Side Cutouts */}
                           <div className={`relative w-11 h-12 flex items-center justify-center shrink-0 ${
-                            isExpiredOrSoldOut ? "opacity-35" : ""
+                            isTierDisabled ? "opacity-35" : ""
                           }`}>
                             <svg
                               viewBox="0 0 44 48"
@@ -845,9 +890,9 @@ export default function EventPurchaseCheckoutModal({
                           <button
                             type="button"
                             onClick={() => handleIncrease(tier.id)}
-                            disabled={isExpiredOrSoldOut}
+                            disabled={!canIncrease}
                             className={`w-8 h-8 flex items-center justify-center transition-all ${
-                              isExpiredOrSoldOut
+                              !canIncrease
                                 ? "text-zinc-700 cursor-not-allowed opacity-30"
                                 : "text-white hover:text-[#dfff28] active:scale-90 cursor-pointer"
                             }`}

@@ -204,7 +204,7 @@ export async function POST(request: NextRequest) {
       if (!Number.isNaN(parsedAmount) && Math.abs(parsedAmount - expectedTotal) > 0.01) {
         return NextResponse.json(
           {
-            error: `EL VALOR DETECTADO EN EL COMPROBANTE ($${parsedAmount.toFixed(2)} USD) NO COINCIDE CON EL TOTAL A PAGAR ($${expectedTotal.toFixed(2)} USD). POR FAVOR, VERIFICA EL MONTO O LA CANTIDAD DE ENTRADAS.`,
+            error: `EL VALOR DETECTADO EN EL COMPROBANTE ($${parsedAmount.toFixed(2)} USD) NO COINCIDE CON EL TOTAL EXACTO A PAGAR ($${expectedTotal.toFixed(2)} USD). VERIFICA QUE LA TRANSFERENCIA SEA POR EL MONTO EXACTO (NI MÁS NI MENOS).`,
             code: "RECEIPT_REJECTED",
           },
           { status: 422 },
