@@ -1234,7 +1234,7 @@ export default function MyAccountDashboardModal({
                             <p>📍 {tkt.venue}</p>
                             <p>🗓️ {tkt.date}</p>
                             <p className="font-semibold text-zinc-200">
-                              {tkt.quantity}x {tkt.tierName} (${tkt.totalAmount} USD)
+                              {tkt.tierName?.replace(/^\d+x\s*/i, "")} (${tkt.totalAmount} USD)
                             </p>
                           </div>
                         </div>

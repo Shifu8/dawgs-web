@@ -56,7 +56,7 @@ export default function TicketPassModal({
     ticket?.venue && !ticket.venue.toLowerCase().startsWith("prueba")
       ? ticket.venue
       : "CUBIC";
-  const tierStr = ticket?.tierName || "General Access";
+  const tierStr = (ticket?.tierName || "General Access").replace(/^\d+x\s*/i, "").trim() || "General Access";
   const qrValue = ticket?.qrCode || `4GO-PASS-${ticket?.id || ticket?.ticketId || "OFFICIAL"}`;
   const posterSrc = ticket?.poster || ticket?.imageUrl || "/images/now4go-hero-presentation-hd-v3_3840w.jpg";
   const refCode = ticket?.referenceNumber || ticket?.id?.slice(0, 10) || "NENEZ-PASS";

@@ -410,8 +410,8 @@ export default function EventPurchaseCheckoutModal({
       // Save purchase request to localStorage
       try {
         const tierDesc = Object.entries(quantities)
-          .map(([id, q]) => `${q}x ${tiers.find((t) => t.id === id)?.name || id}`)
-          .join(", ") || `${totalItemsCount}x Entrada`;
+          .map(([id]) => tiers.find((t) => t.id === id)?.name || id)
+          .join(", ") || "Entrada General";
 
         const newTicket = {
           id: data.receiptId || `tkt-${Date.now()}`,
@@ -420,7 +420,7 @@ export default function EventPurchaseCheckoutModal({
           venue: event.venue || "Lugar del Evento",
           date: event.dateLabel || event.date || "Fecha",
           quantity: totalItemsCount,
-          tierName: tierDesc,
+          tierName: tierDesc.replace(/^\d+x\s*/i, "").trim(),
           totalAmount: totalPrice,
           status: "en_verificacion",
           createdAt: new Date().toISOString(),
@@ -431,7 +431,22 @@ export default function EventPurchaseCheckoutModal({
         const existing = JSON.parse(localStorage.getItem("nenez_purchased_tickets") || "[]");
         const updatedTickets = [newTicket, ...existing.filter((t: any) => t.id !== newTicket.id)];
         localStorage.setItem("nenez_purchased_tickets", JSON.stringify(updatedTickets));
-        setUserExistingEventTickets((prev) => [newTicket, ...prev.filter((t: any) => t.id !== newTicket.id)]);
+        
+        // Expand for current view
+        const passes: any[] = [];
+        if (totalItemsCount > 1) {
+          for (let i = 0; i < totalItemsCount; i++) {
+            passes.push({
+              ...newTicket,
+              id: `${newTicket.id}-${i + 1}`,
+              singleIndex: i + 1,
+              tierName: tierDesc.replace(/^\d+x\s*/i, "").trim(),
+            });
+          }
+        } else {
+          passes.push(newTicket);
+        }
+        setUserExistingEventTickets((prev) => [...passes, ...prev.filter((t: any) => !t.id.startsWith(newTicket.id))]);
       } catch (e) {
         console.error("Error storing purchased ticket:", e);
       }
