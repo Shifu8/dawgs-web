@@ -7,8 +7,23 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const status = searchParams.get("status") as ReceiptStatus | null;
     const search = searchParams.get("search")?.toLowerCase();
+    const eventId = searchParams.get("eventId");
+    const eventTitle = searchParams.get("eventTitle");
 
     let receipts = loadAllReceipts();
+
+    if (eventId || eventTitle) {
+      receipts = receipts.filter((r) => {
+        const eId = (r.eventId || "").toLowerCase().trim();
+        const eTitle = (r.eventTitle || "").toLowerCase().trim();
+        const targetId = (eventId || "").toLowerCase().trim();
+        const targetTitle = (eventTitle || "").toLowerCase().trim();
+
+        if (targetId && (eId === targetId || eId.includes(targetId))) return true;
+        if (targetTitle && (eTitle === targetTitle || eTitle.includes(targetTitle) || eId.includes(targetTitle))) return true;
+        return false;
+      });
+    }
 
     if (status) {
       receipts = receipts.filter((r) => r.status === status);

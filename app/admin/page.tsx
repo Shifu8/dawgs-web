@@ -35,6 +35,7 @@ import QrControlSection from "./components/QrControlSection";
 import TurnstileWidget, { hasTurnstileSiteKey } from "@/frontend/components/TurnstileWidget";
 import HomepageEditor from "./components/HomepageEditor";
 import TicketDesignsManager from "./components/TicketDesignsManager";
+import PurchaseRequestReviewModal from "@/frontend/components/PurchaseRequestReviewModal";
 
 type ChartTooltipProps = {
   active?: boolean;
@@ -436,6 +437,7 @@ function DashboardContent({ receipts, events, posSales, drinkSales, onRefresh }:
   const [search, setSearch] = useState("");
   const [filterStatus, setFilterStatus] = useState<ReceiptStatus | "todas">("todas");
   const [selected, setSelected] = useState<ReceiptRecord | null>(null);
+  const [reviewModalReceipt, setReviewModalReceipt] = useState<ReceiptRecord | null>(null);
   const [reviewing, setReviewing] = useState(false);
   const [showRejectOptions, setShowRejectOptions] = useState(false);
   const [rejectReason, setRejectReason] = useState<string | null>(null);
@@ -867,8 +869,8 @@ function DashboardContent({ receipts, events, posSales, drinkSales, onRefresh }:
                         {receipt.status === "aprobado" ? <FileCheck className="h-5 w-5 text-[#9ff0b5]" /> :
                          receipt.status === "rechazado" ? <FileX className="h-5 w-5 text-[#ff9bad]" /> : <ShieldAlert className="h-5 w-5 text-[#ffd36a]" />}
                       </div>
-                      <div className="min-w-0">
-                        <p className="truncate text-sm font-black text-white">{receipt.firstName} {receipt.lastName}</p>
+                      <div className="min-w-0 cursor-pointer flex-1" onClick={() => setReviewModalReceipt(receipt)}>
+                        <p className="truncate text-sm font-black text-white hover:text-[#ffd36a] transition">{receipt.firstName} {receipt.lastName}</p>
                         <p className="mt-0.5 text-[9px] font-bold text-white/[0.42]">
                           {receipt.phone} / {receipt.quantity} entrada{receipt.quantity !== 1 ? "s" : ""} / {formatDateLabel(receipt.createdAt)}
                         </p>
@@ -877,15 +879,12 @@ function DashboardContent({ receipts, events, posSales, drinkSales, onRefresh }:
                     <div className="flex items-center gap-3 self-end sm:self-auto">
                       {statusBadge(receipt.status)}
                       <button
-                        onClick={() => setSelected(selected?.id === receipt.id ? null : receipt)}
-                        className={`flex h-9 w-9 items-center justify-center rounded-full border transition-all ${
-                          selected?.id === receipt.id
-                            ? "border-[#ffd36a]/[0.35] bg-[#ffd36a]/[0.12] text-[#ffd36a]"
-                            : "border-white/10 bg-white/[0.08] text-white/[0.45] hover:text-white"
-                        }`}
-                        aria-label="Ver comprobante"
+                        onClick={() => setReviewModalReceipt(receipt)}
+                        className="flex h-9 items-center gap-1.5 px-3 rounded-full border border-white/15 bg-white/[0.08] text-[10px] font-black uppercase text-white hover:bg-[#ffd36a] hover:text-black transition-all cursor-pointer shadow-md"
+                        aria-label="Revisar solicitud y comprobante"
                       >
-                        <Eye className="h-4 w-4" />
+                        <Eye className="h-3.5 w-3.5" />
+                        <span>Revisar</span>
                       </button>
                     </div>
                   </div>
@@ -1004,6 +1003,17 @@ function DashboardContent({ receipts, events, posSales, drinkSales, onRefresh }:
           </div>
         )}
       </motion.section>
+
+      {/* ─── FULLSCREEN MODAL REVIEW EXPERIENCE ─── */}
+      <PurchaseRequestReviewModal
+        isOpen={!!reviewModalReceipt}
+        onClose={() => setReviewModalReceipt(null)}
+        receipt={reviewModalReceipt}
+        events={events}
+        onApprove={handleApprove}
+        onReject={handleReject}
+        onStatusUpdated={onRefresh}
+      />
     </div>
   );
 }

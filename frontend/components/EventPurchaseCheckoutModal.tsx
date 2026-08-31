@@ -114,6 +114,9 @@ export default function EventPurchaseCheckoutModal({
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  const [userExistingEventTickets, setUserExistingEventTickets] = useState<any[]>([]);
+  const [viewingTicketQr, setViewingTicketQr] = useState<any | null>(null);
+
   // Reset when opening modal with a new event
   useEffect(() => {
     if (isOpen) {
@@ -133,6 +136,21 @@ export default function EventPurchaseCheckoutModal({
         if (userProfile.email) setCustomerEmail(userProfile.email);
         if (userProfile.phone) setCustomerPhone(userProfile.phone);
       }
+
+      if (event && typeof window !== "undefined") {
+        try {
+          const stored = localStorage.getItem("nenez_purchased_tickets");
+          if (stored) {
+            const parsed = JSON.parse(stored);
+            if (Array.isArray(parsed)) {
+              const forEvent = parsed.filter(
+                (t: any) => t.eventId === event.id || t.eventTitle === event.title
+              );
+              setUserExistingEventTickets(forEvent);
+            }
+          }
+        } catch {}
+      }
     }
   }, [isOpen, userProfile, event]);
 
@@ -140,51 +158,57 @@ export default function EventPurchaseCheckoutModal({
 
   const basePrice = Math.round(event.price !== undefined ? event.price : 10);
 
-  // Compute clean, rounded tiers with realistic Presales (Preventa 1, Preventa 2, etc.)
-  const tiers: PurchaseTier[] = [
-    {
-      id: "ga-preventa-1",
-      name: "GA - Preventa 1 (Early Bird)",
-      price: 5,
-      releaseTag: "Finalizó el 10 Sept · Límite de fecha cumplido",
-      type: "ticket",
-      status: "expired",
-    },
-    {
-      id: "ga-preventa-2",
-      name: "GA - Preventa 2 (Entry ANYTIME)",
-      price: 10,
-      releaseTag: "Válida hasta el 18 Sept · Fase actual",
-      type: "ticket",
-      status: "active",
-    },
-    {
-      id: "vip-preventa",
-      name: "VIP - Preventa 2 (Entry ANYTIME)",
-      price: 20,
-      releaseTag: "Acceso VIP + Barra Exclusiva",
-      type: "ticket",
-      status: "active",
-    },
-    {
-      id: "mesa-vip-stage",
-      name: "MESA VIP STAGE (Incluye 8 Pases)",
-      price: 60,
-      releaseTag: "(Mesa VIP Exclusiva en Escenario)",
-      type: "table",
-      remainingTables: 3,
-      status: "active",
-    },
-    {
-      id: "mesa-normal",
-      name: "MESA LOUNGE (Incluye 4 Pases)",
-      price: 35,
-      releaseTag: "(Mesa Standard)",
-      type: "table",
-      remainingTables: 5,
-      status: "active",
-    },
-  ];
+  // Compute clean tiers based on the event's actual presales or standard tiers
+  const tiers: PurchaseTier[] = (() => {
+    if (event?.presales && Array.isArray(event.presales) && event.presales.length > 0) {
+      const list: PurchaseTier[] = (event.presales as any[]).map((p: any, idx: number) => ({
+        id: `presale-${p.id || idx}`,
+        name: `GA - ${p.name || `Preventa ${idx + 1}`}`,
+        price: Number(p.price) || basePrice,
+        releaseTag: p.duration === "1_semana" ? "Dura 1 Semana (7 días)" : p.duration === "2_semanas" ? "Dura 2 Semanas" : idx === 0 ? "Fase Actual Activa" : "Siguiente Fase",
+        type: "ticket",
+        status: "active",
+      }));
+
+      // Add a VIP option
+      list.push({
+        id: "vip-tier",
+        name: "VIP (Acceso Preferencial + Barra)",
+        price: (Number((event.presales as any[])[0]?.price) || basePrice) * 2,
+        releaseTag: "Acceso VIP Exclusivo",
+        type: "ticket",
+        status: "active",
+      });
+      return list;
+    }
+
+    return [
+      {
+        id: "ga-preventa-1",
+        name: "GA - Preventa 1 (Early Bird)",
+        price: basePrice,
+        releaseTag: "Fase actual · Acceso General",
+        type: "ticket",
+        status: "active",
+      },
+      {
+        id: "ga-preventa-2",
+        name: "GA - Preventa 2 (Entry ANYTIME)",
+        price: basePrice + 5,
+        releaseTag: "Segunda fase de venta",
+        type: "ticket",
+        status: "active",
+      },
+      {
+        id: "vip-preventa",
+        name: "VIP (Entry ANYTIME)",
+        price: basePrice * 2,
+        releaseTag: "Acceso VIP + Barra Exclusiva",
+        type: "ticket",
+        status: "active",
+      },
+    ];
+  })();
 
   const handleIncrease = (tierId: string) => {
     const tier = tiers.find((t) => t.id === tierId);
@@ -325,6 +349,10 @@ export default function EventPurchaseCheckoutModal({
       formData.append("phone", customerPhone.trim());
       formData.append("quantity", totalItemsCount.toString());
       formData.append("paymentMethod", selectedBankId === "loja" ? "banco-loja" : "banco-pichincha");
+      formData.append("totalAmount", totalPrice.toString());
+      formData.append("expectedTotal", totalPrice.toString());
+      formData.append("eventId", event.id);
+      formData.append("eventTitle", event.title);
       formData.append("ticketDesign", "0");
       formData.append("cf-turnstile-response", "");
 
@@ -352,6 +380,36 @@ export default function EventPurchaseCheckoutModal({
       await new Promise((r) => setTimeout(r, 800));
 
       setUploadSuccessMsg("Comprobante recibido con éxito.");
+
+      // Save purchase request to localStorage
+      try {
+        const tierDesc = Object.entries(quantities)
+          .map(([id, q]) => `${q}x ${tiers.find((t) => t.id === id)?.name || id}`)
+          .join(", ") || `${totalItemsCount}x Entrada`;
+
+        const newTicket = {
+          id: data.receiptId || `tkt-${Date.now()}`,
+          eventId: event.id,
+          eventTitle: event.title,
+          venue: event.venue || "Lugar del Evento",
+          date: event.dateLabel || event.date || "Fecha",
+          quantity: totalItemsCount,
+          tierName: tierDesc,
+          totalAmount: totalPrice,
+          status: "en_verificacion",
+          createdAt: new Date().toISOString(),
+          referenceNumber: data.referenceNumber || (receiptFile?.name ? receiptFile.name.slice(0, 12) : "32561683"),
+          qrCode: `4GO-${event.id}-${Date.now()}`,
+        };
+
+        const existing = JSON.parse(localStorage.getItem("nenez_purchased_tickets") || "[]");
+        const updatedTickets = [newTicket, ...existing.filter((t: any) => t.id !== newTicket.id)];
+        localStorage.setItem("nenez_purchased_tickets", JSON.stringify(updatedTickets));
+        setUserExistingEventTickets((prev) => [newTicket, ...prev.filter((t: any) => t.id !== newTicket.id)]);
+      } catch (e) {
+        console.error("Error storing purchased ticket:", e);
+      }
+
       setCurrentStep("confirmed");
       onSuccessPurchase?.(data.receiptId || "order-" + Date.now());
     } catch (err: any) {
@@ -627,6 +685,64 @@ export default function EventPurchaseCheckoutModal({
                   </p>
                 </div>
               </div>
+
+              {/* ─── USER ACTIVE REQUESTS / PASSES FOR THIS EVENT (HORIZONAL CARD STYLE) ─── */}
+              {userExistingEventTickets.length > 0 && (
+                <div className="space-y-2 pt-1 pb-1">
+                  <span className="text-[11px] font-black uppercase tracking-wider text-zinc-400 block">
+                    Tus Solicitudes &amp; Pases para este Evento
+                  </span>
+
+                  <div className="space-y-2">
+                    {userExistingEventTickets.map((tkt) => {
+                      const isConfirmed = tkt.status === "confirmed" || tkt.status === "aprobado";
+                      const isRejected = tkt.status === "rejected" || tkt.status === "rechazado";
+
+                      return (
+                        <div
+                          key={tkt.id}
+                          onClick={() => {
+                            if (isConfirmed) {
+                              setViewingTicketQr(tkt);
+                            }
+                          }}
+                          className="flex items-center justify-between p-4 rounded-2xl bg-zinc-900/90 hover:bg-zinc-900 border border-zinc-800 hover:border-zinc-700 transition cursor-pointer group shadow-lg"
+                        >
+                          <div className="flex flex-col text-left space-y-0.5 min-w-0 pr-3">
+                            <span className="text-sm font-extrabold text-white leading-tight truncate group-hover:text-zinc-200">
+                              {tkt.tierName || "1x Entrada"}
+                            </span>
+                            <span className="text-xs text-zinc-400 font-medium truncate">
+                              {isConfirmed
+                                ? "✓ Entrada confirmada · Código QR activo"
+                                : isRejected
+                                ? "✕ Solicitud no aprobada · Contactar organizador"
+                                : `Ref: #${tkt.referenceNumber || tkt.id.slice(0, 8)} · Esperando verificación`}
+                            </span>
+                          </div>
+
+                          <div className="shrink-0 flex items-center gap-2">
+                            {isConfirmed ? (
+                              <div className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white text-black font-black text-xs uppercase tracking-wider shadow-md">
+                                <QrCode className="w-3.5 h-3.5" />
+                                <span>Ver QR</span>
+                              </div>
+                            ) : isRejected ? (
+                              <span className="px-3 py-1 rounded-full bg-zinc-900 border border-zinc-800 text-zinc-500 font-bold text-xs uppercase">
+                                Rechazado
+                              </span>
+                            ) : (
+                              <div className="px-3.5 py-1.5 rounded-full bg-zinc-950 border border-zinc-700 text-zinc-300 font-bold text-[11px] uppercase tracking-wider">
+                                <span>Por Confirmar</span>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
 
               {/* Tiers List */}
               <div className="space-y-3">
@@ -1096,56 +1212,100 @@ export default function EventPurchaseCheckoutModal({
         {/* PASO 3: CONFIRMACIÓN Y EN ESPERA DE VERIFICACIÓN               */}
         {/* ══════════════════════════════════════════════════════════════ */}
         {currentStep === "confirmed" && (
-          <div className="w-full max-w-2xl mx-auto p-8 sm:p-10 rounded-3xl bg-zinc-900/90 border border-white/20 backdrop-blur-2xl shadow-2xl text-center space-y-6">
-            <div className="w-16 h-16 mx-auto rounded-3xl bg-emerald-500/20 border border-emerald-500/40 text-emerald-400 flex items-center justify-center shadow-lg">
-              <Check className="w-8 h-8" />
+          <div className="w-full max-w-2xl mx-auto p-8 sm:p-10 rounded-3xl bg-zinc-900/90 border border-zinc-800 backdrop-blur-2xl shadow-2xl text-center space-y-6">
+            <div className="w-16 h-16 mx-auto rounded-3xl bg-zinc-800 border border-zinc-700 text-white flex items-center justify-center shadow-lg">
+              <Check className="w-8 h-8 stroke-[3]" />
             </div>
 
             <div className="space-y-2">
               <h3 className="text-2xl font-black text-white uppercase tracking-tight">
-                ¡Comprobante Enviado a Verificación!
+                ¡Solicitud de Entrada Registrada!
               </h3>
-              <p className="text-xs sm:text-sm text-zinc-300 font-medium leading-relaxed max-w-md mx-auto">
-                Tu comprobante ha sido recibido. El organizador o discoteca verificará el depósito en su
-                cuenta bancaria para confirmar y liberar tu entrada o reserva de mesa.
+              <p className="text-xs sm:text-sm text-zinc-400 font-medium leading-relaxed max-w-md mx-auto">
+                Tu comprobante ha sido recibido. El organizador verificará el depósito en su
+                cuenta bancaria para liberar tu código QR oficial.
               </p>
             </div>
 
-            <div className="p-4 rounded-2xl bg-white/[0.04] border border-white/10 text-left space-y-2 text-xs">
-              <div className="flex justify-between">
-                <span className="text-zinc-400 font-medium">Evento:</span>
-                <span className="text-white font-bold">{event.title}</span>
+            {/* Request Card in Step 3 */}
+            <div className="p-4 rounded-2xl bg-zinc-950 border border-zinc-800 text-left space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-black uppercase text-white truncate">{event.title}</span>
+                <span className="px-2.5 py-0.5 rounded-full bg-zinc-800 border border-zinc-700 text-zinc-300 text-[10px] font-bold uppercase">
+                  <span>Esperando Verificación</span>
+                </span>
               </div>
-              <div className="flex justify-between">
-                <span className="text-zinc-400 font-medium">Comprador:</span>
-                <span className="text-white font-bold">{customerName}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-zinc-400 font-medium">Total Transferido:</span>
-                <span className="text-[#dfff28] font-black">{totalPrice} $</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-zinc-400 font-medium">Estado:</span>
-                <span className="text-amber-400 font-bold uppercase">⏳ En verificación bancaria</span>
+
+              <div className="space-y-1 text-xs text-zinc-400">
+                <p className="text-white font-bold">{customerName} • {customerEmail}</p>
+                <p>Total transferido: <span className="font-black text-white">${totalPrice} USD</span></p>
               </div>
             </div>
 
-            <p className="text-[11px] text-zinc-400 font-medium leading-relaxed">
-              En cuanto el organizador confirme tu pago en su cuenta, tu entrada o reserva quedará
-              completamente confirmada y tu código QR de acceso se activará en tu correo ({customerEmail})
-              y en tu cuenta de 4GO.
-            </p>
+            <div className="flex flex-col sm:flex-row gap-3 pt-2">
+              <button
+                type="button"
+                onClick={() => {
+                  if (typeof window !== "undefined") {
+                    window.location.href = "/cuenta?tab=tickets";
+                  }
+                }}
+                className="flex-1 py-3.5 rounded-full bg-white hover:bg-zinc-200 text-black font-black text-xs uppercase tracking-widest transition cursor-pointer shadow-xl"
+              >
+                Ver en Mi Cuenta →
+              </button>
 
-            <button
-              type="button"
-              onClick={onClose}
-              className="w-full py-4 rounded-full bg-white hover:bg-zinc-200 text-black font-black text-xs uppercase tracking-widest transition-all cursor-pointer shadow-xl"
-            >
-              ENTENDIDO, VOLVER AL EVENTO
-            </button>
+              <button
+                type="button"
+                onClick={onClose}
+                className="flex-1 py-3.5 rounded-full bg-zinc-900 hover:bg-zinc-800 border border-zinc-700 text-zinc-300 font-bold text-xs uppercase tracking-wider transition cursor-pointer"
+              >
+                Cerrar y Volver al Evento
+              </button>
+            </div>
           </div>
         )}
       </div>
+
+      {/* QR Modal for user ticket */}
+      {viewingTicketQr && (
+        <div className="fixed inset-0 z-[700] flex items-center justify-center p-4 bg-black/85 backdrop-blur-md">
+          <div className="w-full max-w-sm bg-white text-zinc-900 rounded-[28px] p-6 text-center space-y-4 shadow-2xl relative">
+            <button
+              type="button"
+              onClick={() => setViewingTicketQr(null)}
+              className="absolute top-4 right-4 w-8 h-8 rounded-full bg-zinc-100 hover:bg-zinc-200 text-zinc-600 flex items-center justify-center transition cursor-pointer"
+            >
+              <X className="w-4 h-4" />
+            </button>
+
+            <div className="space-y-1">
+              <span className="text-[10px] font-black uppercase text-zinc-400 tracking-wider">
+                Pase Oficial de Acceso 4GO
+              </span>
+              <h3 className="text-lg font-black uppercase text-zinc-900">
+                {viewingTicketQr.eventTitle}
+              </h3>
+              <p className="text-xs text-zinc-600 font-medium">
+                {viewingTicketQr.venue} • {viewingTicketQr.tierName}
+              </p>
+            </div>
+
+            <div className="w-48 h-48 bg-zinc-50 border-2 border-zinc-900 rounded-2xl mx-auto flex items-center justify-center p-3">
+              <QrCode className="w-full h-full text-zinc-900" />
+            </div>
+
+            <div className="space-y-0.5 text-xs text-zinc-500 font-mono">
+              <p>{viewingTicketQr.qrCode}</p>
+              <p className="text-[10px] text-zinc-900 font-bold uppercase">
+                {viewingTicketQr.status === "confirmed" || viewingTicketQr.status === "aprobado"
+                  ? "✓ Válido para 1 escaneo en puerta"
+                  : "En espera de verificación"}
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ─── MOBILE FIXED BOTTOM CHECKOUT BAR (SCREENSHOT 3 EXACT MATCH) ─── */}
       {currentStep === "select" && (

@@ -186,11 +186,18 @@ export async function POST(request: NextRequest) {
     }
 
     // Verify detected amount matches expected purchase total
-    const activeEvent = getActiveTicketEvent();
-    const allEvents = loadAllEvents();
-    const dbEvent = allEvents.find((e) => e.id === activeEvent.sourceId || e.slug === activeEvent.id);
-    const pricePerTicket = dbEvent?.price ?? 10;
-    const expectedTotal = quantity * pricePerTicket;
+    const formTotalStr = formData.get("totalAmount") || formData.get("expectedTotal");
+    let expectedTotal: number;
+
+    if (formTotalStr && !Number.isNaN(parseFloat(formTotalStr as string))) {
+      expectedTotal = parseFloat(formTotalStr as string);
+    } else {
+      const activeEvent = getActiveTicketEvent();
+      const allEvents = loadAllEvents();
+      const dbEvent = allEvents.find((e) => e.id === activeEvent.sourceId || e.slug === activeEvent.id);
+      const pricePerTicket = dbEvent?.price ?? 10;
+      expectedTotal = quantity * pricePerTicket;
+    }
 
     if (analysis.detectedAmount) {
       const parsedAmount = parseFloat(analysis.detectedAmount);
@@ -205,10 +212,14 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    const eventIdParam = (formData.get("eventId") as string) || "";
+    const eventTitleParam = (formData.get("eventTitle") as string) || "";
+
     const { filePath } = saveFile(buffer, file!.name);
     const record: ReceiptRecord = {
       id: uuidv4(),
-      eventId: getActiveTicketEvent().id,
+      eventId: eventIdParam || getActiveTicketEvent().id,
+      eventTitle: eventTitleParam || "",
       firstName: sanitizeString(firstName.toUpperCase()),
       lastName: sanitizeString(lastName.toUpperCase()),
       phone: phone.replace(/\D/g, ""),
@@ -217,7 +228,7 @@ export async function POST(request: NextRequest) {
       quantity,
       paymentMethod,
       referenceNumber: analysis.detectedReference || "",
-      filePath,
+      filePath: filePath.replace(/\\/g, "/"),
       originalFileName: file!.name,
       fileSize: file!.size,
       mimeType: fileValidation.detectedMime,

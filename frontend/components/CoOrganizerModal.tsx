@@ -1,8 +1,21 @@
 "use client";
 
-import { useState } from "react";
+import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, QrCode, UserPlus, Check, Copy, Link, ShieldCheck, Trash2, Users } from "lucide-react";
+import {
+  X,
+  Users,
+  Link as LinkIcon,
+  Copy,
+  Check,
+  ShieldCheck,
+  Trash2,
+  Share2,
+  Clock,
+  CheckCircle2,
+  Sparkles,
+  Building2,
+} from "lucide-react";
 
 interface CoOrganizerModalProps {
   isOpen: boolean;
@@ -12,11 +25,6 @@ interface CoOrganizerModalProps {
   onUpdateOrganizers: (organizers: string[]) => void;
 }
 
-const AVAILABLE_ORGANIZERS = [
-  { id: "cubic", name: "Cubic", type: "Discoteca / Club", avatar: "🏢" },
-  { id: "sata", name: "Sata Music", type: "Productora / Eventos", avatar: "⚡" },
-];
-
 export default function CoOrganizerModal({
   isOpen,
   onClose,
@@ -24,135 +32,195 @@ export default function CoOrganizerModal({
   currentOrganizers,
   onUpdateOrganizers,
 }: CoOrganizerModalProps) {
-  const [activeTab, setActiveTab] = useState<"list" | "invite" | "qr">("list");
   const [organizers, setOrganizers] = useState<string[]>(currentOrganizers);
+  const [pendingInvites, setPendingInvites] = useState<{ id: string; name: string; date: string }[]>([
+    { id: "inv_1", name: "Sata Music", date: "Pendiente de aceptación" },
+  ]);
   const [copiedLink, setCopiedLink] = useState(false);
-  const [selectedToAdd, setSelectedToAdd] = useState("");
+  const [newInviteOrgName, setNewInviteOrgName] = useState("");
+  const [inviteCreated, setInviteCreated] = useState(false);
 
+  const inviteToken = Buffer.from(`${eventTitle}-${Date.now()}`).toString("base64").slice(0, 16);
   const inviteLink = typeof window !== "undefined"
-    ? `${window.location.origin}/organizer/join-event?event=${encodeURIComponent(eventTitle)}`
-    : `https://now4go.app/organizer/join-event?event=${encodeURIComponent(eventTitle)}`;
+    ? `${window.location.origin}/organizer/join-event?event=${encodeURIComponent(eventTitle)}&token=${inviteToken}`
+    : `https://now4go.app/organizer/join-event?event=${encodeURIComponent(eventTitle)}&token=${inviteToken}`;
 
-  const handleAddOrganizer = (name: string) => {
-    if (!name || organizers.some((o) => o.toLowerCase() === name.toLowerCase())) return;
-    const updated = [...organizers, name];
-    setOrganizers(updated);
-    onUpdateOrganizers(updated);
-    setSelectedToAdd("");
+  const handleGenerateInvite = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newInviteOrgName.trim()) return;
+
+    setPendingInvites((prev) => [
+      ...prev,
+      {
+        id: `inv_${Date.now()}`,
+        name: newInviteOrgName.trim(),
+        date: "Pendiente de aceptación",
+      },
+    ]);
+    setNewInviteOrgName("");
+    setInviteCreated(true);
   };
 
   const handleRemoveOrganizer = (name: string) => {
-    if (organizers.length <= 1) return; // Must have at least 1 main organizer
+    if (organizers.length <= 1) return;
     const updated = organizers.filter((o) => o.toLowerCase() !== name.toLowerCase());
     setOrganizers(updated);
     onUpdateOrganizers(updated);
   };
 
+  const handleRemovePending = (id: string) => {
+    setPendingInvites((prev) => prev.filter((item) => item.id !== id));
+  };
+
   const handleCopyLink = () => {
-    navigator.clipboard.writeText(inviteLink);
-    setCopiedLink(true);
-    setTimeout(() => setCopiedLink(false), 2500);
+    if (typeof navigator !== "undefined") {
+      navigator.clipboard.writeText(inviteLink);
+      setCopiedLink(true);
+      setTimeout(() => setCopiedLink(false), 2500);
+    }
   };
 
   if (!isOpen) return null;
 
   return (
     <AnimatePresence>
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        className="fixed inset-0 z-[500] bg-black/80 backdrop-blur-xl flex items-center justify-center p-4"
-        onClick={onClose}
-      >
+      <div className="fixed inset-0 z-[600] flex items-center justify-center p-3 sm:p-6 bg-black/75 backdrop-blur-md">
         <motion.div
-          initial={{ scale: 0.95, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          exit={{ scale: 0.95, opacity: 0 }}
-          onClick={(e) => e.stopPropagation()}
-          className="relative w-full max-w-lg rounded-3xl bg-[#0c0814] border border-white/15 p-6 shadow-2xl space-y-5 text-white overflow-hidden"
+          initial={{ opacity: 0, scale: 0.96, y: 12 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          exit={{ opacity: 0, scale: 0.96, y: 12 }}
+          transition={{ duration: 0.2 }}
+          className="w-full max-w-xl bg-white text-zinc-900 rounded-[28px] p-6 sm:p-8 shadow-2xl border border-zinc-200 overflow-hidden font-sans relative max-h-[90vh] flex flex-col"
         >
           {/* Header */}
-          <div className="flex items-start justify-between">
-            <div>
-              <div className="flex items-center gap-2 text-xs font-black uppercase text-emerald-400 tracking-wider">
-                <Users className="w-4 h-4 text-emerald-400" />
-                <span>Colaboración & Co-Organizadores</span>
+          <div className="flex items-center justify-between pb-4 border-b border-zinc-100 shrink-0">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-2xl bg-zinc-100 border border-zinc-200 flex items-center justify-center text-zinc-900">
+                <Users className="w-5 h-5 text-zinc-900" />
               </div>
-              <h2 className="text-xl font-black text-white mt-1 uppercase tracking-tight">
-                {eventTitle}
-              </h2>
+              <div>
+                <h3 className="text-base sm:text-lg font-black uppercase tracking-tight text-zinc-900">
+                  Co-Organizadores y Promotores
+                </h3>
+                <p className="text-xs text-zinc-500 font-medium">
+                  Invita a otras productoras o clubs mediante enlace único de consentimiento.
+                </p>
+              </div>
             </div>
+
             <button
+              type="button"
               onClick={onClose}
-              className="w-9 h-9 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-zinc-400 hover:text-white transition cursor-pointer"
+              className="w-8 h-8 rounded-full bg-zinc-100 hover:bg-zinc-200 text-zinc-600 hover:text-black flex items-center justify-center transition cursor-pointer"
             >
               <X className="w-4 h-4" />
             </button>
           </div>
 
-          {/* Sub Navigation */}
-          <div className="flex rounded-xl bg-white/5 p-1 border border-white/10">
-            <button
-              onClick={() => setActiveTab("list")}
-              className={`flex-1 py-2 text-xs font-black uppercase tracking-wider rounded-lg transition ${
-                activeTab === "list" ? "bg-white text-black shadow-md" : "text-zinc-400 hover:text-white"
-              }`}
-            >
-              Organizadores ({organizers.length})
-            </button>
-            <button
-              onClick={() => setActiveTab("invite")}
-              className={`flex-1 py-2 text-xs font-black uppercase tracking-wider rounded-lg transition ${
-                activeTab === "invite" ? "bg-white text-black shadow-md" : "text-zinc-400 hover:text-white"
-              }`}
-            >
-              Enlace
-            </button>
-            <button
-              onClick={() => setActiveTab("qr")}
-              className={`flex-1 py-2 text-xs font-black uppercase tracking-wider rounded-lg transition ${
-                activeTab === "qr" ? "bg-white text-black shadow-md" : "text-zinc-400 hover:text-white"
-              }`}
-            >
-              Código QR
-            </button>
-          </div>
-
-          {/* Tab 1: Current Organizers & Quick Add */}
-          {activeTab === "list" && (
-            <div className="space-y-4">
-              <p className="text-xs text-zinc-400 font-medium leading-relaxed">
-                Los organizadores vinculados aparecerán en la entrada y banner del evento para los usuarios.
+          <div className="overflow-y-auto pr-1 py-4 space-y-5 flex-1">
+            {/* Consent Policy Notice */}
+            <div className="p-3.5 rounded-2xl bg-zinc-50 border border-zinc-200 space-y-1">
+              <div className="flex items-center gap-1.5 text-xs font-bold text-zinc-900 uppercase">
+                <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0" />
+                <span>Protocolo de Consentimiento de Marca</span>
+              </div>
+              <p className="text-[11px] text-zinc-600 font-medium leading-relaxed">
+                Por seguridad y protección de marca, ningún promotor puede ser añadido sin su aceptación. Al generar el enlace, el co-organizador deberá abrirlo con su cuenta para aceptar la coproducción.
               </p>
+            </div>
 
-              {/* Active Organizers List */}
-              <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
+            {/* Unique Invite Link Box */}
+            <div className="space-y-2">
+              <label className="text-xs font-bold uppercase tracking-wider text-zinc-700 block">
+                Enlace Único de Invitación Oficial
+              </label>
+              <div className="p-3 rounded-2xl bg-zinc-50 border border-zinc-200 flex items-center justify-between gap-3">
+                <div className="flex items-center gap-2 min-w-0">
+                  <LinkIcon className="w-4 h-4 text-zinc-500 shrink-0" />
+                  <span className="text-xs text-zinc-700 font-mono truncate">{inviteLink}</span>
+                </div>
+                <button
+                  type="button"
+                  onClick={handleCopyLink}
+                  className="px-3.5 py-1.5 rounded-xl bg-black hover:bg-zinc-800 text-white text-xs font-bold uppercase tracking-wider transition shrink-0 flex items-center gap-1.5 cursor-pointer shadow-sm"
+                >
+                  {copiedLink ? (
+                    <>
+                      <Check className="w-3.5 h-3.5 text-emerald-400" />
+                      <span>Copiado</span>
+                    </>
+                  ) : (
+                    <>
+                      <Copy className="w-3.5 h-3.5" />
+                      <span>Copiar Link</span>
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
+
+            {/* Generate named invitation */}
+            <form onSubmit={handleGenerateInvite} className="space-y-1.5">
+              <label className="text-xs font-bold uppercase tracking-wider text-zinc-700 block">
+                Enviar invitación nominal a un club o promotor
+              </label>
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  value={newInviteOrgName}
+                  onChange={(e) => setNewInviteOrgName(e.target.value)}
+                  placeholder="Nombre de la marca o discoteca (Ej. Paradox Club)"
+                  className="flex-1 px-3.5 py-2.5 rounded-xl bg-zinc-50 border border-zinc-300 text-xs sm:text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:border-black focus:bg-white transition"
+                />
+                <button
+                  type="submit"
+                  disabled={!newInviteOrgName.trim()}
+                  className="px-4 py-2.5 rounded-xl bg-black hover:bg-zinc-800 disabled:opacity-50 text-white font-bold text-xs uppercase tracking-wider transition cursor-pointer shrink-0"
+                >
+                  Generar Invitación
+                </button>
+              </div>
+            </form>
+
+            {/* List of Organizers and Status */}
+            <div className="space-y-2">
+              <label className="text-xs font-bold uppercase tracking-wider text-zinc-700 block">
+                Promotores Vinculados al Evento
+              </label>
+
+              <div className="space-y-2">
+                {/* Active Organizers */}
                 {organizers.map((org, index) => (
                   <div
-                    key={index}
-                    className="flex items-center justify-between p-3 rounded-2xl bg-white/5 border border-white/10"
+                    key={`org-${index}`}
+                    className="flex items-center justify-between p-3 rounded-2xl bg-zinc-50 border border-zinc-200"
                   >
                     <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-full bg-emerald-500/20 border border-emerald-400/40 text-emerald-300 font-black text-xs flex items-center justify-center uppercase">
+                      <div className="w-8 h-8 rounded-xl bg-zinc-900 text-white font-black text-xs flex items-center justify-center uppercase shadow-sm">
                         {org.slice(0, 2)}
                       </div>
                       <div>
-                        <div className="text-xs font-black text-white uppercase tracking-wider flex items-center gap-1.5">
+                        <div className="text-xs font-black text-zinc-900 uppercase tracking-tight flex items-center gap-1.5">
                           <span>{org}</span>
-                          {index === 0 && (
-                            <span className="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 text-[9px] font-extrabold uppercase">
-                              Principal
+                          {index === 0 ? (
+                            <span className="px-2 py-0.5 rounded-full bg-zinc-200 text-zinc-800 text-[9px] font-extrabold uppercase">
+                              Principal / Creador
+                            </span>
+                          ) : (
+                            <span className="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[9px] font-extrabold uppercase">
+                              Confirmado
                             </span>
                           )}
                         </div>
-                        <span className="text-[10px] text-zinc-400 font-medium">Co-Organizador verificado</span>
+                        <span className="text-[10px] text-zinc-500 font-medium">Aparece en la cartelera oficial</span>
                       </div>
                     </div>
+
                     {organizers.length > 1 && index !== 0 && (
                       <button
+                        type="button"
                         onClick={() => handleRemoveOrganizer(org)}
-                        className="p-2 text-zinc-500 hover:text-red-400 transition"
+                        className="p-1.5 rounded-lg text-zinc-400 hover:text-red-600 hover:bg-red-50 transition cursor-pointer"
                         title="Quitar organizador"
                       >
                         <Trash2 className="w-4 h-4" />
@@ -160,114 +228,56 @@ export default function CoOrganizerModal({
                     )}
                   </div>
                 ))}
-              </div>
 
-              {/* Add New Organizer Selector */}
-              <div className="pt-2 border-t border-white/10 space-y-2">
-                <label className="text-[10px] font-black uppercase text-zinc-400 tracking-wider">
-                  Vincular Nuevo Organizador
-                </label>
-                <div className="flex gap-2">
-                  <select
-                    value={selectedToAdd}
-                    onChange={(e) => setSelectedToAdd(e.target.value)}
-                    className="flex-1 h-10 px-3 rounded-xl bg-zinc-900 border border-white/15 text-white text-xs focus:outline-none focus:border-white/30"
+                {/* Pending Invites */}
+                {pendingInvites.map((inv) => (
+                  <div
+                    key={inv.id}
+                    className="flex items-center justify-between p-3 rounded-2xl bg-amber-50/70 border border-amber-200/80"
                   >
-                    <option value="">Seleccionar organizador existente...</option>
-                    {AVAILABLE_ORGANIZERS.filter(
-                      (item) => !organizers.some((o) => o.toLowerCase() === item.name.toLowerCase())
-                    ).map((item) => (
-                      <option key={item.id} value={item.name} className="bg-zinc-900 text-white">
-                        {item.avatar} {item.name.toUpperCase()} ({item.type})
-                      </option>
-                    ))}
-                  </select>
-                  <button
-                    onClick={() => handleAddOrganizer(selectedToAdd)}
-                    disabled={!selectedToAdd}
-                    className="px-4 h-10 rounded-xl bg-emerald-500 hover:bg-emerald-400 disabled:opacity-50 text-black text-xs font-black uppercase tracking-wider transition flex items-center gap-1.5 cursor-pointer shrink-0"
-                  >
-                    <UserPlus className="w-4 h-4" />
-                    <span>Agregar</span>
-                  </button>
-                </div>
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-xl bg-amber-100 text-amber-900 font-bold text-xs flex items-center justify-center uppercase">
+                        <Clock className="w-4 h-4 text-amber-700" />
+                      </div>
+                      <div>
+                        <div className="text-xs font-bold text-zinc-900 uppercase tracking-tight flex items-center gap-1.5">
+                          <span>{inv.name}</span>
+                          <span className="px-2 py-0.5 rounded-full bg-amber-200 text-amber-900 text-[9px] font-extrabold uppercase">
+                            Esperando Aceptación
+                          </span>
+                        </div>
+                        <span className="text-[10px] text-amber-700 font-medium">
+                          El organizador debe aceptar vía el enlace
+                        </span>
+                      </div>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => handleRemovePending(inv.id)}
+                      className="p-1.5 rounded-lg text-zinc-400 hover:text-red-600 hover:bg-red-50 transition cursor-pointer"
+                      title="Cancelar invitación"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
+                ))}
               </div>
             </div>
-          )}
+          </div>
 
-          {/* Tab 2: Invitation Link */}
-          {activeTab === "invite" && (
-            <div className="space-y-4 text-center py-2">
-              <div className="w-12 h-12 rounded-full bg-purple-500/20 border border-purple-400/40 text-purple-300 flex items-center justify-center mx-auto">
-                <Link className="w-6 h-6" />
-              </div>
-              <div>
-                <h3 className="text-sm font-black text-white uppercase">Enlace Único de Co-Host</h3>
-                <p className="text-xs text-zinc-400 mt-1 leading-relaxed">
-                  Envía este enlace a otra discoteca o productora para enlazar este evento automáticamente.
-                </p>
-              </div>
-
-              <div className="p-3 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-between gap-2">
-                <span className="text-xs text-zinc-300 font-mono truncate">{inviteLink}</span>
-                <button
-                  onClick={handleCopyLink}
-                  className="px-3 py-1.5 rounded-xl bg-white text-black text-xs font-black uppercase tracking-wider hover:bg-zinc-200 transition shrink-0 flex items-center gap-1 cursor-pointer"
-                >
-                  {copiedLink ? (
-                    <>
-                      <Check className="w-3.5 h-3.5 text-emerald-600" />
-                      <span>Copiado</span>
-                    </>
-                  ) : (
-                    <>
-                      <Copy className="w-3.5 h-3.5" />
-                      <span>Copiar</span>
-                    </>
-                  )}
-                </button>
-              </div>
-            </div>
-          )}
-
-          {/* Tab 3: QR Code Pairing */}
-          {activeTab === "qr" && (
-            <div className="space-y-4 text-center py-2">
-              <div className="w-12 h-12 rounded-full bg-emerald-500/20 border border-emerald-400/40 text-emerald-300 flex items-center justify-center mx-auto">
-                <QrCode className="w-6 h-6" />
-              </div>
-              <div>
-                <h3 className="text-sm font-black text-white uppercase">Escaneo QR de Enlace</h3>
-                <p className="text-xs text-zinc-400 mt-1 leading-relaxed">
-                  Escanea desde el panel del co-organizador para solicitar aprobación e integrar el evento.
-                </p>
-              </div>
-
-              {/* Simulated QR Visual */}
-              <div className="w-44 h-44 bg-white p-3 rounded-2xl mx-auto flex flex-col items-center justify-center shadow-lg border border-white/20">
-                {/* SVG Mock QR Code */}
-                <svg viewBox="0 0 100 100" className="w-full h-full">
-                  <path
-                    fill="#000"
-                    d="M0 0h30v30H0zM8 8h14v14H8zM70 0h30v30H70zM78 8h14v14H78zM0 70h30v30H0zM8 78h14v14H8zM40 10h10v10H40zM50 20h10v10H50zM40 40h20v20H40zM10 40h10v20H10zM70 40h20v10H70zM80 60h20v20H80zM40 80h10v20H40zM60 70h10v30H60z"
-                  />
-                </svg>
-              </div>
-              <span className="text-[10px] text-zinc-500 font-mono block">CÓDIGO DE ENLACE: PARTY-COHOST-9941</span>
-            </div>
-          )}
-
-          {/* Footer Action */}
-          <div className="pt-3 border-t border-white/10 flex justify-end">
+          {/* Footer Action Buttons */}
+          <div className="pt-4 flex items-center justify-end gap-3 border-t border-zinc-100 shrink-0">
             <button
+              type="button"
               onClick={onClose}
-              className="px-6 py-2.5 rounded-full bg-white text-black text-xs font-black uppercase tracking-wider hover:bg-zinc-200 transition cursor-pointer"
+              className="px-6 py-2.5 rounded-full bg-black hover:bg-zinc-800 text-white font-bold text-xs uppercase tracking-widest transition shadow-lg active:scale-95 cursor-pointer"
             >
-              Guardar Cambios
+              Listo
             </button>
           </div>
         </motion.div>
-      </motion.div>
+      </div>
     </AnimatePresence>
   );
 }

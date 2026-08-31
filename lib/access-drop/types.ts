@@ -66,6 +66,8 @@ export type OcrResult = {
 export type ReceiptRecord = {
   id: string;
   eventId?: string;
+  eventTitle?: string;
+  totalAmount?: number;
   firstName: string;
   lastName: string;
   phone: string;

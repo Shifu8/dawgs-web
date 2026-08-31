@@ -27,18 +27,18 @@ export type ReceiptProfileMatch = {
 export const RECEIPT_REFERENCE_PROFILES: ReceiptReferenceProfile[] = [
   {
     id: "banco-loja",
-    name: "Banco de Loja - envio exitoso",
+    name: "Banco de Loja / Ahorita - envio exitoso",
     classification: "bank_transfer",
     expectedPaymentMethod: "banco-loja",
     minimumScore: 6,
     description:
-      "Comprobante blanco y verde con Envio exitoso, monto transferido, bloques Desde y Para, costo de transaccion y numero de comprobante.",
+      "Comprobante blanco y verde de Banco de Loja / Ahorita con Envio exitoso, monto transferido, bloques Desde y Para, costo de transaccion y numero de comprobante.",
     rules: [
-      { label: "Banco de Loja", pattern: /\bbanco\s+(?:de\s+)?loja\b/, weight: 2.5 },
-      { label: "Envio exitoso", pattern: /\benvio\s+exitoso\b/, weight: 2 },
-      { label: "Monto transferido", pattern: /\bmonto\s+transferido\b/, weight: 1.5 },
-      { label: "Desde y para", pattern: /\bdesde\b[\s\S]{0,500}\bpara\b/, weight: 1 },
-      { label: "Costo de transaccion", pattern: /\bcosto\s+de\s+transaccion\b/, weight: 1 },
+      { label: "Banco de Loja / Ahorita", pattern: /\b(?:ahorita|banco\s+(?:de\s+)?loja|loja)\b/i, weight: 2.5 },
+      { label: "Envio exitoso", pattern: /\b(?:envio|transferencia|pago)\s+exitos[oa]\b/i, weight: 2 },
+      { label: "Monto transferido", pattern: /\bmonto\s+transferido\b/i, weight: 1.5 },
+      { label: "Desde y para", pattern: /\bdesde\b[\s\S]{0,500}\bpara\b/i, weight: 1 },
+      { label: "Costo de transaccion", pattern: /\bcosto\s+de\s+transaccion\b/i, weight: 1 },
       {
         label: "Numero de comprobante",
         pattern: /\b(?:nro|no|numero)\s*(?:de\s+)?comprobante\b/,

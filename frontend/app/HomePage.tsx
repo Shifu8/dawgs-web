@@ -56,6 +56,10 @@ import {
   UserCheck,
   Users,
   Check,
+  ImagePlus,
+  Clock,
+  Trash2,
+  Plus,
 } from "lucide-react";
 import { AnimatePresence, motion, useDragControls } from "framer-motion";
 import Atmosphere from "@/frontend/components/Atmosphere";
@@ -87,6 +91,8 @@ import { events as fallbackEvents } from "@/frontend/services/nenezData";
 import { useHomepageConfig } from "@/frontend/hooks/useHomepageConfig";
 import OrganizerOnboardingModal from "@/frontend/components/OrganizerOnboardingModal";
 import CoOrganizerModal from "@/frontend/components/CoOrganizerModal";
+import LocationPickerModal from "@/frontend/components/LocationPickerModal";
+import MyAccountDashboardModal from "@/frontend/features/account/MyAccountDashboardModal";
 import type { ThemeColors } from "@/lib/homepage-config/themes";
 import type { HomepageConfig } from "@/lib/homepage-config/types";
 import type { Event } from "@/frontend/types/domain";
@@ -201,21 +207,32 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
     }
   }, [showEventPublishedToast]);
 
-  const [newEventPoster, setNewEventPoster] = useState('/images/4go_red_girl_showcase.jpg');
-  const [newEventTitle, setNewEventTitle] = useState('Kaskade: ORIGIN //');
-  const [newEventSubtitle, setNewEventSubtitle] = useState('FACTORY TOWN');
-  const [newEventDate, setNewEventDate] = useState('18 SEP 2026');
-  const [newEventDoorsOpen, setNewEventDoorsOpen] = useState('Apertura de puertas 22:00 GMT-5');
+  const [newEventPoster, setNewEventPoster] = useState('');
+  const [newEventTitle, setNewEventTitle] = useState('');
+  const [newEventSubtitle, setNewEventSubtitle] = useState('');
+  const [newEventDate, setNewEventDate] = useState('');
+  const [newEventDoorsOpen, setNewEventDoorsOpen] = useState('22:00');
   const [newEventCategory, setNewEventCategory] = useState('Electronic / House');
   const [newEventCity, setNewEventCity] = useState('Loja');
-  const [newEventPresale1Price, setNewEventPresale1Price] = useState('5');
-  const [newEventPresale2Price, setNewEventPresale2Price] = useState('10');
-  const [newEventDescription, setNewEventDescription] = useState('Kaskade live in Miami at Factory Town for a special ORIGIN set.');
-  const [newEventAgeRestriction, setNewEventAgeRestriction] = useState('This is an 18+ event');
-  const [newEventVenueName, setNewEventVenueName] = useState('Factory Town - Miami');
-  const [newEventVenueAddress, setNewEventVenueAddress] = useState('Av. Salvador Bustamante Celi y Guayaquil, Loja, Ecuador');
-  const [newEventCoOrganizers, setNewEventCoOrganizers] = useState<string[]>(['Cubic', 'Sata']);
+  const [newEventPresales, setNewEventPresales] = useState<{ id: number; name: string; price: string; duration?: string; customEndDate?: string; capacity?: string }[]>([
+    { id: 1, name: 'Preventa 1', price: '5', duration: '1_semana', customEndDate: '', capacity: '' },
+  ]);
+  const [newEventDescription, setNewEventDescription] = useState('');
+  const [newEventAgeRestriction, setNewEventAgeRestriction] = useState('+18 Años (Cédula de identidad física obligatoria)');
+  const [newEventPolicies, setNewEventPolicies] = useState<string[]>([
+    'Cédula o documento físico obligatorio',
+    'Prohibido ingreso de bebidas y alimentos',
+    'Derecho de admisión reservado',
+  ]);
+  const [newEventVenueName, setNewEventVenueName] = useState('');
+  const [newEventVenueAddress, setNewEventVenueAddress] = useState('');
+  const [newEventCoOrganizers, setNewEventCoOrganizers] = useState<string[]>([]);
+  const [isAccountDashboardOpen, setIsAccountDashboardOpen] = useState(false);
+  const [isOnboardingSaving, setIsOnboardingSaving] = useState(false);
   const [isCoOrganizerModalOpen, setIsCoOrganizerModalOpen] = useState(false);
+  const [isLocationPickerOpen, setIsLocationPickerOpen] = useState(false);
+  const [agreeFiscal, setAgreeFiscal] = useState(false);
+  const [agreeMunicipal, setAgreeMunicipal] = useState(false);
 
   const [orgType, setOrgType] = useState('Discoteca / Club');
   const [orgName, setOrgName] = useState('');
@@ -231,10 +248,18 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
   useEffect(() => {
     if (userProfile) {
       if (userProfile.avatar) setBrandLogoUrl(userProfile.avatar);
-      if (userProfile.venueName || userProfile.name) setOrgName(userProfile.venueName || userProfile.name);
+      const mainOrg = userProfile.venueName || userProfile.name || "";
+      if (mainOrg) {
+        setOrgName(mainOrg);
+        setNewEventVenueName((prev) => (!prev || prev === "Cubic Club" ? (userProfile.venueName || userProfile.name || "") : prev));
+        setNewEventCoOrganizers([mainOrg]);
+      }
       if (userProfile.type) setOrgType(userProfile.type);
       if (userProfile.instagram) setInstagramHandle(userProfile.instagram.replace(/^@/, ''));
-      if (userProfile.address) setClubAddress(userProfile.address);
+      if (userProfile.address) {
+        setClubAddress(userProfile.address);
+        setNewEventVenueAddress((prev) => (!prev || prev.includes("Salvador Bustamante") ? (userProfile.address || "") : prev));
+      }
       if (userProfile.city) setOrgCity(userProfile.city);
       if (userProfile.openingDays && userProfile.openingDays.length > 0) setOpeningDays(userProfile.openingDays);
     }
@@ -435,6 +460,14 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
             localStorage.removeItem("organizer_profile");
           }
         }
+      }
+
+      // Check if routed from /cuenta to publish event
+      const currentParams = new URLSearchParams(window.location.search);
+      if (currentParams.get("action") === "create_event") {
+        setActiveStoryScreen(0);
+        setOrganizerSubView("create_event");
+        window.history.replaceState({}, document.title, window.location.pathname);
       }
     }
   }, []);
@@ -2195,34 +2228,24 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                                   {!(clubAddress || userProfile?.address) ? (
                                     <button
                                       type="button"
-                                      onClick={() => {
-                                        const userAddr = prompt("Ingresa la dirección o punto de referencia de la discoteca en Loja:", "Av. Salvador Bustamante Celi y Guayaquil");
-                                        if (userAddr && userAddr.trim()) {
-                                          setClubAddress(userAddr.trim());
-                                        }
-                                      }}
-                                      className="w-full py-2 px-3.5 rounded-xl bg-zinc-900 hover:bg-black text-white text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 transition cursor-pointer shadow-sm"
+                                      onClick={() => setIsLocationPickerOpen(true)}
+                                      className="w-full py-2.5 px-3.5 rounded-xl bg-zinc-900 hover:bg-black text-white text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 transition cursor-pointer shadow-sm"
                                     >
                                       <MapPin className="w-3.5 h-3.5 text-emerald-400" />
-                                      <span>Elegir Ubicación en Maps 📍</span>
+                                      <span>Seleccionar Ubicación en Maps</span>
                                     </button>
                                   ) : (
-                                    <div className="flex items-center justify-between gap-2 p-2 rounded-xl bg-zinc-50 border border-zinc-300 text-xs font-medium text-zinc-900">
+                                    <div className="flex items-center justify-between gap-2 p-2.5 rounded-xl bg-zinc-50 border border-zinc-300 text-xs font-medium text-zinc-900">
                                       <div className="flex items-center gap-2 truncate">
                                         <MapPin className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
                                         <span className="truncate font-semibold text-[11px]">{clubAddress || userProfile?.address}</span>
                                       </div>
                                       <button
                                         type="button"
-                                        onClick={() => {
-                                          const userAddr = prompt("Editar dirección de la discoteca en Loja:", clubAddress || userProfile?.address || "");
-                                          if (userAddr !== null) {
-                                            setClubAddress(userAddr.trim());
-                                          }
-                                        }}
-                                        className="px-2 py-0.5 rounded-lg bg-zinc-900 hover:bg-black text-white text-[9.5px] font-bold uppercase shrink-0 cursor-pointer"
+                                        onClick={() => setIsLocationPickerOpen(true)}
+                                        className="px-2.5 py-1 rounded-lg bg-zinc-900 hover:bg-black text-white text-[10px] font-bold uppercase shrink-0 cursor-pointer"
                                       >
-                                        Cambiar 📍
+                                        Cambiar
                                       </button>
                                     </div>
                                   )}
@@ -2280,9 +2303,11 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                               <div className="pt-3 shrink-0 border-t border-zinc-100">
                                 <button
                                   type="button"
-                                  disabled={!isFormValid}
+                                  disabled={!isFormValid || isOnboardingSaving}
                                   onClick={async () => {
-                                    if (!isFormValid) return;
+                                    if (!isFormValid || isOnboardingSaving) return;
+                                    setIsOnboardingSaving(true);
+
                                     const emailClean = (userProfile?.email || "usuario@ejemplo.com").trim().toLowerCase();
                                     const isCubic = emailClean === "mrshifu879@gmail.com";
                                     const isSata = emailClean === "brandon.medina@unl.edu.ec";
@@ -2301,11 +2326,15 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                                       hasCompletedOnboarding: true,
                                     };
 
-                                    setUserProfile(updated as any);
-                                    localStorage.setItem("organizer_token", `token-${emailClean}-${Date.now()}`);
-                                    localStorage.setItem("organizer_profile", JSON.stringify(updated));
-                                    localStorage.setItem(`organizer_profile_${emailClean}`, JSON.stringify(updated));
-                                    setOrganizerSubView("create_event");
+                                    // Saving animation delay
+                                    setTimeout(() => {
+                                      setUserProfile(updated as any);
+                                      localStorage.setItem("organizer_token", `token-${emailClean}-${Date.now()}`);
+                                      localStorage.setItem("organizer_profile", JSON.stringify(updated));
+                                      localStorage.setItem(`organizer_profile_${emailClean}`, JSON.stringify(updated));
+                                      setIsOnboardingSaving(false);
+                                      setOrganizerSubView("create_event");
+                                    }, 600);
 
                                     fetch("/api/users/sync", {
                                       method: "POST",
@@ -2327,8 +2356,17 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                                       : "bg-zinc-200 text-zinc-400 cursor-not-allowed opacity-60"
                                   }`}
                                 >
-                                  <span>Siguiente: Crear Evento</span>
-                                  <span>→</span>
+                                  {isOnboardingSaving ? (
+                                    <>
+                                      <div className="w-4 h-4 rounded-full border-2 border-white border-t-transparent animate-spin" />
+                                      <span>Guardando Cuenta Partner...</span>
+                                    </>
+                                  ) : (
+                                    <>
+                                      <span>Siguiente: Crear Evento</span>
+                                      <span>→</span>
+                                    </>
+                                  )}
                                 </button>
                               </div>
                             );
@@ -2337,26 +2375,18 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                       </div>
                     ) : organizerSubView === "published" ? (
                       <div className="relative z-10 w-full max-w-2xl mx-auto space-y-5 font-sans pt-24 sm:pt-28 pb-8">
-                        {/* ─── STEPPER INDICATOR HEADER (STEP 3 ACTIVE) ─── */}
+                        {/* ─── STEPPER INDICATOR HEADER (PASO 2: PUBLICAR) ─── */}
                         <div className="flex items-center justify-center gap-3 sm:gap-6 py-2 text-xs sm:text-sm font-bold text-white tracking-wider uppercase drop-shadow-md">
-                          <button
-                            type="button"
-                            onClick={() => setOrganizerSubView("profile")}
-                            className="text-zinc-400 hover:text-white transition cursor-pointer font-medium"
-                          >
-                            Cuenta de Promotor
-                          </button>
-                          <span className="text-zinc-400 font-normal">→</span>
                           <button
                             type="button"
                             onClick={() => setOrganizerSubView("create_event")}
                             className="text-zinc-400 hover:text-white transition cursor-pointer font-medium"
                           >
-                            Crear Evento
+                            1. Crear Evento
                           </button>
                           <span className="text-zinc-400 font-normal">→</span>
                           <span className="text-white font-black">
-                            Publicar
+                            2. Publicar
                           </span>
                         </div>
 
@@ -2435,14 +2465,10 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
 
                               <button
                                 type="button"
-                                onClick={() => {
-                                  const slug = userProfile?.id || (userProfile?.email === "mrshifu879@gmail.com" ? "cubic" : "sata");
-                                  setSelectedOrganizerSlug(slug);
-                                  setShowOrganizerOverlay(true);
-                                }}
+                                onClick={() => router.push("/cuenta")}
                                 className="w-full py-3 px-4 rounded-2xl bg-zinc-100 hover:bg-zinc-200 text-zinc-900 font-bold text-xs uppercase tracking-wider transition cursor-pointer"
                               >
-                                Ver Mi Perfil
+                                Ir a Mi Cuenta
                               </button>
                             </div>
                           </div>
@@ -2450,18 +2476,10 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                       </div>
                     ) : (
                       <div className="relative z-10 w-full max-w-2xl mx-auto space-y-6 font-sans pt-24 sm:pt-28 pb-12">
-                        {/* --- STEPPER INDICATOR HEADER OUTSIDE MODAL --- */}
+                        {/* --- STEPPER INDICATOR HEADER (1. CREAR EVENTO -> 2. PUBLICAR) --- */}
                         <div className="flex items-center justify-center gap-3 sm:gap-6 py-2 text-xs sm:text-sm font-bold text-white tracking-wider uppercase drop-shadow-md">
-                          <button
-                            type="button"
-                            onClick={() => setOrganizerSubView("profile")}
-                            className="text-zinc-400 hover:text-white transition cursor-pointer font-medium"
-                          >
-                            Cuenta de Promotor
-                          </button>
-                          <span className="text-zinc-400 font-normal">→</span>
                           <span className="text-white font-black">
-                            Crear Evento
+                            1. Crear Evento
                           </span>
                           <span className="text-zinc-400 font-normal">→</span>
                           <button
@@ -2475,7 +2493,7 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                                 : "text-zinc-500 cursor-not-allowed font-medium"
                             }`}
                           >
-                            Publicar
+                            2. Publicar
                           </button>
                         </div>
 
@@ -2514,22 +2532,11 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                             <div className="flex items-center gap-2">
                               <button
                                 type="button"
-                                onClick={() => setOrganizerSubView("profile")}
-                                className="px-3 py-1.5 rounded-xl bg-zinc-100 hover:bg-zinc-200 text-zinc-800 text-[11px] font-bold transition active:scale-95 cursor-pointer text-center flex items-center gap-1"
+                                onClick={() => router.push("/cuenta?tab=partner_profile")}
+                                className="px-3.5 py-1.5 rounded-xl bg-zinc-100 hover:bg-zinc-200 text-zinc-900 text-[11px] font-bold transition active:scale-95 cursor-pointer text-center flex items-center gap-1.5 border border-zinc-200 shadow-sm"
                               >
-                                <ArrowLeft className="w-3 h-3 text-zinc-600" />
-                                <span>Volver a Cuenta</span>
-                              </button>
-                              <button
-                                type="button"
-                                onClick={() => {
-                                  const slug = userProfile?.id || (userProfile?.email === "mrshifu879@gmail.com" ? "cubic" : "sata");
-                                  setSelectedOrganizerSlug(slug);
-                                  setShowOrganizerOverlay(true);
-                                }}
-                                className="px-3 py-1.5 rounded-xl bg-zinc-100 hover:bg-zinc-200 text-zinc-800 text-[11px] font-bold transition active:scale-95 cursor-pointer text-center"
-                              >
-                                Ver Perfil
+                                <ShieldCheck className="w-3.5 h-3.5 text-zinc-700" />
+                                <span>Configurar Partner</span>
                               </button>
                             </div>
                           </div>
@@ -2541,24 +2548,62 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                                 CREAR Y PUBLICAR EVENTO
                               </h2>
                               <p className="text-[11px] text-zinc-500 font-medium">
-                                Todos estos datos se mostrarán exactamente en la cartelera y página de compra del evento.
+                                Configura los detalles oficiales de tu evento para la cartelera principal de 4GO.
                               </p>
                             </div>
 
-                            {/* 1. Flyer / Poster del Evento Uploader */}
+                            {/* 1. Flyer / Poster del Evento Uploader (Starts empty, no forced photo) */}
                             <div className="space-y-2 pb-3 border-b border-zinc-100">
                               <label className="text-xs font-bold uppercase tracking-wider text-zinc-700 block">
                                 Flyer / Poster Oficial del Evento
                               </label>
-                              <div className="flex items-center gap-4">
-                                <div className="w-16 h-20 rounded-xl bg-zinc-900 border border-zinc-300 overflow-hidden shrink-0 shadow-md flex items-center justify-center">
-                                  <img
-                                    src={newEventPoster}
-                                    alt="Preview del Flyer"
-                                    className="w-full h-full object-cover"
-                                  />
+                              
+                              {newEventPoster ? (
+                                <div className="flex items-center gap-4 p-3 rounded-2xl bg-zinc-50 border border-zinc-200">
+                                  <div className="w-16 h-20 rounded-xl bg-zinc-900 border border-zinc-300 overflow-hidden shrink-0 shadow-md">
+                                    <img
+                                      src={newEventPoster}
+                                      alt="Preview del Flyer"
+                                      className="w-full h-full object-cover"
+                                    />
+                                  </div>
+                                  <div className="space-y-1.5 text-left">
+                                    <p className="text-xs font-bold text-zinc-900">Flyer cargado correctamente</p>
+                                    <div className="flex items-center gap-2">
+                                      <input
+                                        type="file"
+                                        accept="image/*"
+                                        id="event-poster-file-change"
+                                        className="hidden"
+                                        onChange={(e) => {
+                                          const file = e.target.files?.[0];
+                                          if (file) {
+                                            const reader = new FileReader();
+                                            reader.onloadend = () => {
+                                              setNewEventPoster(reader.result as string);
+                                            };
+                                            reader.readAsDataURL(file);
+                                          }
+                                        }}
+                                      />
+                                      <label
+                                        htmlFor="event-poster-file-change"
+                                        className="inline-block px-3 py-1.5 rounded-xl bg-zinc-200 hover:bg-zinc-300 text-zinc-800 font-bold text-[11px] uppercase tracking-wider transition cursor-pointer"
+                                      >
+                                        Cambiar Flyer
+                                      </label>
+                                      <button
+                                        type="button"
+                                        onClick={() => setNewEventPoster("")}
+                                        className="px-3 py-1.5 rounded-xl bg-red-50 hover:bg-red-100 text-red-600 font-bold text-[11px] uppercase tracking-wider transition cursor-pointer"
+                                      >
+                                        Eliminar
+                                      </button>
+                                    </div>
+                                  </div>
                                 </div>
-                                <div className="space-y-1 text-left">
+                              ) : (
+                                <div>
                                   <input
                                     type="file"
                                     accept="image/*"
@@ -2577,29 +2622,35 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                                   />
                                   <label
                                     htmlFor="event-poster-file-input"
-                                    className="inline-block px-3.5 py-1.5 rounded-xl bg-black hover:bg-zinc-800 text-white font-bold text-xs uppercase tracking-wider transition cursor-pointer shadow-md"
+                                    className="w-full flex flex-col items-center justify-center p-5 rounded-2xl border-2 border-dashed border-zinc-300 hover:border-black bg-zinc-50 hover:bg-zinc-100/70 transition cursor-pointer text-center group"
                                   >
-                                    Subir Foto / Flyer
+                                    <div className="w-10 h-10 rounded-xl bg-zinc-200 group-hover:bg-black group-hover:text-white text-zinc-700 flex items-center justify-center transition mb-2">
+                                      <ImagePlus className="w-5 h-5" />
+                                    </div>
+                                    <span className="text-xs font-bold text-zinc-900 uppercase tracking-wider">
+                                      Subir Flyer / Poster Oficial
+                                    </span>
+                                    <span className="text-[10px] text-zinc-500 font-medium mt-0.5">
+                                      Formato vertical o cuadrado (JPG, PNG o WEBP)
+                                    </span>
                                   </label>
-                                  <p className="text-[10px] text-zinc-400 font-medium">
-                                    Recomendado: Formato vertical o cuadrado en alta resolución.
-                                  </p>
                                 </div>
-                              </div>
+                              )}
                             </div>
 
                             {/* 2. Título & Subtítulo (Venue / Sala) */}
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                               <div className="space-y-1">
                                 <label className="text-xs font-bold uppercase tracking-wider text-zinc-700 block">
-                                  Título del Evento
+                                  Título del Evento *
                                 </label>
                                 <input
                                   type="text"
+                                  required
                                   value={newEventTitle}
                                   onChange={(e) => setNewEventTitle(e.target.value)}
-                                  placeholder="Ej. Kaskade: ORIGIN //"
-                                  className="w-full px-3.5 py-2 rounded-xl bg-zinc-50 border border-zinc-300 text-xs sm:text-sm text-zinc-900 focus:outline-none focus:border-black focus:bg-white transition font-medium"
+                                  placeholder="Ej. ORIGIN // Club Night"
+                                  className="w-full px-3.5 py-2.5 rounded-xl bg-zinc-50 border border-zinc-300 text-xs sm:text-sm text-zinc-900 focus:outline-none focus:border-black focus:bg-white transition font-medium"
                                 />
                               </div>
 
@@ -2611,96 +2662,297 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                                   type="text"
                                   value={newEventSubtitle}
                                   onChange={(e) => setNewEventSubtitle(e.target.value)}
-                                  placeholder="Ej. FACTORY TOWN / CUBIC LOJA"
-                                  className="w-full px-3.5 py-2 rounded-xl bg-zinc-50 border border-zinc-300 text-xs sm:text-sm text-zinc-900 focus:outline-none focus:border-black focus:bg-white transition font-medium"
+                                  placeholder="Ej. Sala Principal / Terraza VIP"
+                                  className="w-full px-3.5 py-2.5 rounded-xl bg-zinc-50 border border-zinc-300 text-xs sm:text-sm text-zinc-900 focus:outline-none focus:border-black focus:bg-white transition font-medium"
                                 />
                               </div>
                             </div>
 
-                            {/* 3. Fecha, Apertura de Puertas & Género */}
-                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                              <div className="space-y-1">
-                                <label className="text-xs font-bold uppercase tracking-wider text-zinc-700 block">
-                                  Fecha del Evento
-                                </label>
-                                <input
-                                  type="text"
-                                  value={newEventDate}
-                                  onChange={(e) => setNewEventDate(e.target.value)}
-                                  placeholder="Ej. 18 SEP 2026"
-                                  className="w-full px-3.5 py-2 rounded-xl bg-zinc-50 border border-zinc-300 text-xs sm:text-sm text-zinc-900 focus:outline-none focus:border-black focus:bg-white transition font-medium"
-                                />
+                            {/* 3. Fecha & Hora de Apertura Fácil & Rápida */}
+                            <div className="p-3.5 rounded-2xl bg-zinc-50 border border-zinc-200 space-y-3">
+                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                {/* Fecha con selector nativo y accesos rápidos */}
+                                <div className="space-y-1.5">
+                                  <div className="flex items-center justify-between">
+                                    <label className="text-xs font-bold uppercase tracking-wider text-zinc-700 block">
+                                      Fecha del Evento *
+                                    </label>
+                                    <span className="text-[10px] text-zinc-500 font-medium">
+                                      {newEventDate ? new Date(newEventDate + 'T12:00:00').toLocaleDateString('es-EC', { weekday: 'short', month: 'short', day: 'numeric' }) : 'Selecciona fecha'}
+                                    </span>
+                                  </div>
+                                  <input
+                                    type="date"
+                                    required
+                                    min={new Date().toISOString().split('T')[0]}
+                                    value={newEventDate}
+                                    onChange={(e) => setNewEventDate(e.target.value)}
+                                    className="w-full px-3.5 py-2 rounded-xl bg-white border border-zinc-300 text-xs sm:text-sm text-zinc-900 focus:outline-none focus:border-black transition font-semibold cursor-pointer"
+                                  />
+                                  
+                                  {/* Quick Date Pills */}
+                                  <div className="flex flex-wrap gap-1.5 pt-1">
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        const d = new Date();
+                                        setNewEventDate(d.toISOString().split('T')[0]);
+                                      }}
+                                      className="px-2 py-1 rounded-lg bg-zinc-200 hover:bg-zinc-300 text-zinc-800 text-[10px] font-bold transition cursor-pointer"
+                                    >
+                                      Hoy
+                                    </button>
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        const d = new Date();
+                                        d.setDate(d.getDate() + 1);
+                                        setNewEventDate(d.toISOString().split('T')[0]);
+                                      }}
+                                      className="px-2 py-1 rounded-lg bg-zinc-200 hover:bg-zinc-300 text-zinc-800 text-[10px] font-bold transition cursor-pointer"
+                                    >
+                                      Mañana
+                                    </button>
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        const d = new Date();
+                                        let diff = (5 - d.getDay() + 7) % 7;
+                                        if (diff === 0) diff = 7;
+                                        d.setDate(d.getDate() + diff);
+                                        setNewEventDate(d.toISOString().split('T')[0]);
+                                      }}
+                                      className="px-2 py-1 rounded-lg bg-zinc-200 hover:bg-zinc-300 text-zinc-800 text-[10px] font-bold transition cursor-pointer"
+                                    >
+                                      Viernes
+                                    </button>
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        const d = new Date();
+                                        let diff = (6 - d.getDay() + 7) % 7;
+                                        if (diff === 0) diff = 7;
+                                        d.setDate(d.getDate() + diff);
+                                        setNewEventDate(d.toISOString().split('T')[0]);
+                                      }}
+                                      className="px-2 py-1 rounded-lg bg-zinc-200 hover:bg-zinc-300 text-zinc-800 text-[10px] font-bold transition cursor-pointer"
+                                    >
+                                      Sábado
+                                    </button>
+                                  </div>
+                                </div>
+
+                                {/* Hora de Apertura con selector rápido */}
+                                <div className="space-y-1.5">
+                                  <label className="text-xs font-bold uppercase tracking-wider text-zinc-700 block">
+                                    Hora de Apertura *
+                                  </label>
+                                  <input
+                                    type="time"
+                                    required
+                                    value={newEventDoorsOpen}
+                                    onChange={(e) => setNewEventDoorsOpen(e.target.value)}
+                                    className="w-full px-3.5 py-2 rounded-xl bg-white border border-zinc-300 text-xs sm:text-sm text-zinc-900 focus:outline-none focus:border-black transition font-semibold cursor-pointer"
+                                  />
+
+                                  {/* Quick Time Pills */}
+                                  <div className="flex flex-wrap gap-1.5 pt-1">
+                                    {["20:00", "21:00", "22:00", "23:00"].map((t) => (
+                                      <button
+                                        key={t}
+                                        type="button"
+                                        onClick={() => setNewEventDoorsOpen(t)}
+                                        className={`px-2 py-1 rounded-lg text-[10px] font-bold transition cursor-pointer ${
+                                          newEventDoorsOpen === t
+                                            ? "bg-black text-white"
+                                            : "bg-zinc-200 hover:bg-zinc-300 text-zinc-800"
+                                        }`}
+                                      >
+                                        {t}
+                                      </button>
+                                    ))}
+                                  </div>
+                                </div>
                               </div>
 
-                              <div className="space-y-1">
+                              {/* Categoría */}
+                              <div className="space-y-1 pt-1 border-t border-zinc-200">
                                 <label className="text-xs font-bold uppercase tracking-wider text-zinc-700 block">
-                                  Hora de Apertura
-                                </label>
-                                <input
-                                  type="text"
-                                  value={newEventDoorsOpen}
-                                  onChange={(e) => setNewEventDoorsOpen(e.target.value)}
-                                  placeholder="Apertura 22:00"
-                                  className="w-full px-3.5 py-2 rounded-xl bg-zinc-50 border border-zinc-300 text-xs sm:text-sm text-zinc-900 focus:outline-none focus:border-black focus:bg-white transition font-medium"
-                                />
-                              </div>
-
-                              <div className="space-y-1">
-                                <label className="text-xs font-bold uppercase tracking-wider text-zinc-700 block">
-                                  Categoría
+                                  Categoría / Género Musical
                                 </label>
                                 <select
                                   value={newEventCategory}
                                   onChange={(e) => setNewEventCategory(e.target.value)}
-                                  className="w-full px-2.5 py-2 rounded-xl bg-zinc-50 border border-zinc-300 text-xs font-bold text-zinc-900 focus:outline-none focus:border-black focus:bg-white transition cursor-pointer"
+                                  className="w-full px-3 py-2 rounded-xl bg-white border border-zinc-300 text-xs font-bold text-zinc-900 focus:outline-none focus:border-black transition cursor-pointer"
                                 >
                                   <option value="Electronic / House">Electronic / House</option>
-                                  <option value="Fiesta / Club">Fiesta / Club</option>
+                                  <option value="Fiesta / Club">Fiesta / Club Nocturno</option>
                                   <option value="Reggaeton / Urban">Reggaeton / Urban</option>
-                                  <option value="Concierto">Concierto</option>
-                                  <option value="Festival">Festival</option>
+                                  <option value="Concierto">Concierto en Vivo</option>
+                                  <option value="Festival">Festival / Open Air</option>
+                                  <option value="Techno / Underground">Techno / Underground</option>
                                 </select>
                               </div>
                             </div>
 
-                            {/* 4. Preventa 1 & Preventa 2 */}
-                            <div className="p-3.5 rounded-2xl bg-zinc-50 border border-zinc-200 space-y-2.5">
+                            {/* 4. Preventa de Entradas (Solo 1 por defecto, con opción de agregar más) */}
+                            <div className="p-3.5 rounded-2xl bg-zinc-50 border border-zinc-200 space-y-3">
                               <div className="flex items-center justify-between">
-                                <label className="text-xs font-black uppercase tracking-wider text-zinc-800 block">
-                                  Escalafón de Entradas y Preventas
-                                </label>
-                                <span className="text-[10px] text-zinc-500 font-bold">Sin cargos sorpresa</span>
+                                <div>
+                                  <label className="text-xs font-black uppercase tracking-wider text-zinc-800 block">
+                                    Entradas &amp; Preventas
+                                  </label>
+                                  <p className="text-[10px] text-zinc-500 font-medium">
+                                    Define tus fases de preventa. Puedes comenzar con una y habilitar más fases luego.
+                                  </p>
+                                </div>
+                                <span className="text-[10px] text-zinc-500 font-bold">0% de comisión</span>
                               </div>
 
-                              <div className="grid grid-cols-2 gap-3">
-                                <div className="space-y-1">
-                                  <span className="text-[11px] font-bold text-zinc-600 block">Preventa 1 ($)</span>
-                                  <input
-                                    type="number"
-                                    value={newEventPresale1Price}
-                                    onChange={(e) => setNewEventPresale1Price(e.target.value)}
-                                    placeholder="5"
-                                    className="w-full px-3.5 py-1.5 rounded-xl bg-white border border-zinc-300 text-xs font-bold text-zinc-900 focus:outline-none focus:border-black transition"
-                                  />
-                                </div>
-                                <div className="space-y-1">
-                                  <span className="text-[11px] font-bold text-zinc-600 block">Preventa 2 ($)</span>
-                                  <input
-                                    type="number"
-                                    value={newEventPresale2Price}
-                                    onChange={(e) => setNewEventPresale2Price(e.target.value)}
-                                    placeholder="10"
-                                    className="w-full px-3.5 py-1.5 rounded-xl bg-white border border-zinc-300 text-xs font-bold text-zinc-900 focus:outline-none focus:border-black transition"
-                                  />
-                                </div>
+                              <div className="space-y-3">
+                                {newEventPresales.map((phase, idx) => (
+                                  <div
+                                    key={phase.id}
+                                    className="p-3 rounded-2xl bg-white border border-zinc-200 space-y-2.5 shadow-sm"
+                                  >
+                                    {/* Row 1: Nombre, Precio y Eliminar */}
+                                    <div className="flex items-center gap-3">
+                                      <div className="flex-1 space-y-0.5">
+                                        <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider">
+                                          Nombre de Fase
+                                        </span>
+                                        <input
+                                          type="text"
+                                          value={phase.name}
+                                          onChange={(e) => {
+                                            const val = e.target.value;
+                                            setNewEventPresales((prev) =>
+                                              prev.map((item) => (item.id === phase.id ? { ...item, name: val } : item))
+                                            );
+                                          }}
+                                          placeholder="Ej. Preventa 1 / Early Bird"
+                                          className="w-full px-3 py-1.5 rounded-xl bg-zinc-50 border border-zinc-200 text-xs font-bold text-zinc-900 focus:outline-none focus:border-black"
+                                        />
+                                      </div>
+
+                                      <div className="w-28 space-y-0.5">
+                                        <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider">
+                                          Precio ($ USD)
+                                        </span>
+                                        <input
+                                          type="number"
+                                          min="0"
+                                          step="0.5"
+                                          value={phase.price}
+                                          onChange={(e) => {
+                                            const val = e.target.value;
+                                            setNewEventPresales((prev) =>
+                                              prev.map((item) => (item.id === phase.id ? { ...item, price: val } : item))
+                                            );
+                                          }}
+                                          placeholder="5.00"
+                                          className="w-full px-3 py-1.5 rounded-xl bg-zinc-50 border border-zinc-200 text-xs font-black text-zinc-900 focus:outline-none focus:border-black"
+                                        />
+                                      </div>
+
+                                      {newEventPresales.length > 1 && (
+                                        <button
+                                          type="button"
+                                          onClick={() => {
+                                            setNewEventPresales((prev) => prev.filter((item) => item.id !== phase.id));
+                                          }}
+                                          className="p-2 rounded-xl text-zinc-400 hover:text-red-600 hover:bg-red-50 transition cursor-pointer self-end mb-0.5"
+                                          title="Eliminar fase"
+                                        >
+                                          <Trash2 className="w-4 h-4" />
+                                        </button>
+                                      )}
+                                    </div>
+
+                                    {/* Row 2: Programación de Duración / Vigencia */}
+                                    <div className="pt-2 border-t border-zinc-100 grid grid-cols-1 sm:grid-cols-2 gap-2.5 items-center">
+                                      <div className="space-y-1">
+                                        <label className="text-[10px] font-bold text-zinc-600 uppercase tracking-wider flex items-center gap-1">
+                                          <Clock className="w-3 h-3 text-zinc-400" />
+                                          <span>Programar Duración</span>
+                                        </label>
+                                        <select
+                                          value={phase.duration || "1_semana"}
+                                          onChange={(e) => {
+                                            const val = e.target.value;
+                                            setNewEventPresales((prev) =>
+                                              prev.map((item) => (item.id === phase.id ? { ...item, duration: val } : item))
+                                            );
+                                          }}
+                                          className="w-full px-2.5 py-1.5 rounded-lg bg-zinc-50 border border-zinc-200 text-xs font-semibold text-zinc-800 focus:outline-none focus:border-black cursor-pointer"
+                                        >
+                                          <option value="1_semana">Dura 1 Semana (7 días)</option>
+                                          <option value="2_semanas">Dura 2 Semanas (14 días)</option>
+                                          <option value="3_dias">Dura 3 Días</option>
+                                          <option value="hasta_evento">Hasta el día del evento</option>
+                                          <option value="aforo">Hasta agotar aforo / cupos</option>
+                                          <option value="fecha_custom">Fecha límite personalizada</option>
+                                        </select>
+                                      </div>
+
+                                      {phase.duration === "fecha_custom" ? (
+                                        <div className="space-y-1">
+                                          <label className="text-[10px] font-bold text-zinc-600 uppercase tracking-wider block">
+                                            Fecha Fin de Preventa
+                                          </label>
+                                          <input
+                                            type="date"
+                                            value={phase.customEndDate || ""}
+                                            onChange={(e) => {
+                                              const val = e.target.value;
+                                              setNewEventPresales((prev) =>
+                                                prev.map((item) => (item.id === phase.id ? { ...item, customEndDate: val } : item))
+                                              );
+                                            }}
+                                            className="w-full px-2.5 py-1.5 rounded-lg bg-zinc-50 border border-zinc-200 text-xs font-semibold text-zinc-900 focus:outline-none focus:border-black cursor-pointer"
+                                          />
+                                        </div>
+                                      ) : (
+                                        <div className="p-2 rounded-xl bg-zinc-50 border border-zinc-100 flex items-center justify-between">
+                                          <span className="text-[10.5px] text-zinc-600 font-medium">
+                                            {idx === 0
+                                              ? "Activa desde la publicación"
+                                              : `Se activa al vencer ${newEventPresales[idx - 1]?.name || 'fase previa'}`}
+                                          </span>
+                                          <span className="px-2 py-0.5 rounded-md bg-zinc-200 text-zinc-700 text-[9px] font-bold uppercase">
+                                            {idx === 0 ? "Fase 1" : `Fase ${idx + 1}`}
+                                          </span>
+                                        </div>
+                                      )}
+                                    </div>
+                                  </div>
+                                ))}
                               </div>
-                              <p className="text-[10px] text-zinc-400 font-medium">
-                                * La preventa 1 es limitada. Al agotarse, se activará la preventa 2.
-                              </p>
+
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setNewEventPresales((prev) => [
+                                    ...prev,
+                                    {
+                                      id: Date.now(),
+                                      name: `Preventa ${prev.length + 1}`,
+                                      price: String(Number(prev[prev.length - 1]?.price || 5) + 5),
+                                      duration: "1_semana",
+                                      customEndDate: "",
+                                      capacity: "",
+                                    },
+                                  ]);
+                                }}
+                                className="w-full py-2.5 rounded-xl bg-zinc-200/80 hover:bg-zinc-300 text-zinc-800 text-xs font-bold uppercase tracking-wider transition cursor-pointer flex items-center justify-center gap-1.5"
+                              >
+                                <Plus className="w-3.5 h-3.5" />
+                                <span>+ Agregar otra fase de preventa</span>
+                              </button>
                             </div>
 
-                            {/* 5. Información & Restricciones */}
-                            <div className="space-y-2.5">
+                            {/* 5. Información & Restricciones (Combo Box / Chips, sin texto libre) */}
+                            <div className="space-y-3">
                               <div className="space-y-1">
                                 <label className="text-xs font-bold uppercase tracking-wider text-zinc-700 block">
                                   Información / Descripción del Evento
@@ -2709,23 +2961,27 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                                   value={newEventDescription}
                                   onChange={(e) => setNewEventDescription(e.target.value)}
                                   rows={2}
-                                  placeholder="Detalla la experiencia, artistas invitados, código de vestimenta, etc."
-                                  className="w-full px-3.5 py-2 rounded-xl bg-zinc-50 border border-zinc-300 text-xs text-zinc-900 focus:outline-none focus:border-black focus:bg-white transition font-medium"
+                                  placeholder="Detalla la experiencia, artistas invitados, normas de ingreso, etc."
+                                  className="w-full px-3.5 py-2.5 rounded-xl bg-zinc-50 border border-zinc-300 text-xs text-zinc-900 focus:outline-none focus:border-black focus:bg-white transition font-medium"
                                 />
                               </div>
 
+                              {/* Restricción de Edad (Combo Box Seleccionable) */}
                               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                 <div className="space-y-1">
                                   <label className="text-xs font-bold uppercase tracking-wider text-zinc-700 block">
                                     Restricción de Edad
                                   </label>
-                                  <input
-                                    type="text"
+                                  <select
                                     value={newEventAgeRestriction}
                                     onChange={(e) => setNewEventAgeRestriction(e.target.value)}
-                                    placeholder="Ej. +18 con cédula"
-                                    className="w-full px-3.5 py-2 rounded-xl bg-zinc-50 border border-zinc-300 text-xs text-zinc-900 focus:outline-none focus:border-black focus:bg-white transition font-medium"
-                                  />
+                                    className="w-full px-3 py-2 rounded-xl bg-zinc-50 border border-zinc-300 text-xs font-bold text-zinc-900 focus:outline-none focus:border-black focus:bg-white transition cursor-pointer"
+                                  >
+                                    <option value="+18 Años (Cédula de identidad física obligatoria)">+18 Años (Cédula física requerida)</option>
+                                    <option value="+21 Años (Exclusivo adultos / VIP)">+21 Años (Exclusivo adultos / VIP)</option>
+                                    <option value="Todo Público / Evento Familiar">Todo Público / Evento Familiar</option>
+                                    <option value="+16 Años (Con autorización o representante)">+16 Años (Con representante)</option>
+                                  </select>
                                 </div>
 
                                 <div className="space-y-1">
@@ -2740,23 +2996,73 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                                   />
                                 </div>
                               </div>
+
+                              {/* Normas y Restricciones Estandarizadas (Selector de Chips) */}
+                              <div className="space-y-1.5">
+                                <label className="text-xs font-bold uppercase tracking-wider text-zinc-700 block">
+                                  Normas de Admisión Estandarizadas
+                                </label>
+                                <div className="flex flex-wrap gap-1.5">
+                                  {[
+                                    "Cédula o documento físico obligatorio",
+                                    "Prohibido ingreso de bebidas y alimentos",
+                                    "Código de vestimenta casual / semiformal",
+                                    "Prohibido el reingreso al recinto",
+                                    "Derecho de admisión reservado",
+                                    "Prohibido el ingreso de objetos peligrosos",
+                                  ].map((policy) => {
+                                    const isSelected = newEventPolicies.includes(policy);
+                                    return (
+                                      <button
+                                        key={policy}
+                                        type="button"
+                                        onClick={() => {
+                                          if (isSelected) {
+                                            setNewEventPolicies((prev) => prev.filter((p) => p !== policy));
+                                          } else {
+                                            setNewEventPolicies((prev) => [...prev, policy]);
+                                          }
+                                        }}
+                                        className={`px-2.5 py-1 rounded-lg text-[11px] font-bold transition flex items-center gap-1.5 cursor-pointer ${
+                                          isSelected
+                                            ? "bg-black text-white"
+                                            : "bg-zinc-100 hover:bg-zinc-200 text-zinc-700 border border-zinc-200"
+                                        }`}
+                                      >
+                                        <Check className={`w-3 h-3 ${isSelected ? "text-white" : "opacity-0"}`} />
+                                        <span>{policy}</span>
+                                      </button>
+                                    );
+                                  })}
+                                </div>
+                              </div>
                             </div>
 
-                            {/* 6. Lugar / Ubicación */}
+                            {/* 6. Lugar / Ubicación (Google Maps & Selector Rápido) */}
                             <div className="p-3.5 rounded-2xl bg-zinc-50 border border-zinc-200 space-y-2.5">
-                              <label className="text-xs font-black uppercase tracking-wider text-zinc-800 block">
-                                Lugar &amp; Ubicación (Google Maps)
-                              </label>
+                              <div className="flex items-center justify-between">
+                                <label className="text-xs font-black uppercase tracking-wider text-zinc-800 block">
+                                  Lugar &amp; Ubicación del Evento
+                                </label>
+                                <button
+                                  type="button"
+                                  onClick={() => setIsLocationPickerOpen(true)}
+                                  className="px-3 py-1 rounded-xl bg-black hover:bg-zinc-800 text-white text-[11px] font-bold uppercase tracking-wider flex items-center gap-1.5 transition cursor-pointer shadow-sm"
+                                >
+                                  <MapPin className="w-3.5 h-3.5 text-white" />
+                                  <span>Marcar en Google Maps</span>
+                                </button>
+                              </div>
 
                               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                 <div className="space-y-1">
-                                  <span className="text-[11px] font-bold text-zinc-600 block">Nombre del Establecimiento</span>
+                                  <span className="text-[11px] font-bold text-zinc-600 block">Establecimiento / Venue</span>
                                   <input
                                     type="text"
                                     value={newEventVenueName}
                                     onChange={(e) => setNewEventVenueName(e.target.value)}
-                                    placeholder="Factory Town - Miami / Cubic Loja"
-                                    className="w-full px-3.5 py-1.5 rounded-xl bg-white border border-zinc-300 text-xs font-semibold text-zinc-900 focus:outline-none focus:border-black transition"
+                                    placeholder="Cubic Club"
+                                    className="w-full px-3.5 py-2 rounded-xl bg-white border border-zinc-300 text-xs font-semibold text-zinc-900 focus:outline-none focus:border-black transition"
                                   />
                                 </div>
                                 <div className="space-y-1">
@@ -2766,24 +3072,13 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                                     value={newEventVenueAddress}
                                     onChange={(e) => setNewEventVenueAddress(e.target.value)}
                                     placeholder="Av. Salvador Bustamante Celi y Guayaquil, Loja"
-                                    className="w-full px-3.5 py-1.5 rounded-xl bg-white border border-zinc-300 text-xs font-semibold text-zinc-900 focus:outline-none focus:border-black transition"
+                                    className="w-full px-3.5 py-2 rounded-xl bg-white border border-zinc-300 text-xs font-semibold text-zinc-900 focus:outline-none focus:border-black transition"
                                   />
                                 </div>
                               </div>
-
-                              <button
-                                type="button"
-                                onClick={() => {
-                                  window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(newEventVenueAddress || "Cubic Loja")}`, '_blank');
-                                }}
-                                className="px-3.5 py-1.5 rounded-xl bg-zinc-900 hover:bg-black text-white text-[11px] font-bold uppercase tracking-wider flex items-center justify-center gap-1.5 transition cursor-pointer shadow-sm"
-                              >
-                                <MapPin className="w-3 h-3 text-emerald-400" />
-                                <span>Probar y Abrir en Google Maps 📍</span>
-                              </button>
                             </div>
 
-                            {/* 7. Sección Promotor & Co-Promotores (con SATA / QR) */}
+                            {/* 7. Sección Promotor & Co-Promotores (con Enlace Único de Consentimiento) */}
                             <div className="p-3.5 rounded-2xl bg-zinc-50 border border-zinc-200 space-y-2.5">
                               <div className="flex items-center justify-between">
                                 <div>
@@ -2791,7 +3086,7 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                                     Promotores del Evento
                                   </label>
                                   <p className="text-[10px] text-zinc-500 font-medium">
-                                    Aparecerán con su botón oficial de "SEGUIR" en la cartelera.
+                                    Vincula otras marcas mediante enlace único de consentimiento oficial.
                                   </p>
                                 </div>
 
@@ -2800,7 +3095,7 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                                   onClick={() => setIsCoOrganizerModalOpen(true)}
                                   className="px-3 py-1.5 rounded-xl bg-black hover:bg-zinc-800 text-white text-[11px] font-bold uppercase tracking-wider transition active:scale-95 cursor-pointer flex items-center gap-1 shadow-sm"
                                 >
-                                  <span>+ Vincular SATA (QR / Link)</span>
+                                  <span>+ Vincular Co-Organizadores</span>
                                 </button>
                               </div>
 
@@ -2812,28 +3107,71 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                                   >
                                     <span>{coOrg}</span>
                                     <span className="text-[9.5px] px-1.5 py-0.2 rounded bg-zinc-100 text-zinc-600 font-semibold uppercase">
-                                      Promotor
+                                      {idx === 0 ? "Principal" : "Co-Host"}
                                     </span>
                                   </div>
                                 ))}
                               </div>
                             </div>
+
+                            {/* ─── 8. OBLIGATORY LEGAL & FISCAL DISCLAIMERS (CHECKBOXES) ─── */}
+                            <div className="p-4 rounded-2xl bg-zinc-50 border border-zinc-200 space-y-3 font-sans">
+                              {/* Checkbox 1: Fiscal / Tributario */}
+                              <label className="flex items-start justify-between gap-3 cursor-pointer select-none pb-3 border-b border-zinc-200/80">
+                                <span className="text-xs font-medium text-zinc-800 leading-relaxed">
+                                  Como organizador, eres responsable de cumplir con tus obligaciones fiscales según tu régimen tributario.
+                                </span>
+                                <input
+                                  type="checkbox"
+                                  checked={agreeFiscal}
+                                  onChange={(e) => setAgreeFiscal(e.target.checked)}
+                                  className="w-5 h-5 rounded-md border-zinc-300 text-black focus:ring-black accent-black cursor-pointer shrink-0 mt-0.5"
+                                />
+                              </label>
+
+                              {/* Checkbox 2: Normativa municipal y aforo */}
+                              <label className="flex items-start justify-between gap-3 cursor-pointer select-none pb-3 border-b border-zinc-200/80">
+                                <span className="text-xs font-medium text-zinc-800 leading-relaxed">
+                                  Como organizador, eres responsable de cumplir la normativa de cada municipio en permisos y aforo.
+                                </span>
+                                <input
+                                  type="checkbox"
+                                  checked={agreeMunicipal}
+                                  onChange={(e) => setAgreeMunicipal(e.target.checked)}
+                                  className="w-5 h-5 rounded-md border-zinc-300 text-black focus:ring-black accent-black cursor-pointer shrink-0 mt-0.5"
+                                />
+                              </label>
+
+                              {/* Legal Note */}
+                              <p className="text-[11px] text-zinc-500 font-medium pt-0.5">
+                                Tu convenio estará en la sección legal una vez aprobado tu evento.
+                              </p>
+                            </div>
                           </div>
 
                           {/* Pinned Submit Button Footer */}
-                          <div className="pt-3 shrink-0 border-t border-zinc-100">
+                          <div className="pt-3 shrink-0 border-t border-zinc-100 space-y-1.5">
+                            {(!agreeFiscal || !agreeMunicipal || !newEventTitle.trim() || !newEventDate.trim()) && (
+                              <p className="text-[11px] text-amber-700 bg-amber-50 px-3 py-1 rounded-xl text-center font-medium border border-amber-200">
+                                Completa el título, fecha y marca ambas declaraciones legales para publicar el evento.
+                              </p>
+                            )}
+
                             <button
                               type="button"
+                              disabled={!agreeFiscal || !agreeMunicipal || !newEventTitle.trim() || !newEventDate.trim()}
                               onClick={async () => {
-                                if (!newEventTitle.trim()) return;
+                                if (!newEventTitle.trim() || !newEventDate.trim() || !agreeFiscal || !agreeMunicipal) return;
+                                
+                                const basePrice = Number(newEventPresales[0]?.price) || 5;
                                 const newEvtPayload = {
                                   title: newEventTitle,
-                                  subtitle: newEventSubtitle || "FACTORY TOWN",
+                                  subtitle: newEventSubtitle || "SALA PRINCIPAL",
                                   category: newEventCategory,
                                   city: newEventCity,
-                                  price: Number(newEventPresale2Price) || 10,
-                                  date: newEventDate || "2026-09-18",
-                                  dateLabel: newEventDate || "18 SEP 2026",
+                                  price: basePrice,
+                                  date: newEventDate,
+                                  dateLabel: new Date(newEventDate + 'T12:00:00').toLocaleDateString('es-EC', { day: 'numeric', month: 'short', year: 'numeric' }).toUpperCase(),
                                   venue: newEventVenueName || userProfile?.venueName || "Local del Evento",
                                   poster: newEventPoster || "/images/4go_red_girl_showcase.jpg",
                                   imageUrl: newEventPoster || "/images/4go_red_girl_showcase.jpg",
@@ -2842,6 +3180,7 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                                   organizer: userProfile?.venueName || userProfile?.name || "Promotor Oficial",
                                   organizers: newEventCoOrganizers,
                                   ageRestriction: newEventAgeRestriction || "18+",
+                                  presales: newEventPresales,
                                 };
 
                                 let publishedEvt: Event;
@@ -2872,6 +3211,14 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                                   setEvents((prev) => [publishedEvt, ...prev]);
                                 }
 
+                                try {
+                                  const existing = JSON.parse(localStorage.getItem("4go_created_events") || "[]");
+                                  const updatedCreated = [publishedEvt, ...existing.filter((e: any) => e.id !== publishedEvt.id)];
+                                  localStorage.setItem("4go_created_events", JSON.stringify(updatedCreated));
+                                } catch (err) {
+                                  console.error("Error saving created event:", err);
+                                }
+
                                 setLastPublishedEvent(publishedEvt);
                                 setOrganizerSubView("published");
                                 setShowEventPublishedToast(true);
@@ -2880,7 +3227,7 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                                   window.scrollTo({ top: 0, behavior: "smooth" });
                                 }
                               }}
-                              className="w-full py-3.5 rounded-full bg-black hover:bg-zinc-800 text-white font-black text-xs uppercase tracking-widest transition active:scale-95 text-center cursor-pointer shadow-xl"
+                              className="w-full py-3.5 rounded-full bg-black hover:bg-zinc-800 disabled:opacity-40 disabled:cursor-not-allowed text-white font-black text-xs uppercase tracking-widest transition active:scale-95 text-center cursor-pointer shadow-xl"
                             >
                               Publicar Evento Ahora →
                             </button>
@@ -3907,13 +4254,12 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                     type="button"
                     onClick={() => {
                       setShowUserMenu(false);
-                      const slug = userProfile?.id || (userProfile?.email === "mrshifu879@gmail.com" ? "cubic" : "sata");
-                      setSelectedOrganizerSlug(slug);
-                      setShowOrganizerOverlay(true);
+                      router.push("/cuenta");
                     }}
-                    className="w-full px-4 py-3 rounded-2xl text-left text-xs font-black uppercase tracking-wider text-zinc-200 hover:bg-white/10 hover:text-white transition-all cursor-pointer border border-white/5 block"
+                    className="w-full px-4 py-3 rounded-2xl text-left text-xs font-black uppercase tracking-wider text-zinc-100 hover:bg-white/10 hover:text-white transition-all cursor-pointer border border-white/5 block flex items-center justify-between"
                   >
-                    Configuración
+                    <span>Mi Cuenta</span>
+                    <ChevronRight className="w-3.5 h-3.5 text-zinc-400" />
                   </button>
 
                   <button
@@ -3923,41 +4269,6 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                   >
                     Publicar un Evento
                   </button>
-
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setShowUserMenu(false);
-                      setOrganizerSubView("my_events");
-                    }}
-                    className="w-full px-4 py-3 rounded-2xl text-left text-xs font-black uppercase tracking-wider text-zinc-200 hover:bg-white/10 hover:text-white transition-all cursor-pointer border border-white/5 block"
-                  >
-                    Mis Tickets
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setShowUserMenu(false);
-                      setOrganizerSubView("favorites");
-                    }}
-                    className="w-full px-4 py-3 rounded-2xl text-left text-xs font-black uppercase tracking-wider text-zinc-200 hover:bg-white/10 hover:text-white transition-all cursor-pointer border border-white/5 block"
-                  >
-                    Mis Favoritos
-                  </button>
-
-                  {userProfile?.hasCompletedOnboarding && (
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setShowUserMenu(false);
-                        setOrganizerSubView("my_events");
-                      }}
-                      className="w-full px-4 py-3 rounded-2xl text-left text-xs font-black uppercase tracking-wider text-white hover:bg-white/10 transition-all cursor-pointer border border-white/10 block"
-                    >
-                      Mis Eventos
-                    </button>
-                  )}
 
                   <button
                     type="button"
@@ -4123,13 +4434,42 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
         )}
       </AnimatePresence>
 
-      {/* Co-Organizer Collaboration Modal (QR Code & Invite Link for SATA / Cubic) */}
+      {/* Co-Organizer Collaboration Modal (Consent & Unique Invite Link) */}
       <CoOrganizerModal
         isOpen={isCoOrganizerModalOpen}
         onClose={() => setIsCoOrganizerModalOpen(false)}
-        eventTitle={newEventTitle || "Kaskade: ORIGIN //"}
+        eventTitle={newEventTitle || "Evento Oficial"}
         currentOrganizers={newEventCoOrganizers}
         onUpdateOrganizers={(updated) => setNewEventCoOrganizers(updated)}
+      />
+
+      {/* Interactive Map Location Picker Modal */}
+      <LocationPickerModal
+        isOpen={isLocationPickerOpen}
+        onClose={() => setIsLocationPickerOpen(false)}
+        initialVenue={newEventVenueName}
+        initialAddress={newEventVenueAddress}
+        onSelectLocation={(venue, address) => {
+          setNewEventVenueName(venue);
+          setNewEventVenueAddress(address);
+        }}
+      />
+
+      {/* Unified My Account Dashboard Modal */}
+      <MyAccountDashboardModal
+        isOpen={isAccountDashboardOpen}
+        onClose={() => setIsAccountDashboardOpen(false)}
+        userProfile={userProfile}
+        onUpdateProfile={(updated) => setUserProfile(updated)}
+        allEvents={events}
+        onOpenEventDetail={(evt) => {
+          if (evt?.id) {
+            router.push(`/${evt.id}`);
+          }
+        }}
+        onStartCreateEvent={() => {
+          handleStartPublishEvent();
+        }}
       />
 
 

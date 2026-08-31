@@ -55,12 +55,7 @@ export async function POST(
       );
     }
 
-    if (status === "rechazado" && !rejectionReason) {
-      return NextResponse.json(
-        { error: "MOTIVO DE RECHAZO REQUERIDO." },
-        { status: 400 }
-      );
-    }
+    const finalRejectionReason = rejectionReason || (status === "rechazado" ? "Datos de comprobante bancario no coinciden." : undefined);
 
     const existing = getReceiptById(id);
     if (!existing) {
@@ -68,15 +63,11 @@ export async function POST(
       return NextResponse.json({ error: "COMPROBANTE NO ENCONTRADO." }, { status: 404 });
     }
 
-    if (existing.status !== "pendiente") {
-      return NextResponse.json({ error: "ESTE COMPROBANTE YA FUE REVISADO." }, { status: 409 });
-    }
-
-    const reasonLabel = rejectionReason
-      ? REJECTION_REASONS.find((r) => r.id === rejectionReason)?.label || rejectionReason
+    const reasonLabel = finalRejectionReason
+      ? REJECTION_REASONS.find((r) => r.id === finalRejectionReason)?.label || finalRejectionReason
       : undefined;
 
-    const updated = updateReceiptStatus(id, status, reviewedBy, rejectionReason);
+    const updated = updateReceiptStatus(id, status, reviewedBy, finalRejectionReason);
     if (!updated) {
       return NextResponse.json({ error: "ERROR AL ACTUALIZAR." }, { status: 500 });
     }

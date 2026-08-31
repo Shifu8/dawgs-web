@@ -1,14 +1,14 @@
 "use client";
 
 import React, { useState } from "react";
-import { X, ChevronDown, Check, Building, Sparkles, MapPin, Phone, ArrowRight, ShieldCheck, CheckCircle2 } from "lucide-react";
+import { X, ChevronDown, Check, Building, Sparkles, MapPin, Phone, ArrowRight, ShieldCheck, CheckCircle2, Disc3, Mic2, Building2, PartyPopper } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 export interface PartnerTypeOption {
   id: string;
   title: string;
   subtitle: string;
-  icon: string;
+  iconName: "party" | "club" | "artist" | "venue";
 }
 
 export const PARTNER_TYPES: PartnerTypeOption[] = [
@@ -16,25 +16,25 @@ export const PARTNER_TYPES: PartnerTypeOption[] = [
     id: "Promotor / Organizador",
     title: "Promoter",
     subtitle: "Organizas eventos, fiestas o festivales",
-    icon: "🎉",
+    iconName: "party",
   },
   {
     id: "Discoteca / Club",
     title: "Club / Discoteca",
     subtitle: "Tienes un establecimiento fijo o club nocturno",
-    icon: "🪩",
+    iconName: "club",
   },
   {
     id: "Artista / DJ",
     title: "Artist",
     subtitle: "Te presentas o realizas shows en vivo",
-    icon: "🎤",
+    iconName: "artist",
   },
   {
     id: "Venue / Espacio",
     title: "Venue / Espacio",
     subtitle: "Alquilas recintos o locales para eventos",
-    icon: "🏛️",
+    iconName: "venue",
   },
 ];
 
@@ -188,9 +188,9 @@ export default function OrganizerOnboardingModal({
               </h2>
             </div>
 
-            {/* Cute Black & White Characters Illustration */}
-            <div className="hidden sm:flex items-center justify-center shrink-0 w-24 h-20 bg-zinc-50 rounded-2xl border border-zinc-200 p-2 text-3xl select-none">
-              🎉 🪩
+            {/* Clean Modern Badge */}
+            <div className="hidden sm:flex items-center justify-center shrink-0 w-16 h-16 bg-zinc-100 rounded-2xl border border-zinc-200 text-zinc-900 shadow-sm">
+              <Building2 className="w-8 h-8 text-zinc-800" />
             </div>
           </div>
 
@@ -242,7 +242,12 @@ export default function OrganizerOnboardingModal({
                   className="w-full flex items-center justify-between px-4 py-3 rounded-xl bg-zinc-50 border border-zinc-300 hover:border-black text-left transition cursor-pointer focus:outline-none focus:bg-white"
                 >
                   <div className="flex items-center gap-2.5">
-                    <span className="text-lg">{selectedPartner.icon}</span>
+                    <div className="w-6 h-6 rounded-lg bg-zinc-200 flex items-center justify-center text-zinc-800">
+                      {selectedPartner.iconName === "party" && <PartyPopper className="w-3.5 h-3.5" />}
+                      {selectedPartner.iconName === "club" && <Disc3 className="w-3.5 h-3.5" />}
+                      {selectedPartner.iconName === "artist" && <Mic2 className="w-3.5 h-3.5" />}
+                      {selectedPartner.iconName === "venue" && <Building2 className="w-3.5 h-3.5" />}
+                    </div>
                     <span className="text-xs sm:text-sm font-bold text-zinc-900">{selectedPartner.title}</span>
                   </div>
                   <ChevronDown className="w-4 h-4 text-zinc-500 shrink-0" />
@@ -264,7 +269,12 @@ export default function OrganizerOnboardingModal({
                       >
                         <div className="space-y-0.5">
                           <p className="text-xs sm:text-sm font-bold text-zinc-900 flex items-center gap-2">
-                            <span>{type.icon}</span>
+                            <span className="w-6 h-6 rounded-lg bg-zinc-100 flex items-center justify-center text-zinc-800">
+                              {type.iconName === "party" && <PartyPopper className="w-3.5 h-3.5" />}
+                              {type.iconName === "club" && <Disc3 className="w-3.5 h-3.5" />}
+                              {type.iconName === "artist" && <Mic2 className="w-3.5 h-3.5" />}
+                              {type.iconName === "venue" && <Building2 className="w-3.5 h-3.5" />}
+                            </span>
                             <span>{type.title}</span>
                           </p>
                           <p className="text-[11px] text-zinc-500">{type.subtitle}</p>

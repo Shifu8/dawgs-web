@@ -54,23 +54,6 @@ interface EventDetailOverlayProps {
   onOpenAuth?: () => void;
 }
 
-const DEFAULT_ORGANIZERS = [
-  {
-    id: "cubic",
-    name: "CUBIC",
-    type: "Discoteca",
-    img: "/images/cubic-official-logo.png",
-    instagramUrl: "https://instagram.com/cubic.ec",
-  },
-  {
-    id: "sata",
-    name: "SATA",
-    type: "Organizador de eventos",
-    img: "/images/sata-official-logo.jpg",
-    instagramUrl: "https://instagram.com/sata.ec",
-  },
-];
-
 export default function EventDetailOverlay({
   event,
   onClose,
@@ -177,7 +160,25 @@ export default function EventDetailOverlay({
     setFollowedIds((prev) => ({ ...prev, [id]: !prev[id] }));
   };
 
-  const venueName = event.venue || "CUBIC";
+  const venueName = (() => {
+    const rawVenue = event.venue?.trim();
+    const uName = userProfile?.name?.trim().toLowerCase();
+    const uVenue = userProfile?.venueName?.trim().toLowerCase();
+    if (
+      rawVenue &&
+      rawVenue.toLowerCase() !== uName &&
+      rawVenue.toLowerCase() !== uVenue &&
+      !rawVenue.toLowerCase().startsWith("prueba")
+    ) {
+      return rawVenue;
+    }
+    const loc = (event as any).location?.trim();
+    if (loc && loc.toLowerCase() !== uName && loc.toLowerCase() !== uVenue && !loc.toLowerCase().startsWith("prueba")) {
+      return loc;
+    }
+    return "CUBIC";
+  })();
+
   const venueAddress = (event as any).address || "Av. Salvador Bustamante Celi y Guayaquil, Loja, Ecuador";
   const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${venueName} ${venueAddress}`)}`;
 
@@ -547,32 +548,152 @@ export default function EventDetailOverlay({
               </h2>
 
               <div className="space-y-3">
-                {DEFAULT_ORGANIZERS.map((org) => {
-                  const isFollowing = !!followedIds[org.id];
-                  return (
+                {(() => {
+                  let activeProfile = userProfile;
+                  if (!activeProfile && typeof window !== "undefined") {
+                    try {
+                      const stored = localStorage.getItem("organizer_profile");
+                      if (stored) activeProfile = JSON.parse(stored);
+                    } catch {}
+                  }
+
+                  const primaryOrgRaw = (event.organizer || "Cubic").trim();
+                  
+                  // Collect all candidate organizer names
+                  const rawCandidates: string[] = [primaryOrgRaw];
+
+                  const rawCoOrgs = Array.isArray(event.organizers) && event.organizers.length > 0
+                    ? event.organizers
+                    : Array.isArray(event.lineup) && event.lineup.length > 0
+                    ? event.lineup
+                    : [];
+
+                  for (const co of rawCoOrgs) {
+                    if (co && typeof co === "string" && co.trim()) {
+                      rawCandidates.push(co.trim());
+                    }
+                  }
+
+                  // Deduplicate and build clean promoters list
+                  const seenKeys = new Set<string>();
+                  const list: Array<{
+                    id: string;
+                    name: string;
+                    type: string;
+                    img: string;
+                    instagramUrl: string;
+                    isFollowing: boolean;
+                  }> = [];
+
+                  for (let i = 0; i < rawCandidates.length; i++) {
+                    const candidate = rawCandidates[i];
+                    if (!candidate) continue;
+
+                    const lower = candidate.toLowerCase().trim();
+                    const isCubic = lower.includes("cubic");
+                    const isSata = lower.includes("sata");
+
+                    // Check if candidate matches the logged in user profile (e.g. prueba1)
+                    const isCurrentUser = !isCubic && !isSata && !!(
+                      activeProfile &&
+                      (
+                        (activeProfile.venueName && activeProfile.venueName.toLowerCase().trim() === lower) ||
+                        (activeProfile.name && activeProfile.name.toLowerCase().trim() === lower) ||
+                        (activeProfile.email && activeProfile.email.toLowerCase().trim() === lower) ||
+                        lower.includes("prueba")
+                      )
+                    );
+
+                    const canonicalKey = isCubic
+                      ? "cubic"
+                      : isSata
+                      ? "sata"
+                      : isCurrentUser
+                      ? "current_user_promoter"
+                      : `org_${lower.replace(/[^a-z0-9]+/g, "_")}`;
+
+                    // Never add duplicate promoter
+                    if (seenKeys.has(canonicalKey)) continue;
+
+                    // If candidate is Cubic, but primary promoter is a custom creator (e.g. prueba1) AND Cubic is just the venue, skip!
+                    const isPrimaryCustom = !primaryOrgRaw.toLowerCase().includes("cubic") && !primaryOrgRaw.toLowerCase().includes("sata");
+                    const isVenueLocation = (event.venue || "").toLowerCase().includes("cubic");
+                    if (isCubic && isPrimaryCustom && isVenueLocation) {
+                      continue;
+                    }
+
+                    seenKeys.add(canonicalKey);
+
+                    const name = isCubic
+                      ? "CUBIC"
+                      : isSata
+                      ? "SATA"
+                      : isCurrentUser
+                      ? (activeProfile?.venueName || activeProfile?.name || candidate).toUpperCase()
+                      : candidate.toUpperCase();
+
+                    const type = isCubic
+                      ? "Discoteca / Club"
+                      : isSata
+                      ? "Organizador de eventos"
+                      : isCurrentUser
+                      ? (activeProfile?.type || "Organizador / Promotor")
+                      : "Organizador de eventos";
+
+                    const img = isCubic
+                      ? "/images/cubic-official-logo.png"
+                      : isSata
+                      ? "/images/sata-official-logo.jpg"
+                      : isCurrentUser && activeProfile?.avatar
+                      ? activeProfile.avatar
+                      : "";
+
+                    const instagramUrl = isCubic
+                      ? "https://instagram.com/cubic.ec"
+                      : isSata
+                      ? "https://instagram.com/sata.ec"
+                      : isCurrentUser && activeProfile?.instagram
+                      ? `https://instagram.com/${activeProfile.instagram.replace(/^@/, "")}`
+                      : "";
+
+                    list.push({
+                      id: canonicalKey,
+                      name,
+                      type,
+                      img,
+                      instagramUrl,
+                      isFollowing: !!followedIds[canonicalKey],
+                    });
+                  }
+
+                  return list.map((item) => (
                     <div
-                      key={org.id}
+                      key={item.id}
                       className="flex items-center justify-between py-2 border-b border-white/5 last:border-0"
                     >
                       <div
-                        onClick={() => onOpenOrganizer?.(org.id)}
+                        onClick={() => onOpenOrganizer?.(item.id)}
                         className="flex items-center gap-3.5 cursor-pointer group"
                       >
-                        <div className="relative w-12 h-12 rounded-full overflow-hidden border border-white/20 group-hover:border-yellow-400 bg-zinc-900 shrink-0 transition-colors">
-                          <Image
-                            src={org.img}
-                            alt={org.name}
-                            fill
-                            className="object-cover"
-                            sizes="48px"
-                          />
+                        <div className="relative w-12 h-12 rounded-full overflow-hidden border border-white/20 group-hover:border-white bg-zinc-900 shrink-0 transition-colors flex items-center justify-center">
+                          {item.img ? (
+                            <img
+                              src={item.img}
+                              alt={item.name}
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <span className="text-sm font-black text-white uppercase">
+                              {item.name.slice(0, 2) || "4G"}
+                            </span>
+                          )}
                         </div>
                         <div className="flex flex-col">
-                          <span className="text-base font-extrabold text-white leading-tight group-hover:text-yellow-400 transition-colors">
-                            {org.name}
+                          <span className="text-base font-extrabold text-white leading-tight group-hover:text-zinc-200 transition-colors">
+                            {item.name}
                           </span>
                           <span className="text-xs text-zinc-400 font-medium">
-                            {org.type}
+                            {item.type}
                           </span>
                         </div>
                       </div>
@@ -580,17 +701,22 @@ export default function EventDetailOverlay({
                       <button
                         type="button"
                         onClick={() => {
-                          toggleFollow(org.id);
-                          const instagramLink = (org as any).instagramUrl || "https://instagram.com/cubic.ec";
-                          window.open(instagramLink, "_blank", "noopener,noreferrer");
+                          toggleFollow(item.id);
+                          if (item.instagramUrl) {
+                            window.open(item.instagramUrl, "_blank", "noopener,noreferrer");
+                          }
                         }}
-                        className="px-6 py-2 rounded-full bg-white hover:bg-zinc-200 text-black font-black text-xs uppercase tracking-wider transition-all cursor-pointer shadow-md active:scale-95"
+                        className={`px-6 py-2 rounded-full font-black text-xs uppercase tracking-wider transition-all cursor-pointer shadow-md active:scale-95 ${
+                          item.isFollowing
+                            ? "bg-zinc-800 text-zinc-300 border border-zinc-700"
+                            : "bg-white hover:bg-zinc-200 text-black"
+                        }`}
                       >
-                        SEGUIR
+                        {item.isFollowing ? "SIGUIENDO" : "SEGUIR"}
                       </button>
                     </div>
-                  );
-                })}
+                  ));
+                })()}
               </div>
             </div>
 

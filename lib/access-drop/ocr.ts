@@ -35,9 +35,8 @@ const FINANCIAL_KEYWORDS = [
 ] as const;
 
 const BANK_PATTERNS: Array<{ name: string; pattern: RegExp }> = [
-  { name: "Banco Pichincha", pattern: /\bpichincha\b/i },
-  { name: "Deuna", pattern: /\bdeuna\b/i },
-  { name: "Banco de Loja", pattern: /\b(?:banco\s+de\s+loja|banco\s+loja)\b/i },
+  { name: "Ahorita (Banco de Loja)", pattern: /\b(?:ahorita|banco\s+de\s+loja|banco\s+loja|loja)\b/i },
+  { name: "Deuna (Banco Pichincha)", pattern: /\b(?:deuna|pichincha)\b/i },
   { name: "Banco Guayaquil", pattern: /\bguayaquil\b/i },
   { name: "Banco del Pacifico", pattern: /\bpac[ií]fico\b/i },
   { name: "Banco Bolivariano", pattern: /\bbolivariano\b/i },
