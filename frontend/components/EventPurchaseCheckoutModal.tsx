@@ -156,13 +156,13 @@ export default function EventPurchaseCheckoutModal({
                       ...item,
                       id: `${item.id}-${i + 1}`,
                       singleIndex: i + 1,
-                      tierName: `1x ${item.tierName?.replace(/^\d+x\s*/, "") || "Entrada"}`,
+                      tierName: item.tierName?.replace(/^\d+x\s*/i, "") || "Entrada General",
                     });
                   }
                 } else {
                   individualPasses.push({
                     ...item,
-                    tierName: item.tierName?.startsWith("1x ") ? item.tierName : `1x ${item.tierName || "Entrada"}`,
+                    tierName: item.tierName?.replace(/^\d+x\s*/i, "") || "Entrada General",
                   });
                 }
               });
@@ -749,7 +749,7 @@ export default function EventPurchaseCheckoutModal({
                         >
                           <div className="flex flex-col text-left space-y-0.5 min-w-0 pr-3">
                             <span className="text-sm font-extrabold text-white leading-tight truncate group-hover:text-zinc-200">
-                              {tkt.tierName || "1x Entrada"}
+                              {tkt.tierName?.replace(/^\d+x\s*/i, "") || "Entrada"}
                             </span>
                             <span className="text-xs text-zinc-400 font-medium truncate">
                               {isConfirmed
@@ -904,7 +904,12 @@ export default function EventPurchaseCheckoutModal({
                   <button
                     type="button"
                     onClick={() => setShowPromoModal(true)}
-                    className="text-base sm:text-lg font-black text-white hover:text-[#dfff28] transition-colors cursor-pointer text-left inline-flex items-center gap-2"
+                    disabled={isMaxTicketsReached}
+                    className={`text-base sm:text-lg font-black transition-colors text-left inline-flex items-center gap-2 ${
+                      isMaxTicketsReached
+                        ? "text-zinc-600 opacity-40 cursor-not-allowed select-none"
+                        : "text-white hover:text-[#dfff28] cursor-pointer"
+                    }`}
                   >
                     <span>¿Tienes un código?</span>
                     {appliedPromo && (
@@ -946,7 +951,12 @@ export default function EventPurchaseCheckoutModal({
                   <button
                     type="button"
                     onClick={() => setShowPromoModal(true)}
-                    className="text-xs sm:text-sm font-black text-black hover:text-zinc-700 transition-colors cursor-pointer text-left inline-flex items-center gap-1.5"
+                    disabled={isMaxTicketsReached}
+                    className={`text-xs sm:text-sm font-black transition-colors text-left inline-flex items-center gap-1.5 ${
+                      isMaxTicketsReached
+                        ? "text-zinc-400 opacity-40 cursor-not-allowed select-none"
+                        : "text-black hover:text-zinc-700 cursor-pointer"
+                    }`}
                   >
                     <span>¿Tienes un código?</span>
                     {appliedPromo && (
