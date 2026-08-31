@@ -132,20 +132,27 @@ export default function EventPurchaseCheckoutModal({
       setAppliedPromo(null);
       setPromoError("");
       setPromoSuccess("");
-      if (userProfile) {
+      if (userLoggedIn && userProfile) {
         if (userProfile.name) setCustomerName(userProfile.name);
         if (userProfile.email) setCustomerEmail(userProfile.email);
         if (userProfile.phone) setCustomerPhone(userProfile.phone);
+      } else {
+        setCustomerName("");
+        setCustomerEmail("");
+        setCustomerPhone("");
+        setUserExistingEventTickets([]);
       }
 
-      if (event && typeof window !== "undefined") {
+      if (userLoggedIn && userProfile?.email && event && typeof window !== "undefined") {
         try {
           const stored = localStorage.getItem("nenez_purchased_tickets");
           if (stored) {
             const parsed = JSON.parse(stored);
             if (Array.isArray(parsed)) {
               const forEvent = parsed.filter(
-                (t: any) => t.eventId === event.id || t.eventTitle === event.title
+                (t: any) =>
+                  (t.eventId === event.id || t.eventTitle === event.title) &&
+                  (!t.userEmail || t.userEmail.toLowerCase() === userProfile.email.toLowerCase())
               );
               const individualPasses: any[] = [];
               forEvent.forEach((item: any) => {
@@ -170,9 +177,11 @@ export default function EventPurchaseCheckoutModal({
             }
           }
         } catch {}
+      } else {
+        setUserExistingEventTickets([]);
       }
     }
-  }, [isOpen, userProfile, event]);
+  }, [isOpen, userLoggedIn, userProfile, event]);
 
   if (!isOpen || !event) return null;
 
@@ -242,10 +251,12 @@ export default function EventPurchaseCheckoutModal({
     return acc;
   }, 0);
 
-  const existingTicketsCount = userExistingEventTickets.filter(
-    (t: any) => t.status !== "rejected" && t.status !== "rechazado"
-  ).length;
-  const isMaxTicketsReached = existingTicketsCount >= 2;
+  const existingTicketsCount = userLoggedIn
+    ? userExistingEventTickets.filter(
+        (t: any) => t.status !== "rejected" && t.status !== "rechazado"
+      ).length
+    : 0;
+  const isMaxTicketsReached = userLoggedIn && existingTicketsCount >= 2;
 
   const handleIncrease = (tierId: string) => {
     if (existingTicketsCount + totalTickets >= 2) return;
