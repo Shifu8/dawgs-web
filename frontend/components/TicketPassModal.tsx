@@ -3,11 +3,11 @@
 import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import {
-  X,
   Share2,
   Download,
   QrCode,
   Check,
+  ChevronLeft,
 } from "lucide-react";
 
 export interface TicketPassData {
@@ -239,28 +239,32 @@ export default function TicketPassModal({
         className="relative w-full max-w-[340px] sm:max-w-[360px] space-y-4 my-auto text-center selection:bg-[#dfff28] selection:text-black"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Floating Quick Action Buttons on Top Corner */}
-        <div className="flex items-center justify-end gap-2 px-1">
-          <button
-            type="button"
-            onClick={handleShareTicket}
-            className="w-8 h-8 rounded-full bg-black/70 hover:bg-white/20 border border-white/20 text-white flex items-center justify-center transition active:scale-95 cursor-pointer shadow-lg"
-            title="Compartir"
-          >
-            {shareSuccess ? (
-              <Check className="w-3.5 h-3.5 text-[#dfff28]" />
-            ) : (
-              <Share2 className="w-3.5 h-3.5 text-white" />
-            )}
-          </button>
-
+        {/* ─── TOP BAR (PHOTO 1 MATCH) ─── */}
+        <div className="flex items-center justify-between px-1">
           <button
             type="button"
             onClick={onClose}
-            className="w-8 h-8 rounded-full bg-black/70 hover:bg-white/20 border border-white/20 text-white flex items-center justify-center transition active:scale-95 cursor-pointer shadow-lg"
-            title="Cerrar"
+            className="w-9 h-9 rounded-full bg-white/10 hover:bg-white/20 border border-white/20 text-white flex items-center justify-center transition active:scale-95 cursor-pointer shadow-lg"
+            title="Volver"
           >
-            <X className="w-3.5 h-3.5 text-white" />
+            <ChevronLeft className="w-5 h-5 text-white" />
+          </button>
+
+          <h3 className="text-sm sm:text-base font-bold text-white tracking-wide">
+            Tickets
+          </h3>
+
+          <button
+            type="button"
+            onClick={handleShareTicket}
+            className="w-9 h-9 rounded-full bg-white/10 hover:bg-white/20 border border-white/20 text-white flex items-center justify-center transition active:scale-95 cursor-pointer shadow-lg"
+            title="Compartir"
+          >
+            {shareSuccess ? (
+              <Check className="w-4 h-4 text-[#dfff28]" />
+            ) : (
+              <Share2 className="w-4 h-4 text-white" />
+            )}
           </button>
         </div>
 
