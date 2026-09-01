@@ -20,6 +20,7 @@ import {
   Tag,
   Search,
   User,
+  Plus,
 } from "lucide-react";
 import type { Event } from "@/frontend/types/domain";
 import { getHdImageSrc, DEFAULT_HD_EVENT_POSTER } from "@/frontend/utils/hdImages";
@@ -35,6 +36,7 @@ interface EventPurchaseCheckoutModalProps {
   onSuccessPurchase?: (orderId: string) => void;
   onOpenSearch?: () => void;
   onOpenProfile?: () => void;
+  onOpenCreate?: () => void;
 }
 
 export interface PurchaseTier {
@@ -84,6 +86,7 @@ export default function EventPurchaseCheckoutModal({
   onSuccessPurchase,
   onOpenSearch,
   onOpenProfile,
+  onOpenCreate,
 }: EventPurchaseCheckoutModalProps) {
   // Steps: "select" (Paso 1: Entradas/Mesas) -> "payment" (Paso 2: Transferencia y Comprobante) -> "confirmed" (Paso 3: En espera de acreditación)
   const [currentStep, setCurrentStep] = useState<"select" | "payment" | "confirmed">("select");
@@ -560,7 +563,7 @@ export default function EventPurchaseCheckoutModal({
                 onClose();
               }
             }}
-            className="flex items-center justify-center w-11 h-11 rounded-full bg-black/60 border border-white/20 text-white hover:bg-white/20 backdrop-blur-md transition-all cursor-pointer shadow-2xl active:scale-95 shrink-0"
+            className="flex items-center justify-center w-11 h-11 rounded-full bg-white/10 border border-white/20 text-white hover:bg-white/20 backdrop-blur-xl transition-all cursor-pointer shadow-2xl active:scale-95 shrink-0"
             aria-label="Atrás"
           >
             <ArrowLeft className="w-5 h-5" />
@@ -586,14 +589,42 @@ export default function EventPurchaseCheckoutModal({
           </span>
         </div>
 
-        {/* Right Controls: Avatar on top & Search underneath (Absolute with Hover Tooltips) */}
-        <div className="pointer-events-auto flex flex-col items-center gap-2 shrink-0">
-          {/* Profile Button with Hover Preview */}
-          <div className="relative group flex items-center justify-end">
+        {/* Right Controls: + Crear on Left, Buscar in Middle, Avatar on Far Right (Horizontal Glass Buttons) */}
+        <div className="pointer-events-auto flex flex-row items-center gap-2 sm:gap-2.5 shrink-0">
+          {/* + Crear Glass Pill Button (Left) */}
+          <button
+            type="button"
+            onClick={() => onOpenCreate?.()}
+            className="h-10 px-3.5 sm:px-4 rounded-full bg-white/10 hover:bg-white/20 border border-white/20 backdrop-blur-xl flex items-center gap-1.5 text-white font-bold text-xs sm:text-sm shadow-lg cursor-pointer transition-all active:scale-95 whitespace-nowrap"
+            aria-label="Crear Evento"
+          >
+            <Plus className="w-4 h-4 stroke-[2.5]" />
+            <span>Crear</span>
+          </button>
+
+          {/* Search Button with Hover Preview (Middle) */}
+          <div className="relative group flex items-center justify-center">
+            <button
+              type="button"
+              onClick={() => onOpenSearch?.()}
+              className="w-10 h-10 rounded-full bg-white/10 border border-white/20 hover:bg-white/20 text-white backdrop-blur-xl flex items-center justify-center shadow-lg cursor-pointer transition-all active:scale-95"
+              aria-label="Buscar"
+            >
+              <Search className="w-5 h-5 text-white" />
+            </button>
+
+            {/* Hover Tooltip: Buscar */}
+            <div className="absolute top-[calc(100%+8px)] left-1/2 -translate-x-1/2 px-2.5 py-1 rounded-lg bg-zinc-950/90 border border-white/20 text-white text-[11px] font-bold uppercase tracking-wider backdrop-blur-xl shadow-2xl opacity-0 group-hover:opacity-100 pointer-events-none transition-all duration-200 -translate-y-1 group-hover:translate-y-0 whitespace-nowrap z-50">
+              Buscar
+            </div>
+          </div>
+
+          {/* Profile Button with Hover Preview (Far Right) */}
+          <div className="relative group flex items-center justify-center">
             <button
               type="button"
               onClick={() => onOpenProfile?.()}
-              className="w-10 h-10 rounded-full bg-black/60 border border-white/20 backdrop-blur-xl flex items-center justify-center text-white hover:bg-white/20 shadow-lg cursor-pointer transition-all active:scale-95 overflow-hidden relative"
+              className="w-10 h-10 rounded-full bg-white/10 border border-white/20 backdrop-blur-xl flex items-center justify-center text-white hover:bg-white/20 shadow-lg cursor-pointer transition-all active:scale-95 overflow-hidden relative"
               aria-label="Perfil"
             >
               {userLoggedIn && userProfile?.avatar ? (
@@ -612,25 +643,8 @@ export default function EventPurchaseCheckoutModal({
             </button>
 
             {/* Hover Tooltip: Perfil */}
-            <div className="absolute right-[calc(100%+10px)] top-1/2 -translate-y-1/2 px-2.5 py-1 rounded-lg bg-zinc-950/90 border border-white/20 text-white text-[11px] font-bold uppercase tracking-wider backdrop-blur-xl shadow-2xl opacity-0 group-hover:opacity-100 pointer-events-none transition-all duration-200 translate-x-1 group-hover:translate-x-0 whitespace-nowrap z-50">
+            <div className="absolute top-[calc(100%+8px)] left-1/2 -translate-x-1/2 px-2.5 py-1 rounded-lg bg-zinc-950/90 border border-white/20 text-white text-[11px] font-bold uppercase tracking-wider backdrop-blur-xl shadow-2xl opacity-0 group-hover:opacity-100 pointer-events-none transition-all duration-200 -translate-y-1 group-hover:translate-y-0 whitespace-nowrap z-50">
               Perfil
-            </div>
-          </div>
-
-          {/* Search Button with Hover Preview */}
-          <div className="relative group flex items-center justify-end">
-            <button
-              type="button"
-              onClick={() => onOpenSearch?.()}
-              className="w-10 h-10 rounded-full bg-black/60 border border-white/20 hover:bg-white/20 text-white backdrop-blur-xl flex items-center justify-center shadow-lg cursor-pointer transition-all active:scale-95"
-              aria-label="Buscar"
-            >
-              <Search className="w-5 h-5 text-white" />
-            </button>
-
-            {/* Hover Tooltip: Buscar */}
-            <div className="absolute right-[calc(100%+10px)] top-1/2 -translate-y-1/2 px-2.5 py-1 rounded-lg bg-zinc-950/90 border border-white/20 text-white text-[11px] font-bold uppercase tracking-wider backdrop-blur-xl shadow-2xl opacity-0 group-hover:opacity-100 pointer-events-none transition-all duration-200 translate-x-1 group-hover:translate-x-0 whitespace-nowrap z-50">
-              Buscar
             </div>
           </div>
         </div>
