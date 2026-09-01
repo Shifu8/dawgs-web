@@ -938,7 +938,7 @@ export default function MyAccountDashboardModal({
                         {/* Event Brand Header */}
                         <div className="flex items-center gap-4">
                           <div className="relative w-16 h-16 rounded-2xl overflow-hidden border border-white/25 bg-black/40 shadow-2xl shrink-0">
-                            <Image src={eventImageSrc} alt={managingEvent.title} fill className="object-cover" />
+                            <Image src={eventImageSrc} alt={managingEvent.title} fill sizes="64px" className="object-cover" />
                           </div>
                           <div className="min-w-0">
                             <h1 className="text-2xl sm:text-3xl font-black uppercase tracking-tight text-white truncate">

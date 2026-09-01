@@ -303,6 +303,7 @@ export default function ReservationCheckoutModal({
                         src={getHdImageSrc(activeEvent.poster)}
                         alt={activeEvent.title}
                         fill
+                        sizes="(max-width: 640px) 64px, 80px"
                         className="object-cover"
                       />
                     </div>

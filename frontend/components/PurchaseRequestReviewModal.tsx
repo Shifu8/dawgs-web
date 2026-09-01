@@ -287,6 +287,7 @@ export default function PurchaseRequestReviewModal({
                   src={eventImageSrc}
                   alt={eventTitle}
                   fill
+                  sizes="64px"
                   className="object-cover"
                 />
               </div>

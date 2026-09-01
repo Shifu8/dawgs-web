@@ -83,7 +83,6 @@ import MobileDock from "@/frontend/components/MobileDock";
 import Footer from "@/components/Footer";
 import OrganizerProfileOverlay, { ORGANIZER_DATA } from "@/frontend/features/organizer/OrganizerProfileOverlay";
 import { QuickPreviewModal } from "@/frontend/components/QuickPreviewModal";
-import { gsap, useGSAP } from "@/frontend/animations/gsapSetup";
 import DrinksMenuModal from "@/frontend/components/DrinksMenuModal";
 import StoryLinesHeader, { type StoryScreen } from "@/frontend/components/StoryLinesHeader";
 import AlienIcon from "@/frontend/components/AlienIcon";
@@ -166,7 +165,6 @@ function TypewriterText({ text }: { text: string }) {
 
 export default function HomePage({ initialConfig, initialEventSlug }: HomePageProps) {
   const router = useRouter();
-  const scope = useRef<HTMLElement>(null);
   const longPressTimer = useRef<NodeJS.Timeout | null>(null);
   const manualActiveUntil = useRef(0);
 
@@ -602,7 +600,11 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
   const [isTicketPulse, setIsTicketPulse] = useState(false);
   const [isRecoveryPulse, setIsRecoveryPulse] = useState(false);
   const [showEventModal, setShowEventModal] = useState(false);
-  const [showDetailOverlay, setShowDetailOverlay] = useState(false);
+  const [activeOverlay, setActiveOverlay] = useState<"organizer" | "event" | null>(null);
+  const showDetailOverlay = activeOverlay === "event";
+  const showOrganizerOverlay = activeOverlay === "organizer";
+  const setShowDetailOverlay = (val: boolean) => setActiveOverlay(val ? "event" : null);
+  const setShowOrganizerOverlay = (val: boolean) => setActiveOverlay(val ? "organizer" : null);
   const [showReservationModal, setShowReservationModal] = useState(false);
   const [reservationTargetEvent, setReservationTargetEvent] = useState<Event | null>(null);
   const [showQuickPreview, setShowQuickPreview] = useState(false);
@@ -841,8 +843,9 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
   const [selectedDay, setSelectedDay] = useState("todos");
   const [carteleraSearchQuery, setCarteleraSearchQuery] = useState("");
   const [selectedOrganizer, setSelectedOrganizer] = useState("todos");
-  const [showOrganizerOverlay, setShowOrganizerOverlay] = useState(false);
   const [selectedOrganizerSlug, setSelectedOrganizerSlug] = useState("cubic");
+  const [openedFromOrganizerSlug, setOpenedFromOrganizerSlug] = useState<string | null>(null);
+  const [openedFromEvent, setOpenedFromEvent] = useState<Event | null>(null);
   const [mobileDockTab, setMobileDockTab] = useState("inicio");
   const [heroIndex, setHeroIndex] = useState(0);
   const homeCarouselRef = useRef<HTMLDivElement>(null);
@@ -850,6 +853,29 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
   const [showAuthModalForFavorites, setShowAuthModalForFavorites] = useState(false);
   const [likedEvents, setLikedEvents] = useState<Record<string, boolean>>({});
   const [userReservations, setUserReservations] = useState<Record<string, boolean>>({});
+
+  // Cartelera Chips Scroll Navigation State
+  const carteleraChipsRef = useRef<HTMLDivElement>(null);
+  const [canChipsScrollLeft, setCanChipsScrollLeft] = useState(false);
+  const [canChipsScrollRight, setCanChipsScrollRight] = useState(true);
+
+  const checkChipsScroll = () => {
+    const el = carteleraChipsRef.current;
+    if (el) {
+      const isLeft = el.scrollLeft > 4;
+      const isRight = el.scrollLeft + el.clientWidth < el.scrollWidth - 4;
+      setCanChipsScrollLeft(isLeft);
+      setCanChipsScrollRight(isRight);
+    }
+  };
+
+  useEffect(() => {
+    if (activeStoryScreen === 2) {
+      setTimeout(checkChipsScroll, 100);
+      window.addEventListener("resize", checkChipsScroll);
+      return () => window.removeEventListener("resize", checkChipsScroll);
+    }
+  }, [activeStoryScreen]);
 
   // Listen to custom navigation & modal triggers dispatched from Footer
   useEffect(() => {
@@ -886,12 +912,6 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
 
   // Sync per-user favorites and reservations from localStorage & DB on login
   useEffect(() => {
-    if (!userLoggedIn) {
-      setLikedEvents({});
-      setUserReservations({});
-      return;
-    }
-
     const emailToUse = userProfile?.email || (() => {
       if (typeof window === "undefined") return null;
       try {
@@ -936,11 +956,21 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
           }
         })
         .catch((err) => console.error("Error loading user favorites from DB:", err));
+    } else {
+      // Load guest favorites from localStorage
+      try {
+        const guestFav = localStorage.getItem("organizer_favorites") || localStorage.getItem("guest_favorites");
+        if (guestFav) {
+          setLikedEvents(JSON.parse(guestFav));
+        }
+      } catch { }
     }
   }, [userProfile?.email, userLoggedIn]);
 
-  const toggleFavorite = async (eventId: string, e?: React.MouseEvent) => {
-    if (e) e.stopPropagation();
+  const toggleFavorite = (eventId: string, e?: React.MouseEvent | React.TouchEvent) => {
+    if (e) {
+      e.stopPropagation();
+    }
     const emailToUse = userProfile?.email || (() => {
       if (typeof window === "undefined") return null;
       try {
@@ -948,12 +978,6 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
         return stored ? JSON.parse(stored).email : null;
       } catch { return null; }
     })();
-
-    // REQUIRE LOGIN TO SAVE FAVORITES
-    if (!userLoggedIn || !emailToUse) {
-      setShowAuthModalForFavorites(true);
-      return;
-    }
 
     setLikedEvents((prev) => {
       const nextState = !prev[eventId];
@@ -963,6 +987,7 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
           localStorage.setItem(`user_favorites_${emailToUse}`, JSON.stringify(updated));
         }
         localStorage.setItem("organizer_favorites", JSON.stringify(updated));
+        localStorage.setItem("guest_favorites", JSON.stringify(updated));
       } catch { }
 
       if (emailToUse) {
@@ -1008,7 +1033,27 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
     });
   };
 
-  const [followedProfiles, setFollowedProfiles] = useState<Record<string, boolean>>({});
+  const [followedProfiles, setFollowedProfiles] = useState<Record<string, boolean>>(() => {
+    if (typeof window !== "undefined") {
+      try {
+        const saved = localStorage.getItem("nnz_followed_profiles");
+        return saved ? JSON.parse(saved) : {};
+      } catch {
+        return {};
+      }
+    }
+    return {};
+  });
+
+  const toggleFollowProfile = (id: string) => {
+    setFollowedProfiles((prev) => {
+      const next = { ...prev, [id]: !prev[id] };
+      try {
+        localStorage.setItem("nnz_followed_profiles", JSON.stringify(next));
+      } catch {}
+      return next;
+    });
+  };
 
   // Dynamic Real-Time Cartelera Events Filter by Category / Tag & Search Query
   const filteredCarteleraEvents = useMemo(() => {
@@ -1052,14 +1097,88 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
     });
   }, [events, selectedDay, carteleraSearchQuery, likedEvents, userReservations]);
 
+  // Dynamic search profiles merging ORGANIZER_DATA, userProfile, and distinct organizers from active events
+  const allSearchProfiles = useMemo<SearchProfile[]>(() => {
+    const map = new Map<string, SearchProfile>();
+
+    // 1. Add static organizers from ORGANIZER_DATA
+    Object.values(ORGANIZER_DATA).forEach((item) => {
+      map.set(item.id.toLowerCase().trim(), {
+        id: item.id,
+        name: item.name,
+        type: item.type,
+        avatar: item.logo,
+      });
+    });
+
+    // 2. Add logged-in user profile if exists
+    if (userProfile && (userProfile.name || userProfile.venueName)) {
+      const orgName = userProfile.venueName || userProfile.name;
+      const id = (userProfile.id || orgName).toLowerCase().trim();
+      const existing = map.get(id);
+      map.set(id, {
+        id: existing?.id || id,
+        name: orgName,
+        type: (userProfile.type as any) || existing?.type || "Organizador",
+        avatar: userProfile.avatar || existing?.avatar || "",
+      });
+    }
+
+    // 3. Dynamically collect all organizers from loaded events
+    events.forEach((evt) => {
+      const orgs = [evt.organizer, ...(evt.organizers || [])].filter(Boolean) as string[];
+      orgs.forEach((orgName) => {
+        const raw = orgName.trim();
+        if (!raw) return;
+        const lower = raw.toLowerCase();
+
+        if (lower.includes("cubic")) {
+          const c = map.get("cubic");
+          if (c && !c.avatar) c.avatar = "/images/cubic-official-logo.png";
+          return;
+        }
+        if (lower.includes("sata")) {
+          const s = map.get("sata");
+          if (s && !s.avatar) s.avatar = "/images/sata-official-logo.jpg";
+          return;
+        }
+        if (lower.includes("prueba")) {
+          const p = map.get("prueba1") || map.get(lower);
+          if (p && !p.avatar) p.avatar = "/images/logo_4go_black_white.png";
+          return;
+        }
+
+        const resolvedAvatar = (evt as any).miniImage || evt.poster || evt.imageUrl || "";
+        if (!map.has(lower)) {
+          map.set(lower, {
+            id: lower,
+            name: raw,
+            type: "Organizador",
+            avatar: resolvedAvatar,
+          });
+        } else {
+          const existing = map.get(lower)!;
+          if (!existing.avatar && resolvedAvatar) {
+            existing.avatar = resolvedAvatar;
+          }
+        }
+      });
+    });
+
+    return Array.from(map.values());
+  }, [events, userProfile]);
+
   // Matching promoter / club profiles for Cartelera search query
   const matchingCarteleraProfiles = useMemo(() => {
     const query = carteleraSearchQuery.toLowerCase().trim();
     if (!query) return [];
-    return SEARCH_PROFILES.filter(
-      (p) => p.name.toLowerCase().includes(query) || p.type.toLowerCase().includes(query)
+    return allSearchProfiles.filter(
+      (p) =>
+        p.name.toLowerCase().includes(query) ||
+        p.id.toLowerCase().includes(query) ||
+        p.type.toLowerCase().includes(query)
     );
-  }, [carteleraSearchQuery]);
+  }, [carteleraSearchQuery, allSearchProfiles]);
 
   // Smooth 60fps continuous slow auto-scroll to the right (no jumps, lentito)
   useEffect(() => {
@@ -1435,61 +1554,6 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  useGSAP(
-    () => {
-      if (isLoading) return;
-
-      const mm = gsap.matchMedia();
-
-      mm.add(
-        {
-          isDesktop: "(min-width: 1024px)",
-          isMobile: "(max-width: 1023px)",
-          reduceMotion: "(prefers-reduced-motion: reduce)",
-        },
-        (context) => {
-          const { reduceMotion, isDesktop } = context.conditions as {
-            reduceMotion: boolean;
-            isDesktop: boolean;
-          };
-
-          if (reduceMotion) {
-            gsap.set(".logo-icon", { opacity: 1, scale: 1, rotation: 0 });
-            gsap.set(".logo-char", { opacity: 1, y: 0, scale: 1 });
-            gsap.set(".hero-reveal", { autoAlpha: 1, y: 0 });
-            return;
-          }
-
-          const tl = gsap.timeline({ defaults: { ease: "power3.out" } });
-
-          // Animación del logo de Now4Go (corre en móvil y desktop)
-          tl.fromTo(".logo-icon",
-            { scale: 0, rotation: -45, opacity: 0 },
-            { scale: 1, rotation: 0, opacity: 1, duration: 0.8, ease: "back.out(1.7)" }
-          )
-            .fromTo(".logo-char",
-              { opacity: 0, y: 15, scale: 0.7, transformOrigin: "50% 100%" },
-              { opacity: 1, y: 0, scale: 1, duration: 0.45, stagger: 0.04, ease: "back.out(1.5)" },
-              "-=0.5"
-            );
-
-          // Animación adicional del hero (solo en desktop)
-          if (isDesktop) {
-            tl.from(".hero-reveal", {
-              y: 28,
-              stagger: 0.08,
-              duration: 0.85,
-            }, "-=0.3");
-          }
-        },
-        scope.current ?? undefined,
-      );
-
-      return () => mm.revert();
-    },
-    { dependencies: [isLoading], scope },
-  );
-
   const handleTouchStart = () => {
     longPressTimer.current = setTimeout(() => {
       setShowHiddenMenu(true);
@@ -1589,7 +1653,6 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
 
   return (
     <main
-      ref={scope}
       className="relative min-h-screen overflow-x-clip bg-black text-white"
       style={themeStyle}
     >
@@ -1687,15 +1750,15 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
 
           {/* 2. DYNAMIC HEADER TITLE & ACCOUNT BADGE */}
           <div className="w-full flex items-center relative">
-            {/* Exactly centered over the Left Vertical Video (lg:w-[30%]) across all screens */}
-            <div className="w-full lg:w-[30%] flex items-center justify-center text-center">
+            {/* Dynamic Header Title: Aligned to the left on mobile, centered over Left Column on desktop */}
+            <div className="w-full lg:w-[30%] flex items-center justify-start lg:justify-center text-left lg:text-center">
               <button
                 type="button"
                 onClick={() => {
                   setActiveStoryScreen(1);
                   window.scrollTo({ top: 0, behavior: "smooth" });
                 }}
-                className="flex items-center justify-center gap-2 cursor-pointer group focus:outline-none text-center"
+                className="flex items-center justify-start lg:justify-center gap-2 cursor-pointer group focus:outline-none text-left lg:text-center"
               >
                 <AnimatePresence mode="wait">
                   <motion.h1
@@ -1704,7 +1767,7 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: 6 }}
                     transition={{ duration: 0.25, ease: "easeOut" }}
-                    className="text-2xl sm:text-4xl font-extrabold tracking-tight text-white font-sans drop-shadow-md group-hover:text-purple-300 transition-colors whitespace-nowrap text-center"
+                    className="text-2xl sm:text-4xl font-extrabold tracking-tight text-white font-sans drop-shadow-md group-hover:text-purple-300 transition-colors whitespace-nowrap text-left lg:text-center"
                   >
                     {storyScreens[activeStoryScreen]?.label || "Home"}
                   </motion.h1>
@@ -1712,10 +1775,51 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
               </button>
             </div>
 
-            {/* Right: Avatar on top & Search Button underneath (Absolute at Far Right Edge with Hover Tooltips) */}
-            <div className="absolute right-0 top-0 flex flex-col items-center gap-2 shrink-0 z-[300] pr-1 sm:pr-2 lg:pr-4">
-              {/* Profile Button with Hover Preview */}
-              <div className="relative group flex items-center justify-end">
+            {/* Right: + Crear on Left, Buscar in Middle, Avatar on Far Right (Horizontal Glass Buttons) */}
+            <div className="absolute right-0 top-0 flex flex-row items-center gap-2 sm:gap-2.5 shrink-0 z-[300] pr-1 sm:pr-2 lg:pr-4">
+              {/* + Crear Glass Pill Button (Left) */}
+              <button
+                type="button"
+                onClick={() => {
+                  setActiveStoryScreen(0);
+                  if (typeof window !== "undefined") {
+                    window.scrollTo({ top: 0, behavior: "smooth" });
+                  }
+                }}
+                className="h-10 px-3.5 sm:px-4 rounded-full bg-white/10 hover:bg-white/20 border border-white/20 backdrop-blur-xl flex items-center gap-1.5 text-white font-bold text-xs sm:text-sm shadow-lg cursor-pointer transition-all active:scale-95 whitespace-nowrap"
+                aria-label="Crear Evento"
+              >
+                <Plus className="w-4 h-4 stroke-[2.5]" />
+                <span>Crear</span>
+              </button>
+
+              {/* Search Button with Hover Preview (Middle) */}
+              <div className="relative group flex items-center justify-center">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsHeaderSearchOpen((prev) => !prev);
+                    if (!isHeaderSearchOpen) {
+                      setTimeout(() => headerSearchInputRef.current?.focus(), 100);
+                    }
+                  }}
+                  className={`w-10 h-10 rounded-full border backdrop-blur-xl flex items-center justify-center shadow-lg cursor-pointer transition-all active:scale-95 ${isHeaderSearchOpen
+                    ? "bg-white border-white text-zinc-900 shadow-xl scale-105"
+                    : "bg-white/10 border-white/20 hover:bg-white/20 text-white"
+                    }`}
+                  aria-label="Buscar"
+                >
+                  <Search className={`w-5 h-5 ${isHeaderSearchOpen ? "text-zinc-900" : "text-white"}`} />
+                </button>
+
+                {/* Hover Tooltip: Buscar */}
+                <div className="absolute top-[calc(100%+8px)] left-1/2 -translate-x-1/2 px-2.5 py-1 rounded-lg bg-zinc-950/90 border border-white/20 text-white text-[11px] font-bold uppercase tracking-wider backdrop-blur-xl shadow-2xl opacity-0 group-hover:opacity-100 pointer-events-none transition-all duration-200 -translate-y-1 group-hover:translate-y-0 whitespace-nowrap z-50">
+                  Buscar
+                </div>
+              </div>
+
+              {/* Profile Button with Hover Preview (Far Right) */}
+              <div className="relative group flex items-center justify-center">
                 <button
                   type="button"
                   onClick={() => setShowUserMenu(!showUserMenu)}
@@ -1738,33 +1842,8 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                 </button>
 
                 {/* Hover Tooltip: Perfil */}
-                <div className="absolute right-[calc(100%+10px)] top-1/2 -translate-y-1/2 px-2.5 py-1 rounded-lg bg-zinc-950/90 border border-white/20 text-white text-[11px] font-bold uppercase tracking-wider backdrop-blur-xl shadow-2xl opacity-0 group-hover:opacity-100 pointer-events-none transition-all duration-200 translate-x-1 group-hover:translate-x-0 whitespace-nowrap z-50">
+                <div className="absolute top-[calc(100%+8px)] left-1/2 -translate-x-1/2 px-2.5 py-1 rounded-lg bg-zinc-950/90 border border-white/20 text-white text-[11px] font-bold uppercase tracking-wider backdrop-blur-xl shadow-2xl opacity-0 group-hover:opacity-100 pointer-events-none transition-all duration-200 -translate-y-1 group-hover:translate-y-0 whitespace-nowrap z-50">
                   Perfil
-                </div>
-              </div>
-
-              {/* Search Button with Hover Preview */}
-              <div className="relative group flex items-center justify-end">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setIsHeaderSearchOpen((prev) => !prev);
-                    if (!isHeaderSearchOpen) {
-                      setTimeout(() => headerSearchInputRef.current?.focus(), 100);
-                    }
-                  }}
-                  className={`w-10 h-10 rounded-full border backdrop-blur-xl flex items-center justify-center shadow-lg cursor-pointer transition-all active:scale-95 ${isHeaderSearchOpen
-                    ? "bg-white border-white text-zinc-900 shadow-xl scale-105"
-                    : "bg-white/10 border-white/20 hover:bg-white/20 text-white"
-                    }`}
-                  aria-label="Buscar"
-                >
-                  <Search className={`w-5 h-5 ${isHeaderSearchOpen ? "text-zinc-900" : "text-white"}`} />
-                </button>
-
-                {/* Hover Tooltip: Buscar */}
-                <div className="absolute right-[calc(100%+10px)] top-1/2 -translate-y-1/2 px-2.5 py-1 rounded-lg bg-zinc-950/90 border border-white/20 text-white text-[11px] font-bold uppercase tracking-wider backdrop-blur-xl shadow-2xl opacity-0 group-hover:opacity-100 pointer-events-none transition-all duration-200 translate-x-1 group-hover:translate-x-0 whitespace-nowrap z-50">
-                  Buscar
                 </div>
               </div>
             </div>
@@ -1830,8 +1909,11 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                 <div className="mt-2.5 w-full rounded-2xl bg-white border border-zinc-200 shadow-2xl p-4 text-zinc-900 max-h-[68vh] overflow-y-auto no-scrollbar space-y-2">
                   {(() => {
                     const query = headerSearchQuery.toLowerCase().trim();
-                    const matchingProfiles = SEARCH_PROFILES.filter(
-                      (p) => p.name.toLowerCase().includes(query) || p.type.toLowerCase().includes(query)
+                    const matchingProfiles = allSearchProfiles.filter(
+                      (p) =>
+                        p.name.toLowerCase().includes(query) ||
+                        p.id.toLowerCase().includes(query) ||
+                        p.type.toLowerCase().includes(query)
                     );
                     const matchingEvents = events.filter((e) => {
                       const titleMatch = (e.title || "").toLowerCase().includes(query);
@@ -1872,9 +1954,11 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                             <div className="flex items-center gap-3 min-w-0">
                               <div className="w-11 h-11 rounded-full bg-zinc-800 flex items-center justify-center text-white shrink-0 overflow-hidden relative border border-zinc-200/80">
                                 {prof.avatar ? (
-                                  <Image src={prof.avatar} alt={prof.name} fill className="object-cover" />
+                                  <Image src={prof.avatar} alt={prof.name} fill sizes="44px" className="object-cover" />
                                 ) : (
-                                  <Building2 className="w-5 h-5 text-zinc-300" />
+                                  <span className="text-xs font-black uppercase text-white tracking-wider">
+                                    {prof.name.slice(0, 2)}
+                                  </span>
                                 )}
                               </div>
                               <div className="flex-1 min-w-0 text-left">
@@ -1890,10 +1974,7 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                               type="button"
                               onClick={(e) => {
                                 e.stopPropagation();
-                                setFollowedProfiles((prev) => ({
-                                  ...prev,
-                                  [prof.id]: !prev[prof.id],
-                                }));
+                                toggleFollowProfile(prof.id);
                               }}
                               className={`px-5 py-2 rounded-full text-[11px] font-extrabold uppercase tracking-wider transition-all border shrink-0 cursor-pointer active:scale-95 ${followedProfiles[prof.id]
                                 ? "bg-zinc-900 text-white border-zinc-900 shadow-sm"
@@ -1925,6 +2006,7 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                                 src={evt.poster || "/images/now4go-hero-presentation-hd-v3.png"}
                                 alt={evt.title}
                                 fill
+                                sizes="(max-width: 640px) 44px, 48px"
                                 className="object-cover"
                               />
                             </div>
@@ -1969,7 +2051,7 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                 {/* --- TOP HERO ROW (30% LEFT VIDEO / 70% RIGHT AUTH FORM WITH VIDEO) --- */}
                 <div className="w-full min-h-[100dvh] flex flex-col lg:flex-row items-stretch">
                   {/* 1. LEFT COLUMN (30% WIDTH): BACKGROUND VIDEO FROM DOWNLOADS WITH AUDIO */}
-                  <div className="relative w-full lg:w-[30%] h-48 sm:h-64 lg:h-auto lg:min-h-[calc(100vh+6rem)] self-stretch bg-zinc-950 overflow-hidden flex-shrink-0">
+                  <div className="relative w-full lg:w-[30%] h-[42vh] sm:h-[48vh] lg:h-auto lg:min-h-[calc(100vh+6rem)] self-stretch bg-zinc-950 overflow-hidden flex-shrink-0">
                     <video
                       ref={leftVideoRef}
                       autoPlay
@@ -1983,7 +2065,7 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                     <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-transparent to-transparent opacity-90" />
 
                     {/* Bottom Footer: Left Copyright & Right Mute/Unmute Slider Switch */}
-                    <div className="absolute bottom-4 left-4 right-4 lg:bottom-6 lg:left-5 lg:right-5 z-10 flex items-center justify-between gap-2 pointer-events-auto">
+                    <div className="absolute bottom-3 left-4 right-4 lg:bottom-6 lg:left-5 lg:right-5 z-10 flex items-center justify-between gap-2 pointer-events-auto">
                       <span className="text-[9px] sm:text-[10px] font-semibold text-white/70 tracking-tight drop-shadow-md">
                         © 2026, all rights reserved
                       </span>
@@ -2013,7 +2095,7 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                   </div>
 
                   {/* 2. RIGHT COLUMN (70% WIDTH): CENTERED AUTH FORM WITH BACKGROUND VIDEO */}
-                  <div id="subir-evento-section" className="relative w-full lg:w-[70%] min-h-screen px-4 sm:px-12 py-8 sm:py-16 flex flex-col items-center justify-center bg-black text-white font-sans overflow-hidden">
+                  <div id="subir-evento-section" className="relative w-full lg:w-[70%] flex-1 min-h-[58vh] lg:min-h-screen px-4 sm:px-8 lg:px-12 py-8 sm:py-12 lg:py-16 flex flex-col items-center justify-center bg-black text-white font-sans overflow-hidden">
                     <video
                       autoPlay
                       loop
@@ -2025,19 +2107,20 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                       onLoadedMetadata={(e) => {
                         e.currentTarget.playbackRate = 0.5;
                       }}
-                      className="absolute inset-0 w-full h-full object-cover brightness-95 blur-2xl scale-110"
+                      className="absolute inset-0 w-full h-full object-cover brightness-95 blur-2xl scale-125 pointer-events-none"
                     >
                       <source src="/videos/subir_evento_bg.mp4" type="video/mp4" />
                     </video>
 
-                    {/* Overlay for legibility */}
+                    {/* Overlay for legibility & seamless edge blending */}
                     <div className="absolute inset-0 bg-black/45 backdrop-blur-xl" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-black/60 pointer-events-none" />
 
                     {/* Centered Dark Glass Auth / Vertical Dashboard Card */}
                     {!(isMounted && userLoggedIn) ? (
-                      <div className="relative z-10 w-full max-w-lg mx-auto bg-zinc-950/60 backdrop-blur-2xl p-6 sm:p-10 rounded-3xl border border-white/20 shadow-2xl space-y-6 text-white font-sans">
-                        <div className="text-center space-y-2">
-                          <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-white font-sans leading-tight">
+                      <div className="relative z-10 w-full max-w-lg mx-auto bg-zinc-950/60 backdrop-blur-2xl p-5 sm:p-8 lg:p-10 rounded-3xl border border-white/20 shadow-2xl space-y-4 sm:space-y-6 text-white font-sans my-auto">
+                        <div className="text-center space-y-1.5 sm:space-y-2">
+                          <h1 className="text-xl sm:text-2xl lg:text-3xl font-black tracking-tight text-white font-sans leading-tight">
                             Sube tu Evento &amp; Administra tu Cuenta 4GO
                           </h1>
                           <p className="text-xs sm:text-sm text-zinc-300 font-medium max-w-md mx-auto leading-relaxed">
@@ -2046,11 +2129,11 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                         </div>
 
                         {/* Social Logins */}
-                        <div className="space-y-3 pt-2">
+                        <div className="space-y-3 pt-1">
                           <button
                             type="button"
                             onClick={() => handleQuickSocialLogin("google")}
-                            className="w-full py-4 px-6 rounded-full bg-white hover:bg-zinc-100 text-black font-black text-xs sm:text-sm uppercase tracking-wider border border-white/30 flex items-center justify-center gap-3 transition-all hover:scale-[1.01] active:scale-95 cursor-pointer shadow-xl"
+                            className="w-full py-3.5 sm:py-4 px-6 rounded-full bg-white hover:bg-zinc-100 text-black font-black text-xs sm:text-sm uppercase tracking-wider border border-white/30 flex items-center justify-center gap-3 transition-all hover:scale-[1.01] active:scale-95 cursor-pointer shadow-xl"
                           >
                             <svg className="w-5 h-5 shrink-0" viewBox="0 0 24 24">
                               <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
@@ -2063,7 +2146,7 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                         </div>
                       </div>
                     ) : (!userProfile?.hasCompletedOnboarding || organizerSubView === "profile") ? (
-                      <div className="relative z-10 w-full max-w-2xl mx-auto space-y-5 font-sans pt-24 sm:pt-28 pb-8">
+                      <div className="relative z-10 w-full max-w-2xl mx-auto space-y-4 sm:space-y-5 font-sans pt-4 sm:pt-8 lg:pt-28 pb-8">
                         {/* ─── STEPPER INDICATOR HEADER OUTSIDE MODAL (ORIGINAL CLEAN TEXT STYLE) ─── */}
                         <div className="flex items-center justify-center gap-3 sm:gap-6 py-2 text-xs sm:text-sm font-bold text-white tracking-wider uppercase drop-shadow-md">
                           <span className="text-white font-black">
@@ -2475,7 +2558,7 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                         </div>
                       </div>
                     ) : (
-                      <div className="relative z-10 w-full max-w-2xl mx-auto space-y-6 font-sans pt-24 sm:pt-28 pb-12">
+                      <div className="relative z-10 w-full max-w-2xl mx-auto space-y-4 sm:space-y-6 font-sans pt-4 sm:pt-8 lg:pt-28 pb-12">
                         {/* --- STEPPER INDICATOR HEADER (1. CREAR EVENTO -> 2. PUBLICAR) --- */}
                         <div className="flex items-center justify-center gap-3 sm:gap-6 py-2 text-xs sm:text-sm font-bold text-white tracking-wider uppercase drop-shadow-md">
                           <span className="text-white font-black">
@@ -3239,49 +3322,101 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
 
                 </div>
 
-                {/* --- LOWER FEATURE SECTION BELOW VIDEO & LOGIN HERO (SCROLLABLE DOWN) --- */}
-                <div id="subir-features-section" className="w-full bg-zinc-950 text-white pt-16 sm:pt-24 pb-28 sm:pb-36 px-6 sm:px-12 border-t border-zinc-800 font-sans">
-                  <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
-                    {/* Left Side: Marketing & Feature Text */}
-                    <div className="lg:col-span-7 space-y-6 text-left">
-                      <h2 className="text-3xl sm:text-5xl font-black uppercase tracking-tight leading-tight text-white font-sans">
-                        Ventajas de ser Partner 4GO
+                {/* --- LOWER FEATURE SECTION BELOW VIDEO & LOGIN HERO (WHITE BACKGROUND WITH ANIMATED FACES) --- */}
+                <div id="subir-features-section" className="w-full bg-white text-black pt-20 sm:pt-28 pb-28 sm:pb-36 px-6 sm:px-12 font-sans relative z-10">
+                  <div className="max-w-xl mx-auto flex flex-col items-center text-center space-y-16 sm:space-y-24">
+                    {/* Main Centered Header */}
+                    <motion.div
+                      initial={{ opacity: 0, y: 30 }}
+                      whileInView={{ opacity: 1, y: 0 }}
+                      viewport={{ once: false, amount: "some" }}
+                      transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
+                      className="space-y-2 text-center"
+                    >
+                      <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black uppercase tracking-tight leading-tight text-black font-sans">
+                        CREAR EVENTOS NUNCA FUE TAN FÁCIL
                       </h2>
-                      <p className="text-sm sm:text-base text-zinc-300 leading-relaxed font-medium">
-                        Potencia tu discoteca u organización al máximo nivel con 4GO. Disfruta de conexión automática con Meta API para sincronizar tus historias de Instagram en vivo, posicionamiento destacado en la cartelera principal de Loja, gestión integral de reservas de mesas y listas VIP en tiempo real, análisis de asistencia y control de acceso fluido en puerta para brindar la mejor experiencia a tu público.
-                      </p>
-                      <div className="pt-2 flex flex-wrap items-center gap-4">
-                        <button
-                          type="button"
-                          onClick={() => {
-                            if (typeof window !== "undefined") {
-                              window.scrollTo({ top: 0, behavior: "smooth" });
-                            }
-                          }}
-                          className="px-8 py-3.5 rounded-full bg-white hover:bg-zinc-200 text-black font-black text-xs uppercase tracking-widest transition-all shadow-xl active:scale-95 cursor-pointer"
-                        >
-                          ELEVA TU CUENTA A PARTNER 4GO
-                        </button>
-                      </div>
-                    </div>
+                    </motion.div>
 
-                    {/* Right Side: The Party Showcase Photo (No Zoom Effect) */}
-                    <div className="lg:col-span-5 relative w-full h-[400px] sm:h-[500px] rounded-3xl overflow-hidden shadow-2xl border border-white/15 bg-zinc-950">
-                      <Image
-                        src="/images/subir_evento_party_showcase.jpg"
-                        alt="4GO Party Showcase"
-                        fill
-                        priority
-                        className="object-cover"
-                        sizes="(max-width: 1024px) 100vw, 500px"
-                      />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-80" />
-                      <div className="absolute bottom-6 left-6 z-10 text-left">
-                        <span className="text-[11px] font-bold text-white tracking-tight drop-shadow-md block">
-                          © 4GO 2026, all rights reserved
-                        </span>
-                      </div>
-                    </div>
+                    {/* Centered Scroll-Animated Feature Items with Unique Alien Faces (No zoom, pure smooth glide) */}
+                    {[
+                      {
+                        face: "/images/alien_face_v2_1.png",
+                        title: "PUBLICA EN SEGUNDOS",
+                        desc: "Configura tu evento, precios y preventas en menos tiempo del que te tomó leer esto.",
+                      },
+                      {
+                        face: "/images/alien_face_v2_2.png",
+                        title: "COBROS TRANSPARENTES",
+                        desc: "Mira tus ingresos totales desde el inicio, sin comisiones sorpresa ni retrasos al liquidar.",
+                      },
+                      {
+                        face: "/images/alien_face_v2_3.png",
+                        title: "VALIDA ENTRADAS EN PUERTA",
+                        desc: "Escaneo QR instantáneo desde cualquier teléfono para un ingreso rápido y sin duplicados.",
+                      },
+                      {
+                        face: "/images/alien_face_v2_4.png",
+                        title: "ALCANCE DIRECTO A TU PÚBLICO",
+                        desc: "Llega a miles de personas que buscan fiestas, conciertos y planes directamente en su inicio.",
+                      },
+                      {
+                        face: "/images/alien_face_v2_5.png",
+                        title: "CONTROL TOTAL DE ZONAS VIP",
+                        desc: "Administra mesas, consumos mínimos, listas de cortesía y capacidad de tu establecimiento.",
+                      },
+                    ].map((item) => (
+                      <motion.div
+                        key={item.title}
+                        initial={{ opacity: 0, y: 30 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: false, amount: "some" }}
+                        transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
+                        className="flex flex-col items-center text-center space-y-3.5"
+                      >
+                        {/* Distinct Larger Alien Face Illustration (No zoom) */}
+                        <div className="relative w-32 h-28 sm:w-40 sm:h-36 mb-1">
+                          <Image
+                            src={item.face}
+                            alt={item.title}
+                            fill
+                            sizes="(max-width: 640px) 128px, 160px"
+                            className="object-contain"
+                          />
+                        </div>
+
+                        {/* Title */}
+                        <h3 className="text-xl sm:text-2xl font-black uppercase tracking-tight text-black font-sans">
+                          {item.title}
+                        </h3>
+
+                        {/* Description */}
+                        <p className="text-xs sm:text-sm text-zinc-600 font-medium max-w-sm sm:max-w-md mx-auto leading-relaxed">
+                          {item.desc}
+                        </p>
+                      </motion.div>
+                    ))}
+
+                    {/* Centered CTA Button */}
+                    <motion.div
+                      initial={{ opacity: 0, y: 20 }}
+                      whileInView={{ opacity: 1, y: 0 }}
+                      viewport={{ once: false, amount: "some" }}
+                      transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
+                      className="pt-4"
+                    >
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (typeof window !== "undefined") {
+                            window.scrollTo({ top: 0, behavior: "smooth" });
+                          }
+                        }}
+                        className="px-10 py-4 rounded-full bg-black hover:bg-zinc-800 text-white font-black text-xs sm:text-sm uppercase tracking-widest transition-all shadow-xl active:scale-95 cursor-pointer"
+                      >
+                        ELEVA TU CUENTA A PARTNER 4GO
+                      </button>
+                    </motion.div>
                   </div>
                 </div>
               </motion.div>
@@ -3332,7 +3467,7 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                             fill
                             priority
                             quality={100}
-                            sizes="100vw"
+                            sizes="(max-width: 639px) 1px, 100vw"
                             aria-hidden="true"
                             className="hidden sm:block object-cover object-center scale-110 blur-2xl brightness-[0.4] saturate-150"
                           />
@@ -3483,7 +3618,9 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                           key={`carousel-card-${evt.id}-${idx}`}
                           onClick={() => {
                             setSelectedCarouselEvent(evt);
-                            setShowDetailOverlay(true);
+                            setOpenedFromEvent(null);
+                            setOpenedFromOrganizerSlug(null);
+                            setActiveOverlay("event");
                           }}
                           className="w-36 sm:w-56 md:w-60 lg:w-64 shrink-0 flex flex-col space-y-2 cursor-pointer group"
                         >
@@ -3499,19 +3636,19 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                             {/* Subtle Gradient Overlay */}
                             <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
 
-                            {/* Heart Overlay Button (Bottom Right) */}
-                            <div className="absolute bottom-2.5 right-2.5 z-10">
+                            {/* Heart Overlay Button (Bottom Right - Snappy 0ms Mobile Tap) */}
+                            <div className="absolute bottom-2 right-2 sm:bottom-2.5 sm:right-2.5 z-20 pointer-events-auto">
                               <button
                                 type="button"
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   toggleFavorite(evt.id, e);
                                 }}
-                                className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-white hover:bg-zinc-100 backdrop-blur-md border border-white flex items-center justify-center transition-transform active:scale-95 shadow-lg cursor-pointer"
+                                className="w-8 h-8 sm:w-8 sm:h-8 rounded-full bg-white hover:bg-zinc-100 active:bg-zinc-200 border border-white flex items-center justify-center transition-transform active:scale-90 shadow-md cursor-pointer touch-manipulation select-none"
                                 aria-label="Guardar favorito"
                               >
                                 <Heart
-                                  className={`w-3.5 h-3.5 transition-colors ${likedEvents[evt.id]
+                                  className={`w-4 h-4 transition-colors ${likedEvents[evt.id]
                                     ? "text-red-500 fill-red-500"
                                     : "text-zinc-900"
                                     }`}
@@ -3541,75 +3678,67 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                   </div>
                 </section>
 
-                {/* --- 3. BLACK FEATURE SECTION (EN ESPAÑOL) --- */}
-                <section className="w-full bg-black text-white py-16 sm:py-24 relative z-20 font-sans border-t border-zinc-900">
-                  <div className="max-w-[1200px] mx-auto px-6 sm:px-12 text-center space-y-12 sm:space-y-16">
-                    {/* Centered Title */}
-                    <h2 className="text-3xl sm:text-5xl font-black text-white tracking-tight font-sans uppercase">
-                      Reservar entradas nunca fue tan fácil
-                    </h2>
+                {/* --- 3. FEATURE SECTION (COMPRAR ENTRADAS - WHITE BACKGROUND, HORIZONTAL ON PC, VERTICAL ON MOBILE) --- */}
+                <div id="comprar-features-section" className="w-full bg-white text-black pt-16 sm:pt-24 pb-20 sm:pb-28 px-6 sm:px-12 font-sans relative z-10 border-t border-zinc-200">
+                  <div className="max-w-[1200px] mx-auto text-center space-y-14 sm:space-y-16">
+                    {/* Main Centered Header */}
+                    <div className="space-y-2 text-center max-w-2xl mx-auto">
+                      <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black uppercase tracking-tight leading-tight text-black font-sans">
+                        COMPRAR ENTRADAS NUNCA FUE TAN FÁCIL
+                      </h2>
+                    </div>
 
-                    {/* 3 Feature Columns */}
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-10 sm:gap-12 items-start">
-                      {/* Column 1 */}
-                      <div className="flex flex-col items-center text-center space-y-3 group">
-                        <div className="relative w-36 h-36 sm:w-44 sm:h-44 transition-transform duration-300">
-                          <Image
-                            src="/images/4go_alien_hands_tilt_left.png"
-                            alt="Reserva en segundos"
-                            fill
-                            className="object-contain filter drop-shadow-xl"
-                          />
-                        </div>
-                        <h3 className="text-lg sm:text-xl font-black text-white uppercase tracking-tight">
-                          Reserva en segundos
-                        </h3>
-                        <p className="text-xs sm:text-sm font-semibold text-zinc-300 max-w-xs leading-relaxed">
-                          Obtén tus entradas en menos tiempo del que te tomó leer esto.
-                        </p>
-                      </div>
+                    {/* Feature Items (Horizontal 3-column grid on PC, vertical stack on Mobile) */}
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-12 md:gap-10 lg:gap-16 items-start">
+                      {[
+                        {
+                          face: "/images/alien_face_v2_1.png",
+                          title: "COMPRA EN SEGUNDOS",
+                          desc: "Obtén tus entradas oficiales en menos tiempo del que te tomó leer esto.",
+                        },
+                        {
+                          face: "/images/alien_face_v2_2.png",
+                          title: "PRECIOS TRANSPARENTES",
+                          desc: "Mira el precio total desde el inicio, sin cargos ocultos ni sorpresas al pagar.",
+                        },
+                        {
+                          face: "/images/alien_face_v2_3.png",
+                          title: "RECOMENDACIONES PERSONALIZADAS",
+                          desc: "Descubre los eventos hechos a tu medida directamente en tu inicio.",
+                        },
+                      ].map((item) => (
+                        <div
+                          key={item.title}
+                          className="flex flex-col items-center text-center space-y-3.5"
+                        >
+                          {/* Distinct Larger Alien Face Illustration (No zoom) */}
+                          <div className="relative w-32 h-28 sm:w-36 sm:h-32 mb-1">
+                            <Image
+                              src={item.face}
+                              alt={item.title}
+                              fill
+                              sizes="(max-width: 640px) 128px, 144px"
+                              className="object-contain"
+                            />
+                          </div>
 
-                      {/* Column 2 */}
-                      <div className="flex flex-col items-center text-center space-y-3 group">
-                        <div className="relative w-36 h-36 sm:w-44 sm:h-44 transition-transform duration-300">
-                          <Image
-                            src="/images/4go_alien_hands_straight.png"
-                            alt="Precios transparentes"
-                            fill
-                            className="object-contain filter drop-shadow-xl"
-                          />
-                        </div>
-                        <h3 className="text-lg sm:text-xl font-black text-white uppercase tracking-tight">
-                          Precios transparentes
-                        </h3>
-                        <p className="text-xs sm:text-sm font-semibold text-zinc-300 max-w-xs leading-relaxed">
-                          Mira el precio total desde el inicio, sin cargos ocultos ni sorpresas al pagar.
-                        </p>
-                      </div>
+                          {/* Title */}
+                          <h3 className="text-xl sm:text-2xl font-black uppercase tracking-tight text-black font-sans">
+                            {item.title}
+                          </h3>
 
-                      {/* Column 3 */}
-                      <div className="flex flex-col items-center text-center space-y-3 group">
-                        <div className="relative w-36 h-36 sm:w-44 sm:h-44 transition-transform duration-300">
-                          <Image
-                            src="/images/4go_alien_hands_tilt_right.png"
-                            alt="Recomendaciones personalizadas"
-                            fill
-                            className="object-contain filter drop-shadow-xl"
-                          />
+                          {/* Description */}
+                          <p className="text-xs sm:text-sm text-zinc-600 font-medium max-w-xs mx-auto leading-relaxed">
+                            {item.desc}
+                          </p>
                         </div>
-                        <h3 className="text-lg sm:text-xl font-black text-white uppercase tracking-tight">
-                          Recomendaciones personalizadas
-                        </h3>
-                        <p className="text-xs sm:text-sm font-semibold text-zinc-300 max-w-xs leading-relaxed">
-                          Descubre los eventos hechos a tu medida directamente en tu inicio.
-                        </p>
-                      </div>
+                      ))}
                     </div>
                   </div>
-                </section>
+                </div>
 
                 {/* --- 4. WHITE ORGANIZER BANNER SECTION (PUBLICA TUS EVENTOS) --- */}
-                <section id="subir-features-section" className="w-full bg-white text-black py-16 sm:py-24 relative z-20 font-sans border-t border-zinc-200">
+                <section id="organizer-banner-section" className="w-full bg-white text-black py-16 sm:py-24 relative z-20 font-sans border-t border-zinc-200">
                   <div className="max-w-[1300px] mx-auto px-6 sm:px-12">
                     <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8 items-center">
                       {/* Left Column: Title, Description & Action Buttons */}
@@ -3687,7 +3816,7 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                 </section>
 
                 {/* --- 6. MERCH 4GO SECTION WITH CLEAN MINIMAL OVERLAY --- */}
-                <section id="merch-4go-section" className="w-full relative z-20 font-sans py-36 sm:py-48 lg:py-56 overflow-hidden border-t border-white/10 text-white min-h-[550px] sm:min-h-[680px] lg:min-h-[820px] flex items-end justify-center pb-16 sm:pb-24 lg:pb-28">
+                <section id="merch-4go-section" className="w-full relative z-20 font-sans py-36 sm:py-48 lg:py-56 overflow-hidden border-t border-white/10 text-white min-h-[550px] sm:min-h-[680px] lg:min-h-[850px] flex items-end justify-center pb-16 sm:pb-24 lg:pb-28">
                   {/* Full-bleed Vivid Hero Image as Section Background */}
                   <div className="absolute inset-0 z-0 overflow-hidden">
                     <Image
@@ -3696,11 +3825,11 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                       fill
                       priority
                       quality={100}
-                      className="object-cover object-center"
+                      className="object-cover object-[center_12%] sm:object-[center_15%] lg:object-[center_10%]"
                       sizes="100vw"
                     />
                     {/* Soft vignette gradient overlay for bottom text readability */}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-black/40" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-black/20" />
                   </div>
 
                   {/* Clean Minimal Overlay: Title + Subtitle + White Pill Button */}
@@ -3731,54 +3860,58 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.25, ease: "easeOut" }}
-                className="w-full text-white min-h-screen pt-28 sm:pt-32 pb-40 px-4 sm:px-8 relative z-10 bg-[#0c0714] overflow-hidden"
+                className="w-full text-white min-h-screen pt-28 sm:pt-32 pb-40 px-4 sm:px-8 relative z-10 bg-black overflow-hidden"
               >
-                {/* --- KASKADE: ORIGIN // EXACT AMBIENT POSTER BLUR BACKDROP (ZERO-FLICKER PERFECTED) --- */}
-                <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden bg-[#0c0714]">
-                  {/* Instant dark base shield to prevent initial unblurred green raster flash */}
-                  <div className="absolute inset-0 bg-[#0c0714] z-0" />
+                {/* ─── ULTRA-VIVID AMBIENT POSTER COLOR BLUR (AUTHENTIC GRADIENT FADE TO DEEP BLACK) ─── */}
+                <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden bg-black transform-gpu">
+                  {/* Blurred Image with Smooth Mask-Image Gradient Fade to Black */}
+                  <div
+                    className="absolute top-0 inset-x-0 h-[85vh] max-h-[850px] overflow-hidden"
+                    style={{
+                      WebkitMaskImage: "linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,0.9) 25%, rgba(0,0,0,0.45) 60%, rgba(0,0,0,0) 100%)",
+                      maskImage: "linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,0.9) 25%, rgba(0,0,0,0.45) 60%, rgba(0,0,0,0) 100%)",
+                    }}
+                  >
+                    <Image
+                      src={events[0]?.poster || "/images/alien_face_v2_1.png"}
+                      alt=""
+                      aria-hidden="true"
+                      fill
+                      priority
+                      quality={20}
+                      sizes="120px"
+                      className="object-cover object-top scale-150 blur-[90px] saturate-200 brightness-110 opacity-85 transform-gpu will-change-transform"
+                    />
+                  </div>
 
-                  <Image
-                    src="/images/4go_dj_green_alien_hero_2k.png"
-                    alt="Kaskade: ORIGIN //"
-                    fill
-                    priority
-                    quality={100}
-                    sizes="100vw"
-                    className="object-cover object-center scale-150 blur-[110px] saturate-200 brightness-110 opacity-75 relative z-10"
-                  />
-                  {/* Exact Dark Gradient Overlay from Event Detail Screen */}
-                  <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-black/40 to-[#0c0714]/95 z-20" />
+                  {/* Global Smooth Gradient Overlay */}
+                  <div className="absolute inset-0 bg-gradient-to-b from-black/10 via-black/25 via-40% to-black pointer-events-none" />
                 </div>
 
                 <div className="max-w-[1400px] mx-auto space-y-6 relative z-10">
-                  {/* Section Header Row with Title on Left */}
-                  <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 pt-1 border-b border-white/10 pb-4 text-left">
-                    <div className="space-y-1">
-                      <h2 className="text-3xl sm:text-5xl font-black text-white tracking-tight font-sans drop-shadow-md">
-                        Eventos populares <span className="text-[#dfff28] font-black">en Loja</span>
-                      </h2>
-                      <p className="text-xs sm:text-sm text-zinc-300 font-medium">
-                      </p>
-                    </div>
-                  </div>
 
-                  {/* --- HORIZONTAL GLASS PILL FILTER BAR & INTEGRATED LIVE SEARCH (EXPANDED & UNCLIPPED) --- */}
-                  <div className="w-full bg-white/10 border border-white/20 backdrop-blur-2xl rounded-full px-3 sm:px-4 py-2 sm:py-2.5 flex items-center justify-between gap-3 sm:gap-4 shadow-2xl relative z-20 overflow-x-auto no-scrollbar">
-                    {/* Left: Expanded Search Input Bar */}
-                    <div className="relative flex-1 min-w-[220px] max-w-sm sm:max-w-md md:max-w-lg flex items-center shrink-0">
-                      <Search className="absolute left-3.5 w-4 h-4 text-white/60 pointer-events-none" />
+                  {/* --- YOUTUBE-STYLE CLEAN SEARCH ON TOP & FILTER CHIPS BELOW --- */}
+                  <div className="flex flex-col items-center gap-3.5 relative z-20 w-full">
+                    {/* Top: Centered Search Input */}
+                    <div className="relative w-full max-w-md mx-auto flex items-center">
+                      <Search className="absolute left-3.5 w-4 h-4 text-white/50 pointer-events-none" />
                       <input
                         type="text"
                         value={carteleraSearchQuery}
-                        onChange={(e) => setCarteleraSearchQuery(e.target.value)}
+                        onChange={(e) => {
+                          setCarteleraSearchQuery(e.target.value);
+                          setTimeout(checkChipsScroll, 100);
+                        }}
                         placeholder="Buscar evento, promotor o club..."
-                        className="w-full pl-10 pr-9 py-2 rounded-full bg-black/40 border border-white/15 text-xs font-semibold text-white placeholder:text-white/50 focus:outline-none focus:border-[#dfff28] focus:bg-black/60 transition-all"
+                        className="w-full pl-10 pr-9 py-2.5 rounded-xl bg-[#202020] hover:bg-[#252525] border border-white/10 text-xs font-semibold text-white placeholder:text-white/45 focus:outline-none focus:border-white/40 focus:bg-[#2b2b2b] transition-all shadow-inner"
                       />
                       {carteleraSearchQuery && (
                         <button
                           type="button"
-                          onClick={() => setCarteleraSearchQuery("")}
+                          onClick={() => {
+                            setCarteleraSearchQuery("");
+                            setTimeout(checkChipsScroll, 100);
+                          }}
                           className="absolute right-3 p-1 text-white/60 hover:text-white transition cursor-pointer"
                         >
                           <X className="w-3.5 h-3.5" />
@@ -3786,32 +3919,91 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                       )}
                     </div>
 
-                    {/* Right: Unclipped Text-Only Category Pills */}
-                    <div className="flex items-center gap-1.5 sm:gap-2 shrink-0 overflow-x-auto no-scrollbar pr-1">
-                      {[
-                        { id: "todos", label: "Todos" },
-                        { id: "favoritos", label: "Favoritos" },
-                        { id: "mis_reservas", label: "Mis Reservas" },
-                        { id: "dj", label: "DJ" },
-                        { id: "party", label: "Fiesta" },
-                        { id: "comedy", label: "Comedia" },
-                        { id: "gigs", label: "Gigs" },
-                        { id: "food", label: "Food" },
-                        { id: "social", label: "Social" },
-                        { id: "wellbeing", label: "Bienestar" },
-                      ].map((cat) => (
-                        <button
-                          key={`horiz-pill-${cat.id}`}
-                          type="button"
-                          onClick={() => setSelectedDay(cat.id)}
-                          className={`px-4 py-2 rounded-full text-xs font-black uppercase tracking-wider shrink-0 transition-all cursor-pointer shadow-md border ${selectedDay === cat.id || (cat.id === "todos" && selectedDay === "todos")
-                            ? "bg-white text-black border-white scale-105 shadow-[0_0_20px_rgba(255,255,255,0.4)]"
-                            : "bg-black/40 border-white/10 text-white/80 hover:text-white hover:border-white/30 hover:bg-white/10"
-                            }`}
-                        >
-                          <span>{cat.label}</span>
-                        </button>
-                      ))}
+                    {/* Bottom: Chips Horizontal Carousel (Centered on PC, Scrollable on Mobile) */}
+                    <div className="relative w-full max-w-5xl mx-auto flex items-center justify-center">
+                      {/* Floating Left Scroll Arrow Button (Mobile only) */}
+                      <AnimatePresence>
+                        {canChipsScrollLeft && (
+                          <motion.button
+                            type="button"
+                            initial={{ opacity: 0, scale: 0.8 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            exit={{ opacity: 0, scale: 0.8 }}
+                            transition={{ duration: 0.18, ease: "easeOut" }}
+                            onClick={() => {
+                              const el = carteleraChipsRef.current;
+                              if (el) {
+                                el.scrollBy({ left: -220, behavior: "smooth" });
+                                setTimeout(checkChipsScroll, 250);
+                              }
+                            }}
+                            className="md:hidden absolute left-0 top-1/2 -translate-y-1/2 z-20 w-8 h-8 rounded-full bg-[#181818] hover:bg-[#282828] text-white flex items-center justify-center transition-all active:scale-90 cursor-pointer shadow-[0_2px_10px_rgba(0,0,0,0.7)] border border-white/15"
+                            aria-label="Anterior"
+                          >
+                            <ChevronLeft className="w-4 h-4 text-white stroke-[2.5]" />
+                          </motion.button>
+                        )}
+                      </AnimatePresence>
+
+                      <div
+                        ref={carteleraChipsRef}
+                        id="cartelera-chips-container"
+                        onScroll={checkChipsScroll}
+                        className="flex items-center gap-2 overflow-x-auto no-scrollbar scroll-smooth py-1 px-1 w-full justify-start md:justify-center"
+                      >
+                        {[
+                          { id: "todos", label: "Todo" },
+                          { id: "favoritos", label: "Favoritos" },
+                          { id: "mis_reservas", label: "Mis Reservas" },
+                          { id: "dj", label: "DJ" },
+                          { id: "party", label: "Fiesta" },
+                          { id: "comedy", label: "Comedia" },
+                          { id: "gigs", label: "Gigs" },
+                          { id: "food", label: "Food" },
+                          { id: "social", label: "Social" },
+                          { id: "wellbeing", label: "Bienestar" },
+                        ].map((cat) => {
+                          const isActive = selectedDay === cat.id || (cat.id === "todos" && selectedDay === "todos");
+                          return (
+                            <button
+                              key={`chip-${cat.id}`}
+                              type="button"
+                              onClick={() => setSelectedDay(cat.id)}
+                              className={`px-3.5 py-1.5 rounded-lg text-xs font-bold shrink-0 transition-colors cursor-pointer select-none ${
+                                isActive
+                                  ? "bg-white text-black shadow-sm"
+                                  : "bg-[#272727] hover:bg-[#3f3f3f] text-white/90"
+                              }`}
+                            >
+                              {cat.label}
+                            </button>
+                          );
+                        })}
+                      </div>
+
+                      {/* Floating Right Scroll Arrow Button (Mobile only) */}
+                      <AnimatePresence>
+                        {canChipsScrollRight && (
+                          <motion.button
+                            type="button"
+                            initial={{ opacity: 0, scale: 0.8 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            exit={{ opacity: 0, scale: 0.8 }}
+                            transition={{ duration: 0.18, ease: "easeOut" }}
+                            onClick={() => {
+                              const el = carteleraChipsRef.current;
+                              if (el) {
+                                el.scrollBy({ left: 220, behavior: "smooth" });
+                                setTimeout(checkChipsScroll, 250);
+                              }
+                            }}
+                            className="md:hidden absolute right-0 top-1/2 -translate-y-1/2 z-20 w-8 h-8 rounded-full bg-[#181818] hover:bg-[#282828] text-white flex items-center justify-center transition-all active:scale-90 cursor-pointer shadow-[0_2px_10px_rgba(0,0,0,0.7)] border border-white/15"
+                            aria-label="Siguiente"
+                          >
+                            <ChevronRight className="w-4 h-4 text-white stroke-[2.5]" />
+                          </motion.button>
+                        )}
+                      </AnimatePresence>
                     </div>
                   </div>
 
@@ -3826,15 +4018,19 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                             type="button"
                             onClick={() => {
                               setSelectedOrganizerSlug(prof.id);
-                              setShowOrganizerOverlay(true);
+                              setOpenedFromEvent(null);
+                              setOpenedFromOrganizerSlug(null);
+                              setActiveOverlay("organizer");
                             }}
                             className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/10 border border-white/20 backdrop-blur-xl hover:bg-white/20 hover:border-white/30 text-white transition-all cursor-pointer shadow-xl shrink-0 group active:scale-95"
                           >
                             <div className="relative w-7 h-7 rounded-full bg-zinc-800 border border-white/30 overflow-hidden flex items-center justify-center shrink-0 shadow-md">
                               {prof.avatar ? (
-                                <Image src={prof.avatar} alt={prof.name} fill className="object-cover" />
+                                <Image src={prof.avatar} alt={prof.name} fill sizes="28px" className="object-cover" />
                               ) : (
-                                <Building2 className="w-3.5 h-3.5 text-white" />
+                                <span className="text-[9px] font-black uppercase text-white tracking-wider">
+                                  {prof.name.slice(0, 2)}
+                                </span>
                               )}
                             </div>
                             <span className="text-xs font-black text-white group-hover:text-[#dfff28] transition-colors truncate">
@@ -3854,7 +4050,9 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                               key={`cartelera-card-${evt.id}`}
                               onClick={() => {
                                 setSelectedCarouselEvent(evt);
-                                setShowDetailOverlay(true);
+                                setOpenedFromEvent(null);
+                                setOpenedFromOrganizerSlug(null);
+                                setActiveOverlay("event");
                               }}
                               className="group flex flex-col text-left cursor-pointer space-y-3 w-full max-w-[380px] mx-auto"
                             >
@@ -3868,12 +4066,15 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
                                   sizes="(max-width: 768px) 100vw, 360px"
                                 />
 
-                                {/* Heart Favorite Overlay Button */}
-                                <div className="absolute bottom-3.5 right-3.5 z-10">
+                                {/* Heart Favorite Overlay Button (Snappy 0ms Mobile Tap) */}
+                                <div className="absolute bottom-3 right-3 sm:bottom-3.5 sm:right-3.5 z-20 pointer-events-auto">
                                   <button
                                     type="button"
-                                    onClick={(e) => toggleFavorite(evt.id, e)}
-                                    className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-black/60 backdrop-blur-md border border-white/20 flex items-center justify-center text-white hover:scale-110 active:scale-95 transition-transform shadow-lg cursor-pointer"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      toggleFavorite(evt.id, e);
+                                    }}
+                                    className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-black/70 backdrop-blur-md border border-white/25 flex items-center justify-center text-white hover:scale-110 active:scale-90 transition-transform shadow-lg cursor-pointer touch-manipulation select-none"
                                     aria-label="Guardar favorito"
                                   >
                                     <Heart
@@ -3950,21 +4151,100 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
         }}
       />
 
-      {/* Apple Music Style Verified Organizer Profile Overlay */}
-      <OrganizerProfileOverlay
-        isOpen={showOrganizerOverlay}
-        onClose={() => setShowOrganizerOverlay(false)}
-        organizerName={selectedOrganizerSlug}
-        allEvents={events}
-        onSelectEvent={(evt) => {
-          setSelectedCarouselEvent(evt);
-          setShowDetailOverlay(true);
-        }}
-        onBuyEvent={(evt) => {
-          setSelectedCarouselEvent(evt);
-          setIsTicketModalOpen(true);
-        }}
-      />
+      {/* Solid Black Cinematic Curtain (Guarantees zero home bleed-through) */}
+      <AnimatePresence>
+        {Boolean(activeOverlay) && (
+          <motion.div
+            key="cinematic-black-curtain"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.15, ease: "easeOut" }}
+            className="fixed inset-0 z-[840] bg-black pointer-events-none"
+          />
+        )}
+      </AnimatePresence>
+
+      {/* Seamless Soft Blink Transition (Home <-> Event <-> Organizer <-> Back) */}
+      <AnimatePresence>
+        {activeOverlay === "organizer" && (
+          <OrganizerProfileOverlay
+            key={`organizer-modal-${selectedOrganizerSlug}`}
+            isOpen={true}
+            zIndex="z-[850]"
+            onClose={() => {
+              if (openedFromEvent) {
+                setSelectedCarouselEvent(openedFromEvent);
+                setActiveOverlay("event");
+                setOpenedFromEvent(null);
+              } else {
+                setActiveOverlay(null);
+              }
+              setOpenedFromOrganizerSlug(null);
+            }}
+            organizerName={selectedOrganizerSlug}
+            allEvents={events}
+            followedProfiles={followedProfiles}
+            onToggleFollow={toggleFollowProfile}
+            onSelectEvent={(evt) => {
+              setSelectedCarouselEvent(evt);
+              setOpenedFromOrganizerSlug(selectedOrganizerSlug);
+              setActiveOverlay("event");
+            }}
+            onBuyEvent={(evt) => {
+              setSelectedCarouselEvent(evt);
+              setIsTicketModalOpen(true);
+            }}
+          />
+        )}
+
+        {activeOverlay === "event" && selectedCarouselEvent && (
+          <EventDetailOverlay
+            key={`event-detail-modal-${selectedCarouselEvent.id}`}
+            event={selectedCarouselEvent}
+            allEvents={events}
+            isOpen={true}
+            zIndex="z-[850]"
+            onClose={() => {
+              if (openedFromOrganizerSlug) {
+                setSelectedOrganizerSlug(openedFromOrganizerSlug);
+                setActiveOverlay("organizer");
+                setOpenedFromOrganizerSlug(null);
+              } else {
+                setActiveOverlay(null);
+              }
+              setOpenedFromEvent(null);
+            }}
+            onBuy={(event) => {
+              setSelectedCarouselEvent(event);
+              setReservationTargetEvent(event);
+              setShowReservationModal(true);
+            }}
+            onSelectEvent={(event) => {
+              setSelectedCarouselEvent(event);
+            }}
+            onOpenDrinks={() => setShowDrinksModal(true)}
+            onOpenOrganizer={(slug) => {
+              if (selectedCarouselEvent) {
+                setOpenedFromEvent(selectedCarouselEvent);
+              }
+              setSelectedOrganizerSlug(slug || "cubic");
+              setActiveOverlay("organizer");
+            }}
+            onOpenSearch={() => {
+              setIsHeaderSearchOpen(true);
+              setTimeout(() => headerSearchInputRef.current?.focus(), 100);
+            }}
+            onOpenProfile={() => setShowUserMenu(true)}
+            userLoggedIn={userLoggedIn}
+            userProfile={userProfile}
+            isFavorite={!!likedEvents[selectedCarouselEvent?.id || ""]}
+            onToggleFavorite={(eventId, e) => toggleFavorite(eventId, e)}
+            onOpenAuth={() => setShowAuthModalForFavorites(true)}
+            isCheckoutOpen={showReservationModal || isTicketModalOpen}
+          />
+        )}
+      </AnimatePresence>
 
       {/* --- NEW COMPREHENSIVE TICKET & TABLE PURCHASE CHECKOUT MODAL (WITH OCR VERIFICATION) --- */}
       <AnimatePresence>
@@ -3999,42 +4279,6 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
         isOpen={showQuickPreview}
         onClose={() => setShowQuickPreview(false)}
       />
-
-      {/* Premium Cinematic Event Detail Overlay */}
-      <AnimatePresence>
-        {showDetailOverlay && (
-          <EventDetailOverlay
-            event={selectedCarouselEvent}
-            allEvents={events}
-            isOpen={showDetailOverlay}
-            onClose={() => setShowDetailOverlay(false)}
-            onBuy={(event) => {
-              setSelectedCarouselEvent(event);
-              setReservationTargetEvent(event);
-              setShowReservationModal(true);
-            }}
-            onSelectEvent={(event) => {
-              setSelectedCarouselEvent(event);
-            }}
-            onOpenDrinks={() => setShowDrinksModal(true)}
-            onOpenOrganizer={(slug) => {
-              setSelectedOrganizerSlug(slug || "cubic");
-              setShowOrganizerOverlay(true);
-            }}
-            onOpenSearch={() => {
-              setIsHeaderSearchOpen(true);
-              setTimeout(() => headerSearchInputRef.current?.focus(), 100);
-            }}
-            onOpenProfile={() => setShowUserMenu(true)}
-            userLoggedIn={userLoggedIn}
-            userProfile={userProfile}
-            isFavorite={!!likedEvents[selectedCarouselEvent?.id || ""]}
-            onToggleFavorite={(eventId, e) => toggleFavorite(eventId, e)}
-            onOpenAuth={() => setShowAuthModalForFavorites(true)}
-            isCheckoutOpen={showReservationModal || isTicketModalOpen}
-          />
-        )}
-      </AnimatePresence>
 
       {/* Drinks & Bar Menu Modal */}
       <DrinksMenuModal

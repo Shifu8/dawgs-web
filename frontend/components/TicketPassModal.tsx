@@ -290,7 +290,7 @@ export default function TicketPassModal({
 
   return (
     <div
-      className="fixed inset-0 z-[850] flex items-center justify-center p-3 sm:p-5 bg-black/90 backdrop-blur-xl overflow-y-auto"
+      className="fixed inset-0 z-[1000] flex items-center justify-center p-3 sm:p-5 bg-black/90 backdrop-blur-xl overflow-y-auto"
       onClick={onClose}
     >
       <div
@@ -350,6 +350,7 @@ export default function TicketPassModal({
                 fill
                 className="object-cover object-center"
                 priority
+                sizes="(max-width: 640px) 100vw, 420px"
               />
             </div>
 

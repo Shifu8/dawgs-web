@@ -81,6 +81,7 @@ export const QuickPreviewModal: React.FC<QuickPreviewModalProps> = ({
                   src={event.poster}
                   alt={event.title}
                   fill
+                  sizes="64px"
                   className="object-cover"
                 />
               ) : (

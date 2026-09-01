@@ -323,6 +323,7 @@ export default function OrganizerPublishScreen() {
                     alt="4GO Event Pass Showcase"
                     fill
                     priority
+                    sizes="(max-width: 768px) 240px, 280px"
                     className="object-cover object-top"
                   />
                   <div className="absolute bottom-3 left-3 right-3 z-20 p-2 rounded-xl bg-black/80 backdrop-blur-md border border-white/20">

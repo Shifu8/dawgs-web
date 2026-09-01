@@ -516,7 +516,7 @@ export default function EventPurchaseCheckoutModal({
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       transition={{ duration: 0.35, ease: "easeInOut" }}
-      className="fixed inset-0 z-[500] bg-black text-white flex flex-col select-none overflow-y-auto"
+      className="fixed inset-0 z-[950] bg-black text-white flex flex-col select-none overflow-y-auto"
     >
       {/* ─── AMBIENT POSTER COLOR BLUR (AUTHENTIC GRADIENT FADE TO DEEP BLACK) ─── */}
       <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden bg-black transform-gpu">
@@ -733,6 +733,7 @@ export default function EventPurchaseCheckoutModal({
                     src={getHdImageSrc(event.poster)}
                     alt={event.title}
                     fill
+                    sizes="(max-width: 640px) 64px, 80px"
                     className="object-cover"
                   />
                 </div>
@@ -1165,6 +1166,7 @@ export default function EventPurchaseCheckoutModal({
                         src={selectedBank.qrImage}
                         alt={`QR ${selectedBank.bank}`}
                         fill
+                        sizes="144px"
                         className="object-contain"
                       />
                     </div>
@@ -1244,6 +1246,7 @@ export default function EventPurchaseCheckoutModal({
                       src={receiptPreview}
                       alt="Comprobante"
                       fill
+                      sizes="80px"
                       className="object-cover"
                     />
                   </div>

@@ -33,6 +33,7 @@ import {
 } from "lucide-react";
 import type { Event } from "@/frontend/types/domain";
 import { DEFAULT_HD_EVENT_POSTER, getHdImageSrc } from "@/frontend/utils/hdImages";
+import { ORGANIZER_DATA } from "@/frontend/features/organizer/OrganizerProfileOverlay";
 import Footer from "@/components/Footer";
 
 interface EventDetailOverlayProps {
@@ -45,13 +46,14 @@ interface EventDetailOverlayProps {
   onOpenDrinks?: () => void;
   onOpenSearch?: () => void;
   onOpenProfile?: () => void;
-  isOpen?: boolean;
   isCheckoutOpen?: boolean;
   userLoggedIn?: boolean;
   userProfile?: any;
   isFavorite?: boolean;
   onToggleFavorite?: (eventId: string, e?: React.MouseEvent) => void;
   onOpenAuth?: () => void;
+  zIndex?: string;
+  isOpen?: boolean;
 }
 
 export default function EventDetailOverlay({
@@ -66,6 +68,8 @@ export default function EventDetailOverlay({
   isFavorite = false,
   onToggleFavorite,
   onOpenAuth,
+  zIndex = "z-[800]",
+  isOpen = true,
 }: EventDetailOverlayProps) {
   const [isExpandedDescription, setIsExpandedDescription] = useState(false);
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
@@ -128,13 +132,13 @@ export default function EventDetailOverlay({
   };
 
   useEffect(() => {
-    if (typeof window !== "undefined") {
+    if (isOpen && typeof window !== "undefined") {
       document.body.style.overflow = "hidden";
       return () => {
         document.body.style.overflow = "";
       };
     }
-  }, []);
+  }, [isOpen]);
 
   const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
     if (e.currentTarget.scrollTop > 300) {
@@ -197,8 +201,8 @@ export default function EventDetailOverlay({
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      transition={{ duration: 0.35, ease: "easeInOut" }}
-      className="fixed inset-0 z-[300] bg-[#0c0714] text-white flex flex-col select-none overflow-hidden"
+      transition={{ duration: 0.22, ease: "easeOut" }}
+      className={`fixed inset-0 ${zIndex} bg-black text-white flex flex-col select-none overflow-hidden`}
     >
       {/* ─── ULTRA-VIVID AMBIENT POSTER COLOR BLUR (AUTHENTIC GRADIENT FADE TO DEEP BLACK) ─── */}
       <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden bg-black transform-gpu">
@@ -244,10 +248,10 @@ export default function EventDetailOverlay({
           </div>
         </div>
 
-        {/* Right Controls: Avatar on top & Search underneath (Absolute with Hover Tooltips) */}
-        <div className="pointer-events-auto flex flex-col items-center gap-2 shrink-0">
-          {/* Profile Button with Hover Preview */}
-          <div className="relative group flex items-center justify-end">
+        {/* Right Controls: Avatar on Left & Search on Right (Horizontal with Hover Tooltips) */}
+        <div className="pointer-events-auto flex flex-row items-center gap-2 sm:gap-2.5 shrink-0">
+          {/* Profile Button with Hover Preview (Left) */}
+          <div className="relative group flex items-center justify-center">
             <button
               type="button"
               onClick={() => onOpenProfile?.()}
@@ -270,13 +274,13 @@ export default function EventDetailOverlay({
             </button>
 
             {/* Hover Tooltip: Perfil */}
-            <div className="absolute right-[calc(100%+10px)] top-1/2 -translate-y-1/2 px-2.5 py-1 rounded-lg bg-zinc-950/90 border border-white/20 text-white text-[11px] font-bold uppercase tracking-wider backdrop-blur-xl shadow-2xl opacity-0 group-hover:opacity-100 pointer-events-none transition-all duration-200 translate-x-1 group-hover:translate-x-0 whitespace-nowrap z-50">
+            <div className="absolute top-[calc(100%+8px)] left-1/2 -translate-x-1/2 px-2.5 py-1 rounded-lg bg-zinc-950/90 border border-white/20 text-white text-[11px] font-bold uppercase tracking-wider backdrop-blur-xl shadow-2xl opacity-0 group-hover:opacity-100 pointer-events-none transition-all duration-200 -translate-y-1 group-hover:translate-y-0 whitespace-nowrap z-50">
               Perfil
             </div>
           </div>
 
-          {/* Search Button with Hover Preview */}
-          <div className="relative group flex items-center justify-end">
+          {/* Search Button with Hover Preview (Right) */}
+          <div className="relative group flex items-center justify-center">
             <button
               type="button"
               onClick={() => onOpenSearch?.()}
@@ -287,7 +291,7 @@ export default function EventDetailOverlay({
             </button>
 
             {/* Hover Tooltip: Buscar */}
-            <div className="absolute right-[calc(100%+10px)] top-1/2 -translate-y-1/2 px-2.5 py-1 rounded-lg bg-zinc-950/90 border border-white/20 text-white text-[11px] font-bold uppercase tracking-wider backdrop-blur-xl shadow-2xl opacity-0 group-hover:opacity-100 pointer-events-none transition-all duration-200 translate-x-1 group-hover:translate-x-0 whitespace-nowrap z-50">
+            <div className="absolute top-[calc(100%+8px)] left-1/2 -translate-x-1/2 px-2.5 py-1 rounded-lg bg-zinc-950/90 border border-white/20 text-white text-[11px] font-bold uppercase tracking-wider backdrop-blur-xl shadow-2xl opacity-0 group-hover:opacity-100 pointer-events-none transition-all duration-200 -translate-y-1 group-hover:translate-y-0 whitespace-nowrap z-50">
               Buscar
             </div>
           </div>
@@ -578,6 +582,7 @@ export default function EventDetailOverlay({
                   const seenKeys = new Set<string>();
                   const list: Array<{
                     id: string;
+                    slug?: string;
                     name: string;
                     type: string;
                     img: string;
@@ -640,13 +645,21 @@ export default function EventDetailOverlay({
                       ? (activeProfile?.type || "Organizador / Promotor")
                       : "Organizador de eventos";
 
-                    const img = isCubic
+                    const isPrueba = lower.includes("prueba");
+                    const orgKey = isCubic ? "cubic" : isSata ? "sata" : isPrueba ? "prueba1" : lower;
+                    const staticOrg = ORGANIZER_DATA[orgKey] || ORGANIZER_DATA[lower];
+
+                    const img = (activeProfile?.avatar && (isCurrentUser || isPrueba))
+                      ? activeProfile.avatar
+                      : staticOrg?.logo
+                      ? staticOrg.logo
+                      : isCubic
                       ? "/images/cubic-official-logo.png"
                       : isSata
                       ? "/images/sata-official-logo.jpg"
-                      : isCurrentUser && activeProfile?.avatar
-                      ? activeProfile.avatar
-                      : "";
+                      : isPrueba
+                      ? "/images/logo_4go_black_white.png"
+                      : (event as any).miniImage || event.poster || event.imageUrl || "";
 
                     const instagramUrl = isCubic
                       ? "https://instagram.com/cubic.ec"
@@ -654,10 +667,11 @@ export default function EventDetailOverlay({
                       ? "https://instagram.com/sata.ec"
                       : isCurrentUser && activeProfile?.instagram
                       ? `https://instagram.com/${activeProfile.instagram.replace(/^@/, "")}`
-                      : "";
+                      : staticOrg?.instagramUrl || "";
 
                     list.push({
                       id: canonicalKey,
+                      slug: orgKey,
                       name,
                       type,
                       img,
@@ -672,7 +686,7 @@ export default function EventDetailOverlay({
                       className="flex items-center justify-between py-2 border-b border-white/5 last:border-0"
                     >
                       <div
-                        onClick={() => onOpenOrganizer?.(item.id)}
+                        onClick={() => onOpenOrganizer?.(item.slug || item.id)}
                         className="flex items-center gap-3.5 cursor-pointer group"
                       >
                         <div className="relative w-12 h-12 rounded-full overflow-hidden border border-white/20 group-hover:border-white bg-zinc-900 shrink-0 transition-colors flex items-center justify-center">

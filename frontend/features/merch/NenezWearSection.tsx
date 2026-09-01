@@ -79,7 +79,7 @@ export default function NenezWearSection() {
                 transition={{ duration: 0.6 }}
                 className="absolute inset-0"
               >
-                <Image src={model.image} alt={model.modelName} fill className="object-cover object-center" />
+                <Image src={model.image} alt={model.modelName} fill sizes="(max-width: 768px) 100vw, 500px" className="object-cover object-center" />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/10" />
               </motion.div>
             </AnimatePresence>
@@ -189,7 +189,7 @@ export default function NenezWearSection() {
                     </div>
 
                     <div className="relative h-[300px] md:h-[360px] w-full rounded-[20px] overflow-hidden border border-white/5 bg-zinc-900">
-                      <Image src={outfit.image} alt={outfit.name} fill className="object-cover object-top transition-transform duration-[1.8s] group-hover:scale-105 brightness-[0.9] group-hover:brightness-100" />
+                      <Image src={outfit.image} alt={outfit.name} fill sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 360px" className="object-cover object-top transition-transform duration-[1.8s] group-hover:scale-105 brightness-[0.9] group-hover:brightness-100" />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent pointer-events-none" />
                       <div className="absolute bottom-4 left-4 right-4 z-10">
                         <span className="text-[6px] font-black text-[#C8FF00] tracking-widest uppercase">{outfit.category}</span>
