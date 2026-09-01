@@ -4236,6 +4236,13 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
               setTimeout(() => headerSearchInputRef.current?.focus(), 100);
             }}
             onOpenProfile={() => setShowUserMenu(true)}
+            onOpenCreate={() => {
+              setActiveOverlay(null);
+              setActiveStoryScreen(0);
+              if (typeof window !== "undefined") {
+                window.scrollTo({ top: 0, behavior: "smooth" });
+              }
+            }}
             userLoggedIn={userLoggedIn}
             userProfile={userProfile}
             isFavorite={!!likedEvents[selectedCarouselEvent?.id || ""]}
@@ -4264,6 +4271,15 @@ export default function HomePage({ initialConfig, initialEventSlug }: HomePagePr
               setTimeout(() => headerSearchInputRef.current?.focus(), 100);
             }}
             onOpenProfile={() => setShowUserMenu(true)}
+            onOpenCreate={() => {
+              setShowReservationModal(false);
+              setIsTicketModalOpen(false);
+              setActiveOverlay(null);
+              setActiveStoryScreen(0);
+              if (typeof window !== "undefined") {
+                window.scrollTo({ top: 0, behavior: "smooth" });
+              }
+            }}
             onSuccessPurchase={(orderId) => {
               if (selectedCarouselEvent?.id) {
                 handleConfirmReservation(selectedCarouselEvent.id, "general");

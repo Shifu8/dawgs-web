@@ -170,14 +170,14 @@ export default function OrganizerProfileOverlay({
       </div>
 
       <header className="fixed top-0 inset-x-0 z-[550] flex items-center justify-between px-4 sm:px-8 py-4 bg-gradient-to-b from-[#0c0714]/90 via-[#0c0714]/50 to-transparent pointer-events-none">
-        <button type="button" onClick={onClose} className="pointer-events-auto flex items-center justify-center w-11 h-11 rounded-full bg-black/60 border border-white/20 text-white hover:bg-white/20 backdrop-blur-md transition-all cursor-pointer shadow-2xl active:scale-95" aria-label="Volver">
+        <button type="button" onClick={onClose} className="pointer-events-auto flex items-center justify-center w-11 h-11 rounded-full bg-white/10 border border-white/20 text-white hover:bg-white/20 backdrop-blur-xl transition-all cursor-pointer shadow-2xl active:scale-95" aria-label="Volver">
           <ChevronLeft className="w-5 h-5" />
         </button>
         <div className="pointer-events-auto flex items-center gap-2">
-          <button type="button" onClick={() => { if (navigator.share) { navigator.share({ title: `${org.title} - 4GO`, url: org.instagramUrl }); } }} className="flex items-center justify-center w-11 h-11 rounded-full bg-black/60 border border-white/20 text-white hover:bg-white/20 backdrop-blur-md transition-all cursor-pointer shadow-2xl active:scale-95" aria-label="Compartir">
+          <button type="button" onClick={() => { if (navigator.share) { navigator.share({ title: `${org.title} - 4GO`, url: org.instagramUrl }); } }} className="flex items-center justify-center w-11 h-11 rounded-full bg-white/10 border border-white/20 text-white hover:bg-white/20 backdrop-blur-xl transition-all cursor-pointer shadow-2xl active:scale-95" aria-label="Compartir">
             <Share2 className="w-5 h-5" />
           </button>
-          <button type="button" onClick={onClose} className="flex items-center justify-center w-11 h-11 rounded-full bg-black/60 border border-white/20 text-white hover:bg-white/20 backdrop-blur-md transition-all cursor-pointer shadow-2xl active:scale-95" aria-label="Cerrar">
+          <button type="button" onClick={onClose} className="flex items-center justify-center w-11 h-11 rounded-full bg-white/10 border border-white/20 text-white hover:bg-white/20 backdrop-blur-xl transition-all cursor-pointer shadow-2xl active:scale-95" aria-label="Cerrar">
             <X className="w-5 h-5" />
           </button>
         </div>
