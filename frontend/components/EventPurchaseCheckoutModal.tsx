@@ -486,7 +486,7 @@ export default function EventPurchaseCheckoutModal({
           alt="4GO Favicon"
           width={34}
           height={34}
-          className="object-contain rounded-xl"
+          className="object-contain rounded-xl w-auto h-auto"
         />
       </div>
       <p className="text-[11px] sm:text-xs text-zinc-300 font-sans font-medium leading-relaxed tracking-normal">

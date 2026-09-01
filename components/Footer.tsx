@@ -29,7 +29,7 @@ export default function Footer({ showTopBanner = false }: FooterProps) {
                 alt="4GO"
                 width={144}
                 height={144}
-                className="object-contain"
+                className="object-contain w-auto h-auto"
                 priority
               />
             </div>
@@ -63,7 +63,7 @@ export default function Footer({ showTopBanner = false }: FooterProps) {
                   alt="4GO Logo"
                   width={96}
                   height={96}
-                  className="object-contain"
+                  className="object-contain w-auto h-auto"
                 />
               </div>
               <p className="text-sm sm:text-base text-zinc-600 font-medium max-w-md leading-relaxed">
