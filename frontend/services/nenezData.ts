@@ -285,7 +285,7 @@ export const events: Event[] = [
     city: "New York",
     dateLabel: "jue, 17 sept",
     startsAt: "2026-09-17T20:00:00-05:00",
-    poster: "/images/4go_organizer_artwork_v4.jpg",
+    poster: "/images/4go_red_girl_showcase.jpg",
     lineup: ["Tory Silver", "Annie Collette", "Julian Cubillos"],
     organizer: "Cubicolor",
     venue: "Purgatory",

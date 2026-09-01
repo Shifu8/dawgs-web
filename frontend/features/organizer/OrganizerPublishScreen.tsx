@@ -345,7 +345,7 @@ export default function OrganizerPublishScreen() {
                 {/* Surreal Flowers 4GO Artwork Image inside Front Phone Screen */}
                 <div className="relative w-full h-full rounded-[30px] overflow-hidden bg-black">
                   <Image
-                    src="/4go_organizer_artwork_v4.jpg"
+                    src="/images/4go_red_girl_showcase.jpg"
                     alt="4GO Surreal Flowers 3D Artwork"
                     fill
                     priority
